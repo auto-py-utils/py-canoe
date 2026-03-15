@@ -263,7 +263,7 @@ class TestStandalonePyCanoe:
     def test_test_unit_methods(self):
         self.canoe_inst.open(canoe_cfg=r'C:\Users\Public\Documents\Vector\CANoe\Sample Configurations 11.0.81\CAN\Diagnostics\UDSSystem\UDSSystem.cfg')
         assert self.canoe_inst.start_measurement()
-        test_configurations = self.canoe_inst.application.configuration.get_test_configurations()
+        test_configurations = self.canoe_inst.get_test_configurations()
         for tc_name in test_configurations.keys():
             assert self.canoe_inst.execute_test_configuration(tc_name, wait_for_completion=True)
         assert self.canoe_inst.application.configuration.execute_all_test_configurations(wait_for_completion=False)
