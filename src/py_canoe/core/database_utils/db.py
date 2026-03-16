@@ -1,4 +1,9 @@
-import canmatrix.formats
+try:
+    import canmatrix.formats
+    CANMATRIX_AVAILABLE = True
+except ImportError:
+    CANMATRIX_AVAILABLE = False
+
 from typing import Dict, Any
 
 from py_canoe.helpers.common import logger
@@ -15,6 +20,11 @@ def fetch_database_info(db_path: str) -> Dict[str, Dict[str, Any]]:
         A dictionary containing 'networks', 'ecus', 'frames', 'pdus', 'frames_signals', and 'pdus_signals' as sub-dictionaries.
         Returns an empty dict if loading fails.
     """
+    if not CANMATRIX_AVAILABLE:
+        raise ImportError(
+            "canmatrix is required for database operations. "
+            "Install it with: uv pip install py-canoe[database] or uv pip install canmatrix[arxml,kcd,ldf,xls,xlsx,yaml,eds]"
+        )
     try:
         logger.info(f"Loading database from: {db_path}")
         db = canmatrix.formats.loadp(db_path)

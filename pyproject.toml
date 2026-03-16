@@ -17,8 +17,20 @@ classifiers = [
     "Operating System :: Microsoft :: Windows"
 ]
 dependencies = [
-    "canmatrix[arxml,kcd,ldf,xls,xlsx,yaml,eds]",
     "pywin32",
+]
+
+[project.optional-dependencies]
+robot = ["robotframework"]
+database = ["canmatrix[arxml,kcd,ldf,xls,xlsx,yaml,eds]", "pandas"]
+restapi = ["fastapi[standard]"]
+plot = ["plotly", "pandas"]
+report = ["datapane", "plotly", "pandas"]
+all = [
+    "robotframework",
+    "fastapi[standard]",
+    "canmatrix[arxml,kcd,ldf,xls,xlsx,yaml,eds]",
+    "plotly", "pandas", "datapane",
 ]
 
 [dependency-groups]
