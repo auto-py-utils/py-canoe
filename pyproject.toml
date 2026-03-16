@@ -55,5 +55,5 @@ quote-style = "double"
 indent-style = "space"
 
 [build-system]
-requires = ["uv_build"]
-build-backend = "uv_build"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
