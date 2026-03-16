@@ -1,4 +1,6 @@
-from typing import Union
+import time
+from datetime import datetime, timezone
+from typing import Optional, Union
 
 from py_canoe.core.child_elements.channels import Channels
 from py_canoe.core.child_elements.database_setup import Databases
@@ -8,7 +10,7 @@ from py_canoe.core.child_elements.replay_collection import ReplayCollection
 from py_canoe.core.child_elements.security_configuration import SecurityConfiguration
 from py_canoe.core.child_elements.signals import Signal
 from py_canoe.core.database_utils.db import fetch_database_info
-from py_canoe.helpers.common import logger
+from py_canoe.helpers.common import logger, wait
 
 
 class Bus:
@@ -32,9 +34,9 @@ class Bus:
     def set_bus(self, bus_type: str = 'CAN'):
         try:
             self.com_object = self.app.com_object.GetBus(bus_type)
+            return self.com_object
         except Exception as e:
             logger.error(f"❌ Error retrieving {bus_type} bus: {e}")
-        finally:
             return self.com_object
 
     @property
@@ -236,6 +238,119 @@ class Bus:
         except Exception as e:
             logger.error(f"❌ Error checking {bus} bus signal state: {e}")
             return -1
+
+    def profile_signal_value(
+        self,
+        bus: str,
+        channel: int,
+        message: str,
+        signal: str,
+        duration: float = 1.0,
+        interval: float = 0.0,
+        raw_value: bool = False,
+        max_samples: Optional[int] = None,
+        include_samples: bool = False,
+        include_timestamps: bool = False,
+    ) -> dict:
+        if duration <= 0:
+            return {
+                "count": 0,
+                "duration": 0.0,
+                "min": None,
+                "max": None,
+                "mean": None,
+                "std": None,
+                **({"samples": []} if include_samples else {}),
+                **({"timestamps": []} if include_timestamps else {}),
+            }
+
+        bus_type = bus.upper()
+        if bus_type not in self.app.bus_types:
+            logger.error(f"❌ Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
+            return {}
+
+        self.set_bus(bus_type)
+        try:
+            signal_obj = self.get_signal(channel, message, signal)
+        except Exception as e:
+            logger.error(f"❌ Error retrieving signal object for profiling: {e}")
+            return {}
+
+        value_getter = (lambda: signal_obj.raw_value) if raw_value else (lambda: signal_obj.value)
+
+        start = time.perf_counter()
+        end_time = start + duration
+        count = 0
+        mean = 0.0
+        m2 = 0.0
+        min_value = float("inf")
+        max_value = float("-inf")
+        samples = [] if include_samples else None
+        timestamps = [] if include_timestamps else None
+        logger.info(f"📊 Starting signal profiling for {message}::{signal} on {bus} bus for duration {duration}s with interval {interval}s...")
+        while True:
+            now = time.perf_counter()
+            if now >= end_time:
+                break
+            if max_samples is not None and count >= max_samples:
+                break
+
+            value = value_getter()
+            # Avoid breaking on missing signals; just skip them
+            if value is None:
+                if interval > 0:
+                    wait(interval)
+                continue
+
+            try:
+                numeric = float(value)
+            except Exception:
+                # If value is not numeric, keep the raw value
+                numeric = value
+
+            if include_samples:
+                samples.append(numeric)
+            if include_timestamps:
+                timestamps.append(time.time())
+
+            if isinstance(numeric, (int, float)) and not isinstance(numeric, bool):
+                count += 1
+                if numeric < min_value:
+                    min_value = numeric
+                if numeric > max_value:
+                    max_value = numeric
+
+                # Welford's online algorithm for mean and variance
+                delta = numeric - mean
+                mean += delta / count
+                delta2 = numeric - mean
+                m2 += delta * delta2
+            else:
+                # For non-numeric samples we still count them, but cannot compute stats
+                count += 1
+
+            if interval > 0:
+                wait(interval)
+
+        duration_actual = time.perf_counter() - start
+        variance = m2 / (count - 1) if count > 1 else None
+        std = variance**0.5 if variance is not None else None
+
+        profiled_signal = {
+            "count": count,
+            "duration": duration_actual,
+            "min": None if count == 0 else (None if min_value == float("inf") else min_value),
+            "max": None if count == 0 else (None if max_value == float("-inf") else max_value),
+            "mean": None if count == 0 else mean,
+            "std": std,
+            **({"samples": samples} if include_samples else {}),
+            **({"timestamps": timestamps} if include_timestamps else {}),
+        }
+        logger.info(
+            f"📊 Completed signal profiling for {message}::{signal} on {bus} bus: count={count}, duration={duration_actual:.2f}s, "
+            f"min={profiled_signal['min']}, max={profiled_signal['max']}, mean={profiled_signal['mean']}, std={profiled_signal['std']}"
+        )
+        return profiled_signal
 
     def get_j1939_signal_value(self, bus: str, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, raw_value=False) -> Union[float, int, None]:
         try:

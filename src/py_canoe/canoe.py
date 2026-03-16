@@ -184,6 +184,49 @@ class CANoe:
             return signal_value, datetime.now(timezone.utc).timestamp()
         return signal_value
 
+    def profile_signal_value(
+        self,
+        bus: str,
+        channel: int,
+        message: str,
+        signal: str,
+        duration: float = 1.0,
+        interval: float = 0.0,
+        raw_value: bool = False,
+        max_samples: Optional[int] = None,
+        include_samples: bool = False,
+        include_timestamps: bool = False,
+    ) -> dict:
+        """Profiles a signal by sampling it repeatedly and returning basic stats.
+
+        This is useful for quickly observing signal stability, typical value range,
+        and timing characteristics without storing all the samples in memory.
+
+        Args:
+            bus (str): The bus name.
+            channel (int): The channel number.
+            message (str): The message name.
+            signal (str): The signal name.
+            duration (float): How long to sample the signal (seconds). Defaults to 1.0.
+            interval (float): Minimum time to wait between samples (seconds). Defaults to 0.0.
+            raw_value (bool): Whether to query the raw value. Defaults to False.
+            max_samples (Optional[int]): Stop after collecting this many samples. Defaults to None.
+            include_samples (bool): If True, return the list of sampled values.
+            include_timestamps (bool): If True, return the list of timestamps for each sample.
+
+        Returns:
+            dict: A dictionary with keys:
+                - count: number of samples collected
+                - duration: actual sampling duration (seconds)
+                - min: minimum value (or None if no samples)
+                - max: maximum value (or None if no samples)
+                - mean: mean value (or None if no samples)
+                - std: standard deviation (or None if fewer than 2 samples)
+                - samples (optional): list of sampled values
+                - timestamps (optional): list of timestamps in UTC seconds
+        """
+        return self.application.bus.profile_signal_value(bus, channel, message, signal, duration, interval, raw_value, max_samples, include_samples, include_timestamps)
+
     def set_signal_value(self, bus: str, channel: int, message: str, signal: str, value: Union[int, float], raw_value: bool = False) -> bool:
         """
         Sets the value of a signal.

@@ -270,3 +270,21 @@ class TestStandalonePyCanoe:
         wait(5)
         assert self.canoe_inst.application.configuration.stop_all_test_configurations()
         assert self.canoe_inst.stop_measurement()
+    
+    def test_profile_signal_performance(self):
+        self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=False, prompt_user=False)
+        assert self.canoe_inst.start_measurement()
+        wait(1)
+        prof = self.canoe_inst.profile_signal_value(
+            bus='CAN',
+            channel=1,
+            message='EngineState',
+            signal='EngineSpeed',
+            duration=30.0,
+            interval=0.1,
+            include_samples=True,
+            include_timestamps=True,
+        )
+        assert prof.get('count', 0) >= 1
+        assert 'mean' in prof
+        assert self.canoe_inst.stop_measurement()
