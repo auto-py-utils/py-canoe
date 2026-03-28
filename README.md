@@ -4,7 +4,7 @@
 
 Python 🐍 Package for accessing Vector CANoe 🛶 Tool via COM Interface
 
-> **Note:** Looking for volunteers to maintain and contribute to this project. If interested, please reach out on [LinkedIn](https://www.linkedin.com/in/chaitu-ycr/).
+> **Note:** Looking for volunteers to maintain and contribute to this project. If interested, please reach out to me on [LinkedIn](https://www.linkedin.com/in/chaitu-ycr/).
 
 ## 🔗 useful links
 

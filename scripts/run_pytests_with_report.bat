@@ -48,9 +48,8 @@ uv run pytest tests/ ^
 if %ERRORLEVEL% NEQ 0 goto ERROR
 
 REM ----------------------------
-REM 5. Deactivate Virtual Environment and Cleanup
+REM 5. Cleanup
 REM ----------------------------
-call "%VENV_DEACTIVATE%"
 popd
 goto :EOF
 

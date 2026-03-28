@@ -44,7 +44,7 @@ dev = [
     "pytest-watch",
     "mkdocs-puml",
     "mkdocs-exclude",
-    "mkdocs-material",
+    "mkdocs-material<10",
     "mkdocs-jupyter",
     "mkdocstrings-python",
     "mkdocs-macros-plugin",
