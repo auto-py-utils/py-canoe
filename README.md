@@ -235,6 +235,18 @@ sys_var_val = canoe_inst.get_system_variable_value('sys_demo::demo')
 canoe_inst.stop_measurement()
 ```
 
+### list system variable namespaces and variables
+
+```python
+from py_canoe import CANoe, wait
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
+
+namespace_names = canoe_inst.application.system.get_all_namespace_names()
+variables = canoe_inst.application.system.get_all_variables_in_namespace('demo')
+```
+
 ### send diagnostic request, control tester present
 
 ```python

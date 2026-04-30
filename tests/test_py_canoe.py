@@ -283,6 +283,21 @@ class TestStandalonePyCanoe:
         assert len(paths) > 0
         assert all(isinstance(p, str) for p in paths)
 
+    def test_get_all_namespace_names(self):
+        self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=False, prompt_user=False)
+        names = self.canoe_inst.application.system.get_all_namespace_names()
+        assert isinstance(names, list)
+        assert 'demo' in names
+
+    def test_get_all_variables_in_namespace(self):
+        self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=False, prompt_user=False)
+        variables = self.canoe_inst.application.system.get_all_variables_in_namespace('demo')
+        assert isinstance(variables, list)
+        assert len(variables) > 0
+        var_names = [v['name'] for v in variables]
+        assert 'sys_var2' in var_names
+        assert all('name' in v and 'value' in v and 'full_name' in v for v in variables)
+
     def test_logging(self):
         self.canoe_inst.open(canoe_cfg=self.canoe_cfg_online_setup)
         logging_blocks = self.canoe_inst.get_logging_blocks()

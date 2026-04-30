@@ -112,7 +112,7 @@ class Variable:
     def set_value(self, value, timeout: Union[int, float]):
         status: bool = False
         self.com_object.Value = value
-        if self.variable_events:
+        if hasattr(self, 'variable_events') and self.variable_events:
             self.variable_events.VARIABLE_UPDATED = False
             status = DoEventsUntil(lambda: self.variable_events.VARIABLE_UPDATED, timeout, "Variable Update")
             if status:

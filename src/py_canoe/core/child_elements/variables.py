@@ -10,8 +10,15 @@ class Variables:
     def count(self):
         return self.com_object.Count
 
-    def item(self, index: int) -> 'Variable':
-        return Variable(self.com_object.Item(index))
+    def item(self, index: int, enable_events: bool = True) -> 'Variable':
+        return Variable(self.com_object.Item(index), enable_events=enable_events)
+
+    def fetch_all(self) -> list['Variable']:
+        result = []
+        count = self.count
+        for i in range(1, count + 1):
+            result.append(self.item(i, enable_events=False))
+        return result
 
     def add(self, name: str):
         return self.com_object.Add(name)

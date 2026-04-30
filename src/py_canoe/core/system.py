@@ -2,8 +2,10 @@ from typing import Union
 
 from py_canoe.helpers.common import logger
 from py_canoe.core.child_elements.namespaces import Namespaces
+from py_canoe.core.child_elements.variables import Variables
 from py_canoe.core.child_elements.variables_files import VariablesFiles
 from py_canoe.core.child_elements.variable import Variable
+from py_canoe.exceptions import PyCanoeError, NamespaceNotFoundError
 
 
 class System:
@@ -149,6 +151,33 @@ class System:
         except Exception as e:
             logger.error(f"❌ Error getting system namespaces: {e}")
             return None
+
+    def get_all_namespace_names(self) -> list[str]:
+        try:
+            names = [ns.name for ns in self.namespaces.fetch_all()]
+        except Exception as e:
+            raise PyCanoeError(f"Failed to enumerate namespaces: {e}") from e
+        logger.info(f'📢 {len(names)} system variable namespace(s) found')
+        return names
+
+    def get_all_variables_in_namespace(self, namespace_name: str) -> list[dict]:
+        try:
+            ns_com = self.com_object.Namespaces(namespace_name)
+        except Exception as e:
+            raise NamespaceNotFoundError(f"Namespace '{namespace_name}' not found: {e}") from e
+        try:
+            variables_obj = Variables(ns_com.Variables)
+            result = []
+            for var in variables_obj.fetch_all():
+                result.append({
+                    "name": var.name,
+                    "value": var.get_value(),
+                    "full_name": var.full_name,
+                })
+            logger.info(f"📢 {len(result)} variable(s) found in '{namespace_name}'")
+            return result
+        except Exception as e:
+            raise PyCanoeError(f"Failed to enumerate variables in '{namespace_name}': {e}") from e
 
     def get_variables_files(self) -> dict[str, "VariablesFile"] | None:
         try:
