@@ -272,6 +272,18 @@ canoe_inst.control_replay_block(block_name='DemoReplayBlock', start_stop=False)
 canoe_inst.stop_measurement()
 ```
 
+### compile CAPL nodes and get detailed error output
+
+```python
+from py_canoe import CANoe, wait
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
+
+result = canoe_inst.application.configuration.compile_and_verify_with_result()
+state = canoe_inst.application.configuration.run_compilation()
+```
+
 ### compile CAPL nodes and call capl function
 
 ```python

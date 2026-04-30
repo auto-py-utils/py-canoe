@@ -161,8 +161,32 @@ class Configuration:
 
     # VTSystem
 
-    def compile_and_verify(self) -> bool:
+    def compile_and_verify(self) -> None:
         self.com_object.CompileAndVerify()
+        logger.info("CAPL compilation completed successfully.")
+
+    def compile_and_verify_with_result(self) -> dict[str, object]:
+        result = self._compile_and_verify_internal()
+        if result["success"]:
+            logger.info('CAPL compilation succeeded')
+        else:
+            logger.warning(f'CAPL compilation failed: {result["error"]}')
+        return result
+
+    def run_compilation(self) -> bool:
+        result = self._compile_and_verify_internal()
+        if result["success"]:
+            logger.info('CAPL compilation passed')
+        else:
+            logger.warning(f'CAPL compilation failed: {result["error"]}')
+        return result["success"]
+
+    def _compile_and_verify_internal(self) -> dict[str, object]:
+        try:
+            self.com_object.CompileAndVerify()
+            return {"success": True, "error": None}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
 
     def save(self) -> bool:
         try:
