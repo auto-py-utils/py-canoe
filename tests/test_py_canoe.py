@@ -262,6 +262,13 @@ class TestStandalonePyCanoe:
         assert isinstance(result, bool)
         assert result is True
 
+    def test_get_all_network_names(self):
+        self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=False, prompt_user=False)
+        names = self.canoe_inst.application.networks.get_all_network_names()
+        assert isinstance(names, list)
+        assert len(names) > 0
+        assert all(isinstance(n, str) for n in names)
+
     def test_logging(self):
         self.canoe_inst.open(canoe_cfg=self.canoe_cfg_online_setup)
         logging_blocks = self.canoe_inst.get_logging_blocks()

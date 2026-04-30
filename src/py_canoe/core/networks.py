@@ -22,6 +22,21 @@ class Networks:
     def item(self, index: int) -> Network:
         return Network(self.com_object.Item(index))
 
+    def get_all_network_names(self) -> list[str]:
+        try:
+            count = self.count
+            names = []
+            for i in range(1, count + 1):
+                network = self.item(i)
+                name = network.name
+                if name is not None:
+                    names.append(name)
+            logger.info(f'networks: {names}')
+            return names
+        except Exception as e:
+            logger.error(f"Error retrieving network names: {e}")
+            return []
+
     def fetch_diagnostic_devices(self):
         try:
             for i in range(1, self.count + 1):

@@ -368,6 +368,17 @@ canoe_inst.add_database(fr"{file_path}\demo_cfg\DBs\sample_databases\XCP.dbc", '
 canoe_inst.remove_database(fr"{file_path}\demo_cfg\DBs\sample_databases\XCP.dbc", 1)
 ```
 
+### get configured network names
+
+```python
+from py_canoe import CANoe, wait
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
+
+network_names = canoe_inst.application.networks.get_all_network_names()
+```
+
 ### start/stop online logging block
 
 ```python
