@@ -269,6 +269,20 @@ class TestStandalonePyCanoe:
         assert len(names) > 0
         assert all(isinstance(n, str) for n in names)
 
+    def test_simulation_bus_names(self):
+        self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=False, prompt_user=False)
+        names = self.canoe_inst.application.bus.get_simulation_bus_names()
+        assert isinstance(names, list)
+        assert len(names) > 0
+        assert all(isinstance(n, str) for n in names)
+
+    def test_simulation_database_paths(self):
+        self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=False, prompt_user=False)
+        paths = self.canoe_inst.application.bus.get_simulation_database_paths()
+        assert isinstance(paths, list)
+        assert len(paths) > 0
+        assert all(isinstance(p, str) for p in paths)
+
     def test_logging(self):
         self.canoe_inst.open(canoe_cfg=self.canoe_cfg_online_setup)
         logging_blocks = self.canoe_inst.get_logging_blocks()

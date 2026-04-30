@@ -10,6 +10,7 @@ from py_canoe.core.child_elements.replay_collection import ReplayCollection
 from py_canoe.core.child_elements.security_configuration import SecurityConfiguration
 from py_canoe.core.child_elements.signals import Signal
 from py_canoe.core.database_utils.db import fetch_database_info
+from py_canoe.exceptions import ConfigurationNotLoadedError
 from py_canoe.helpers.common import logger, wait
 
 
@@ -160,6 +161,35 @@ class Bus:
         except Exception as e:
             logger.error(f"❌ Error retrieving {bus} bus nodes information: {e}")
             return {}
+
+    def get_simulation_bus_names(self) -> list[str]:
+        try:
+            sim_buses = self.app.configuration.simulation_setup.buses
+            bus_names: list[str] = []
+            for i in range(1, sim_buses.count + 1):
+                sim_bus = sim_buses.item(i)
+                if sim_bus.name is not None:
+                    bus_names.append(sim_bus.name)
+            logger.info(f'📜 simulation buses: {bus_names}')
+            return bus_names
+        except Exception as e:
+            raise ConfigurationNotLoadedError(f"Cannot access simulation buses: {e}") from e
+
+    def get_simulation_database_paths(self) -> list[str]:
+        try:
+            sim_buses = self.app.configuration.simulation_setup.buses
+            paths: list[str] = []
+            for i in range(1, sim_buses.count + 1):
+                sim_bus = sim_buses.item(i)
+                dbs = sim_bus.databases
+                for j in range(1, dbs.count + 1):
+                    db = dbs.item(j)
+                    if db.full_name is not None:
+                        paths.append(db.full_name)
+            logger.info(f'📜 simulation database paths: {paths}')
+            return paths
+        except Exception as e:
+            raise ConfigurationNotLoadedError(f"Cannot access simulation databases: {e}") from e
 
     def get_signal_value(self, bus: str, channel: int, message: str, signal: str, raw_value: bool = False) -> Union[int, float, None]:
         try:

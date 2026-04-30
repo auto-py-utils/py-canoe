@@ -379,6 +379,18 @@ canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
 network_names = canoe_inst.application.networks.get_all_network_names()
 ```
 
+### get configured simulation buses and database paths
+
+```python
+from py_canoe import CANoe, wait
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
+
+bus_names = canoe_inst.application.bus.get_simulation_bus_names()
+db_paths = canoe_inst.application.bus.get_simulation_database_paths()
+```
+
 ### start/stop online logging block
 
 ```python

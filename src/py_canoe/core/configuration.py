@@ -14,6 +14,7 @@ from py_canoe.core.child_elements.general_setup import GeneralSetup
 from py_canoe.core.child_elements.measurement_setup import MeasurementSetup
 from py_canoe.core.child_elements.database_setup import Databases
 from py_canoe.core.child_elements.replay_collection import ReplayCollection
+from py_canoe.core.child_elements.simulation_setup import SimulationSetup
 from py_canoe.core.child_elements.test_configurations import TestConfigurations
 from py_canoe.core.child_elements.test_setup import TestSetup
 from py_canoe.helpers.common import logger, wait
@@ -141,7 +142,9 @@ class Configuration:
 
     # Sensor
 
-    # SimulationSetup
+    @property
+    def simulation_setup(self) -> 'SimulationSetup':
+        return SimulationSetup(self.com_object.SimulationSetup)
 
     # StandaloneMode
 
