@@ -272,6 +272,24 @@ canoe_inst.control_replay_block(block_name='DemoReplayBlock', start_stop=False)
 canoe_inst.stop_measurement()
 ```
 
+### compile CAPL nodes with success check
+
+```python
+from py_canoe import CANoe, wait
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
+
+# Simple bool check
+if canoe_inst.application.configuration.run_compilation():
+    print("Compilation OK")
+
+# Get detailed error information
+result = canoe_inst.application.configuration.get_compilation_result()
+if not result["success"]:
+    print(f"Compilation failed: {result['error']}")
+```
+
 ### compile CAPL nodes and call capl function
 
 ```python

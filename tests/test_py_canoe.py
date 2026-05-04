@@ -248,6 +248,20 @@ class TestStandalonePyCanoe:
         assert self.canoe_inst.remove_database(fr"{self.file_path}\demo_cfg\DBs\sample_databases\XCP.dbc", 1)
         assert self.canoe_inst.save_configuration()
 
+    def test_get_compilation_result(self):
+        self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=False, prompt_user=False)
+        result = self.canoe_inst.application.configuration.get_compilation_result()
+        assert isinstance(result, dict)
+        assert "success" in result
+        assert "error" in result
+        assert result["success"] is True
+
+    def test_run_compilation(self):
+        self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=False, prompt_user=False)
+        result = self.canoe_inst.application.configuration.run_compilation()
+        assert isinstance(result, bool)
+        assert result is True
+
     def test_logging(self):
         self.canoe_inst.open(canoe_cfg=self.canoe_cfg_online_setup)
         logging_blocks = self.canoe_inst.get_logging_blocks()

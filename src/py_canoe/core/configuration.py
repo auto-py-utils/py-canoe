@@ -161,8 +161,61 @@ class Configuration:
 
     # VTSystem
 
-    def compile_and_verify(self) -> bool:
+    def compile_and_verify(self) -> None:
         self.com_object.CompileAndVerify()
+        logger.info("CAPL compilation completed successfully.")
+
+    def get_compilation_result(self) -> dict[str, object]:
+        """Get CAPL compilation result with error details.
+
+        Compiles all CAPL code in the current configuration and returns
+        detailed result including success status and error information.
+
+        Returns:
+            dict: Dictionary with keys:
+                - "success" (bool): True if compilation succeeded, False otherwise
+                - "error" (str | None): Error message if compilation failed, None on success
+
+        Example:
+            >>> result = config.get_compilation_result()
+            >>> if result["success"]:
+            ...     print("Compilation OK")
+            ... else:
+            ...     print(f"Compilation failed: {result['error']}")
+        """
+        result = self._compile_and_verify_internal()
+        if result["success"]:
+            logger.info('CAPL compilation succeeded')
+        else:
+            logger.warning(f'CAPL compilation failed: {result["error"]}')
+        return result
+
+    def run_compilation(self) -> bool:
+        """Run CAPL compilation and return success status.
+
+        Compiles all CAPL code in the current configuration.
+        Use get_compilation_result() if you need error details.
+
+        Returns:
+            bool: True if compilation succeeded, False otherwise
+
+        Example:
+            >>> if config.run_compilation():
+            ...     print("Compilation OK")
+        """
+        result = self._compile_and_verify_internal()
+        if result["success"]:
+            logger.info('CAPL compilation passed')
+        else:
+            logger.warning(f'CAPL compilation failed: {result["error"]}')
+        return result["success"]
+
+    def _compile_and_verify_internal(self) -> dict[str, object]:
+        try:
+            self.com_object.CompileAndVerify()
+            return {"success": True, "error": None}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
 
     def save(self) -> bool:
         try:
