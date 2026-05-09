@@ -82,9 +82,13 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#getset-system-variable-or-define-system-variable">get/set system variable or define system variable</a>
     </li>
+    <li class="toctree-l3"><a class="reference internal" href="#list-system-variable-namespaces-and-variables">list system variable namespaces and variables</a>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="#send-diagnostic-request-control-tester-present">send diagnostic request, control tester present</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#set-replay-block-source-file-control-replay-block-start-stop">set replay block source file / control replay block start stop</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#compile-capl-nodes-with-success-check">compile CAPL nodes with success check</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#compile-capl-nodes-and-call-capl-function">compile CAPL nodes and call capl function</a>
     </li>
@@ -95,6 +99,10 @@
     <li class="toctree-l3"><a class="reference internal" href="#getset-environment-variable-value">get/set environment variable value</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#addremove-database">add/remove database</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#get-configured-network-names">get configured network names</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#get-configured-simulation-buses-and-database-paths">get configured simulation buses and database paths</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#startstop-online-logging-block">start/stop online logging block</a>
     </li>
@@ -137,7 +145,7 @@
 <h2 id="about-package">about package</h2>
 <p>Python 🐍 Package for accessing Vector CANoe 🛶 Tool via COM Interface</p>
 <blockquote>
-<p><strong>Note:</strong> Looking for volunteers to maintain and contribute to this project. If interested, please reach out on <a href="https://www.linkedin.com/in/chaitu-ycr/">LinkedIn</a>.</p>
+<p><strong>Note:</strong> Looking for volunteers to maintain and contribute to this project. If interested, please reach out to me on <a href="https://www.linkedin.com/in/chaitu-ycr/">LinkedIn</a>.</p>
 </blockquote>
 <h2 id="useful-links">🔗 useful links</h2>
 <ul>
@@ -325,6 +333,15 @@ canoe_inst.start_measurement()
 sys_var_val = canoe_inst.get_system_variable_value('sys_demo::demo')
 canoe_inst.stop_measurement()
 </code></pre>
+<h3 id="list-system-variable-namespaces-and-variables">list system variable namespaces and variables</h3>
+<pre><code class="language-python">from py_canoe import CANoe, wait
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
+
+namespace_names = canoe_inst.application.system.get_all_namespace_names()
+variables = canoe_inst.application.system.get_all_variables_in_namespace('demo')
+</code></pre>
 <h3 id="send-diagnostic-request-control-tester-present">send diagnostic request, control tester present</h3>
 <pre><code class="language-python">from py_canoe import CANoe, wait
 
@@ -355,6 +372,21 @@ canoe_inst.control_replay_block(block_name='DemoReplayBlock', start_stop=True)
 wait(2)
 canoe_inst.control_replay_block(block_name='DemoReplayBlock', start_stop=False)
 canoe_inst.stop_measurement()
+</code></pre>
+<h3 id="compile-capl-nodes-with-success-check">compile CAPL nodes with success check</h3>
+<pre><code class="language-python">from py_canoe import CANoe, wait
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
+
+# Simple bool check
+if canoe_inst.application.configuration.run_compilation():
+    print(&quot;Compilation OK&quot;)
+
+# Get detailed error information
+result = canoe_inst.application.configuration.get_compilation_result()
+if not result[&quot;success&quot;]:
+    print(f&quot;Compilation failed: {result['error']}&quot;)
 </code></pre>
 <h3 id="compile-capl-nodes-and-call-capl-function">compile CAPL nodes and call capl function</h3>
 <pre><code class="language-python">from py_canoe import CANoe, wait
@@ -418,6 +450,23 @@ canoe_inst.start_measurement()
 canoe_inst.add_database(fr&quot;{file_path}\demo_cfg\DBs\sample_databases\XCP.dbc&quot;, 'CAN1', 1)
 # remove database
 canoe_inst.remove_database(fr&quot;{file_path}\demo_cfg\DBs\sample_databases\XCP.dbc&quot;, 1)
+</code></pre>
+<h3 id="get-configured-network-names">get configured network names</h3>
+<pre><code class="language-python">from py_canoe import CANoe, wait
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
+
+network_names = canoe_inst.application.networks.get_all_network_names()
+</code></pre>
+<h3 id="get-configured-simulation-buses-and-database-paths">get configured simulation buses and database paths</h3>
+<pre><code class="language-python">from py_canoe import CANoe, wait
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
+
+bus_names = canoe_inst.application.bus.get_simulation_bus_names()
+db_paths = canoe_inst.application.bus.get_simulation_database_paths()
 </code></pre>
 <h3 id="startstop-online-logging-block">start/stop online logging block</h3>
 <pre><code class="language-python">from py_canoe import CANoe, wait
@@ -500,5 +549,5 @@ canoe_inst.quit()
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2026-03-15 18:42:49.680964+00:00
+Build Date UTC : 2026-05-09 07:27:09.641632+00:00
 -->
