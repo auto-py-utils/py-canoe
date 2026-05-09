@@ -844,7 +844,7 @@ class CANoe:
         self.application.measurement.measurement_index = index
         return True
 
-    def send_diag_request(self, diag_ecu_qualifier_name: str, request: str, request_in_bytes=True, return_sender_name=False, response_in_bytearray=False) -> Union[str, dict]:
+    def send_diag_request(self, diag_ecu_qualifier_name: str, request: str, request_in_bytes=True, return_sender_name=False, response_in_bytearray=False, timeout: float = 30, poll_s: float = 0.01) -> Union[str, dict]:
         """
         Sends a diagnostic request.
 
@@ -854,11 +854,13 @@ class CANoe:
             request_in_bytes (bool): Whether the request is in bytes.
             return_sender_name (bool): Whether to return the sender name.
             response_in_bytearray (bool): Whether to return the response in bytearray.
+            timeout (float): The timeout in seconds for the operation. Defaults to 30.
+            poll_s (float): The polling interval in seconds to check for the response. Defaults to 0.01.
 
         Returns:
             Union[str, dict]: The response from the diagnostic request.
         """
-        return self.application.networks.send_diag_request(diag_ecu_qualifier_name, request, request_in_bytes, return_sender_name, response_in_bytearray)
+        return self.application.networks.send_diag_request(diag_ecu_qualifier_name, request, request_in_bytes, return_sender_name, response_in_bytearray, timeout, poll_s)
 
     def control_tester_present(self, diag_ecu_qualifier_name: str, value: bool) -> bool:
         """

@@ -55,6 +55,8 @@ class TestStandalonePyCanoe:
         wait(1)
 
     def test_attach_to_active_application(self):
+        assert self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=False, prompt_user=False)
+        assert self.canoe_inst.start_measurement()
         assert self.canoe_inst.attach_to_active_application()
         wait(1)
         assert self.canoe_inst.check_signal_online(bus='CAN', channel=1, message='LightState', signal='FlashLight')
@@ -295,7 +297,7 @@ class TestStandalonePyCanoe:
         assert isinstance(variables, list)
         assert len(variables) > 0
         var_names = [v['name'] for v in variables]
-        assert 'sys_var2' in var_names
+        assert 'var_on_off' in var_names
         assert all('name' in v and 'value' in v and 'full_name' in v for v in variables)
 
     def test_logging(self):

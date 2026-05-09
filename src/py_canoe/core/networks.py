@@ -72,14 +72,9 @@ class Networks:
                 diag_request.send()
                 logger.info(f'💉 {diag_ecu_qualifier_name}: Diagnostic Request = {request}')
                 start_time = time.time()
-                while (
-                    diag_request.responses.count == 0
-                    and (time.time() - start_time) < timeout
-                ):
+                while (diag_request.responses.count == 0 and (time.time() - start_time) < timeout):
                     if (time.time() - start_time) >= timeout:
-                        logger.warning(
-                            f"Diagnostic request timed out after {timeout}s: {request}"
-                        )
+                        logger.warning(f"Diagnostic request timed out after {timeout}s: {request}")
                         return f"ERROR: timeout after {timeout}s"
                     wait(poll_s)
                 if diag_request.responses.count > 0:
