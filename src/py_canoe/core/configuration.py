@@ -499,7 +499,7 @@ class Configuration:
             test_environments = self.get_test_environments()
             if len(test_environments) > 0:
                 for test_env_name in test_environments.keys():
-                    logger.info(f'🧐🏃‍➡️🥱 executing test environment "{test_env_name}". please wait...')
+                    logger.info(f'🧐🏃🥱 executing test environment "{test_env_name}". please wait...')
                     self.execute_all_test_modules_in_test_env(test_env_name)
                     logger.info(f'🧐🧍✔️ completed executing test environment "{test_env_name}"')
             else:

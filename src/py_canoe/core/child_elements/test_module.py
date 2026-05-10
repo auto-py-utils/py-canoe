@@ -165,7 +165,7 @@ class TestModule:
         self.com_object.Start()
         status = DoEventsUntil(lambda: self.test_module_events.TM_STARTED, TEST_MODULE_START_EVENT_TIMEOUT, "Test Module Start")
         if status:
-            logger.info(f'🧪🏃‍➡️ started executing test module ({self.name})...')
+            logger.info(f'🧪🏃 started executing test module ({self.name})...')
 
     def wait_for_completion(self) -> bool:
         return_value = False

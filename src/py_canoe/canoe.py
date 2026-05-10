@@ -184,19 +184,7 @@ class CANoe:
             return signal_value, datetime.now(timezone.utc).timestamp()
         return signal_value
 
-    def profile_signal_value(
-        self,
-        bus: str,
-        channel: int,
-        message: str,
-        signal: str,
-        duration: float = 1.0,
-        interval: float = 0.0,
-        raw_value: bool = False,
-        max_samples: Optional[int] = None,
-        include_samples: bool = False,
-        include_timestamps: bool = False,
-    ) -> dict:
+    def profile_signal_value(self, bus: str, channel: int, message: str, signal: str, duration: float = 1.0, interval: float = 0.0, raw_value: bool = False, max_samples: Optional[int] = None, include_samples: bool = False, include_timestamps: bool = False,) -> dict:
         """Profiles a signal by sampling it repeatedly and returning basic stats.
 
         This is useful for quickly observing signal stability, typical value range,

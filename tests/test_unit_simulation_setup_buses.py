@@ -1,13 +1,20 @@
 import pytest
-from unittest.mock import MagicMock, PropertyMock
+from unittest.mock import MagicMock, PropertyMock, patch
+
 from py_canoe.exceptions import ConfigurationNotLoadedError
-from py_canoe.core.child_elements.simulation_setup import (
-    SimulationSetup,
-    SimulationBuses,
-    SimulationBus,
-    SimulationBusDatabases,
-    SimulationBusDatabase,
-)
+from py_canoe.core.child_elements.simulation_setup import SimulationSetup
+from py_canoe.core.child_elements.buses import Buses
+from py_canoe.core.child_elements.bus import Bus
+from py_canoe.core.child_elements.databases import Databases
+from py_canoe.core.child_elements.database import Database
+
+
+@pytest.fixture(autouse=True)
+def _patch_child_element_dispatch():
+    with patch("py_canoe.core.child_elements.bus.win32com.client.Dispatch", side_effect=lambda x: x), \
+         patch("py_canoe.core.child_elements.simulation_setup.win32com.client.Dispatch", side_effect=lambda x: x), \
+         patch("py_canoe.core.child_elements.database.win32com.client.Dispatch", side_effect=lambda x: x):
+        yield
 
 
 def _make_sim_buses(bus_specs):
@@ -34,7 +41,7 @@ def _make_sim_buses(bus_specs):
 
     buses_com.Item.side_effect = buses_item
 
-    sim_buses = SimulationBuses.__new__(SimulationBuses)
+    sim_buses = Buses.__new__(Buses)
     sim_buses.com_object = buses_com
     return sim_buses
 
@@ -63,12 +70,12 @@ class TestSimulationSetupClasses:
         com.Buses = buses_com
         ss = SimulationSetup(com)
         result = ss.buses
-        assert isinstance(result, SimulationBuses)
+        assert isinstance(result, Buses)
 
     def test_simulation_buses_count(self):
         com = MagicMock()
         com.Count = 3
-        sb = SimulationBuses(com)
+        sb = Buses(com)
         assert sb.count == 3
 
     def test_simulation_buses_item_returns_simulation_bus(self):
@@ -76,35 +83,35 @@ class TestSimulationSetupClasses:
         buses_com = MagicMock()
         buses_com.Item.return_value = inner_com
         buses_com.Count = 1
-        sb = SimulationBuses(buses_com)
+        sb = Buses(buses_com)
         result = sb.item(1)
-        assert isinstance(result, SimulationBus)
+        assert isinstance(result, Bus)
 
     def test_simulation_bus_name(self):
         com = MagicMock()
         com.Name = "CAN1"
-        bus = SimulationBus(com)
+        bus = Bus(com)
         assert bus.name == "CAN1"
 
     def test_simulation_bus_databases_property(self):
         dbs_com = MagicMock()
         com = MagicMock()
         com.Databases = dbs_com
-        bus = SimulationBus(com)
+        bus = Bus(com)
         result = bus.databases
-        assert isinstance(result, SimulationBusDatabases)
+        assert isinstance(result, Databases)
 
     def test_simulation_bus_databases_count(self):
         com = MagicMock()
         com.Count = 2
-        dbs = SimulationBusDatabases(com)
+        dbs = Databases(com)
         assert dbs.count == 2
 
     def test_simulation_bus_database_properties(self):
         com = MagicMock()
         com.FullName = "C:/path/to/db.dbc"
         com.Name = "db"
-        db = SimulationBusDatabase(com)
+        db = Database(com)
         assert db.full_name == "C:/path/to/db.dbc"
         assert db.name == "db"
 
@@ -142,7 +149,7 @@ class TestGetSimulationBusNames:
             return bus_com
 
         buses_com.Item.side_effect = buses_item
-        sim_buses = SimulationBuses.__new__(SimulationBuses)
+        sim_buses = Buses.__new__(Buses)
         sim_buses.com_object = buses_com
 
         sim_setup = MagicMock(spec=SimulationSetup)
@@ -224,7 +231,7 @@ class TestGetSimulationDatabasePaths:
             return bus_com
 
         buses_com.Item.side_effect = buses_item
-        sim_buses = SimulationBuses.__new__(SimulationBuses)
+        sim_buses = Buses.__new__(Buses)
         sim_buses.com_object = buses_com
 
         sim_setup = MagicMock(spec=SimulationSetup)

@@ -1,6 +1,6 @@
 [project]
 name = "py-canoe"
-version = "26.2.0"
+version = "26.2.1"
 description = "Python 🐍 Package for accessing Vector CANoe 🛶 Tool via COM Interface"
 license = { file = "LICENSE" }
 readme = "README.md"
@@ -58,9 +58,6 @@ documentation = "https://chaitu-ycr.github.io/py-canoe/"
 
 [tool.uv]
 package = true
-
-[tool.ruff]
-line-length = 120
 
 [tool.ruff.format]
 quote-style = "double"

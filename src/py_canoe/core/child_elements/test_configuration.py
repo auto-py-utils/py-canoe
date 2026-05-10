@@ -129,7 +129,7 @@ class TestConfiguration:
         self.com_object.Start()
         status = DoEventsUntil(lambda: self.test_configuration_events.STARTED, TEST_CONFIGURATION_TIMEOUT, "Test Configuration Start")
         if status:
-            logger.info(f'🧪🏃‍➡️ started executing test configuration ({self.name})...')
+            logger.info(f'🧪🏃 started executing test configuration ({self.name})...')
 
     def stop(self) -> None:
         self.test_configuration_events.STOPPED = False

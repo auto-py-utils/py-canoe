@@ -120,7 +120,7 @@ class Networks:
             if diag_device:
                 if value:
                     diag_device.diag_start_tester_present()
-                    logger.info(f'✔️ {diag_ecu_qualifier_name}: Tester Present started 🏃‍➡️')
+                    logger.info(f'✔️ {diag_ecu_qualifier_name}: Tester Present started 🏃')
                 else:
                     diag_device.diag_stop_tester_present()
                     logger.info(f'⏹️ {diag_ecu_qualifier_name}: Tester Present stopped 🧍')

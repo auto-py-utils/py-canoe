@@ -75,7 +75,7 @@ class Measurement:
             self.com_object.Start()
             status = DoEventsUntil(lambda: self.measurement_events.START, timeout, "CANoe Measurement Start")
             if status:
-                logger.info('📢 Measurement Started 🏃‍➡️')
+                logger.info('📢 Measurement Started 🏃')
             return status
         except Exception as e:
             logger.error(f"❌ Error starting CANoe measurement: {e}")
@@ -110,7 +110,7 @@ class Measurement:
             self.com_object.Animate()
             status = DoEventsUntil(lambda: self.measurement_events.START, timeout, "CANoe Measurement Animation Initialization")
             if status:
-                logger.info(f'📢 Measurement started 🏃‍➡️ in Animation mode with animation delay ⏲️ {animation_delay} ms')
+                logger.info(f'📢 Measurement started 🏃 in Animation mode with animation delay ⏲️ {animation_delay} ms')
             else:
                 logger.error(f"❌ Measurement did not start in Animation mode within {timeout} seconds")
             return status
