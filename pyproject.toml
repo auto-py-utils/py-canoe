@@ -59,6 +59,12 @@ documentation = "https://chaitu-ycr.github.io/py-canoe/"
 [tool.uv]
 package = true
 
+[tool.pytest.ini_options]
+markers = [
+    "integration: Integration tests requiring CANoe COM interface",
+    "unit: Unit tests with mocks (default)",
+]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"

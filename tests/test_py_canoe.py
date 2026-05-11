@@ -1,8 +1,12 @@
 import os
+import pytest
 from py_canoe import CANoe, wait
 from py_canoe.helpers.common import logger
+from tests.conftest import skip_if_no_canoe
 
 
+@pytest.mark.integration
+@skip_if_no_canoe
 class TestStandalonePyCanoe:
     @classmethod
     def setup_class(cls):
