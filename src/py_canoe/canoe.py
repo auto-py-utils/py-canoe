@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Iterable, Optional
 if TYPE_CHECKING:
     from py_canoe.core.child_elements.measurement_setup import Logging, ExporterSymbol, Message
     from py_canoe.core.child_elements.test_configurations import TestConfiguration
