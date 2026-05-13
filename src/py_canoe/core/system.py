@@ -30,7 +30,7 @@ class System:
         try:
             parts = sys_var_name.split('::')
             if len(parts) < 2:
-                logger.error(f"❌ Invalid system variable name '{sys_var_name}'. Must be in 'namespace::variable' format.")
+                logger.error(f"Invalid system variable name '{sys_var_name}'. Must be in 'namespace::variable' format.")
                 return None
             namespace = '::'.join(parts[:-1])
             variable_name = parts[-1]
@@ -49,14 +49,14 @@ class System:
             logger.info(f"System Variable '{sys_var_name}' defined successfully with value: {value}")
             return new_var_com_obj
         except Exception as e:
-            logger.error(f"❌ Error defining System Variable '{sys_var_name}': {e}")
+            logger.error(f"Error defining System Variable '{sys_var_name}': {e}")
             return None
 
     def remove_variable(self, sys_var_name: str) -> bool:
         try:
             parts = sys_var_name.split('::')
             if len(parts) < 2:
-                logger.error(f"❌ Invalid system variable name '{sys_var_name}'. Must be in 'namespace::variable' format.")
+                logger.error(f"Invalid system variable name '{sys_var_name}'. Must be in 'namespace::variable' format.")
                 return None
             namespace = '::'.join(parts[:-1])
             variable_name = parts[-1]
@@ -71,14 +71,14 @@ class System:
             logger.info(f"System Variable '{sys_var_name}' not found.")
             return False
         except Exception as e:
-            logger.error(f"❌ Error removing System Variable '{sys_var_name}': {e}")
+            logger.error(f"Error removing System Variable '{sys_var_name}': {e}")
             return False
 
     def get_variable_value(self, sys_var_name: str, return_symbolic_name=False) -> Union[int, float, str, None]:
         try:
             parts = sys_var_name.split('::')
             if len(parts) < 2:
-                logger.error(f"❌ Invalid system variable name '{sys_var_name}'. Must be in 'namespace::variable' format.")
+                logger.error(f"Invalid system variable name '{sys_var_name}'. Must be in 'namespace::variable' format.")
                 return None
             namespace = '::'.join(parts[:-1])
             variable_name = parts[-1]
@@ -92,14 +92,14 @@ class System:
             logger.info(f"System Variable '{sys_var_name}' value: {value}")
             return value
         except Exception as e:
-            logger.error(f"❌ Error retrieving System Variable '{sys_var_name}': {e}")
+            logger.error(f"Error retrieving System Variable '{sys_var_name}': {e}")
             return None
 
     def set_variable_value(self, sys_var_name: str, value: Union[int, float, str], timeout: Union[int, float] = 1) -> bool:
         try:
             parts = sys_var_name.split('::')
             if len(parts) < 2:
-                logger.error(f"❌ Invalid system variable name '{sys_var_name}'. Must be in 'namespace::variable' format.")
+                logger.error(f"Invalid system variable name '{sys_var_name}'. Must be in 'namespace::variable' format.")
                 return False
             namespace = '::'.join(parts[:-1])
             variable_name = parts[-1]
@@ -109,19 +109,19 @@ class System:
             try:
                 converted_value = var_type(value)
             except Exception:
-                logger.error(f"❌ Could not convert value '{value}' to type {var_type.__name__} for '{sys_var_name}'")
+                logger.error(f"Could not convert value '{value}' to type {var_type.__name__} for '{sys_var_name}'")
                 return False
             status = variable_obj.set_value(converted_value, timeout)
             return status
         except Exception as e:
-            logger.error(f"❌ Error setting System Variable '{sys_var_name}': {e}")
+            logger.error(f"Error setting System Variable '{sys_var_name}': {e}")
             return False
 
     def set_variable_array_values(self, sys_var_name: str, value: tuple, index: int = 0, timeout: Union[int, float] = 1) -> bool:
         try:
             parts = sys_var_name.split('::')
             if len(parts) < 2:
-                logger.error(f"❌ Invalid system variable name '{sys_var_name}'. Must be in 'namespace::variable' format.")
+                logger.error(f"Invalid system variable name '{sys_var_name}'. Must be in 'namespace::variable' format.")
                 return False
             namespace = '::'.join(parts[:-1])
             variable_name = parts[-1]
@@ -129,14 +129,14 @@ class System:
             variable_obj = Variable(namespace_obj.Variables(variable_name))
             arr = list(variable_obj.get_value())
             if index < 0 or index + len(value) > len(arr):
-                logger.error(f"❌ Not enough space in System Variable Array '{sys_var_name}' to set values.")
+                logger.error(f"Not enough space in System Variable Array '{sys_var_name}' to set values.")
                 return False
             value_type = type(arr[0]) if arr else type(value[0])
             arr[index:index + len(value)] = [value_type(v) for v in value]
             status = variable_obj.set_value(tuple(arr), timeout)
             return status
         except Exception as e:
-            logger.error(f"❌ Error setting System Variable Array '{sys_var_name}': {e}")
+            logger.error(f"Error setting System Variable Array '{sys_var_name}': {e}")
             return False
 
     def get_namespaces(self) -> dict[str, "Namespace"] | None:
@@ -146,10 +146,10 @@ class System:
             for index in range(1, namespaces.count + 1):
                 namespace = namespaces.item(index)
                 namespaces_dict[namespace.name] = namespace
-            logger.info(f"📢 total {namespaces.count} system root namespaces found.")
+            logger.info(f"total {namespaces.count} system root namespaces found.")
             return namespaces_dict
         except Exception as e:
-            logger.error(f"❌ Error getting system namespaces: {e}")
+            logger.error(f"Error getting system namespaces: {e}")
             return None
 
     def get_all_namespace_names(self) -> list[str]:
@@ -157,7 +157,7 @@ class System:
             names = [ns.name for ns in self.namespaces.fetch_all()]
         except Exception as e:
             raise PyCanoeError(f"Failed to enumerate namespaces: {e}") from e
-        logger.info(f'📢 {len(names)} system variable namespace(s) found')
+        logger.info(f'{len(names)} system variable namespace(s) found')
         return names
 
     def get_all_variables_in_namespace(self, namespace_name: str) -> list[dict]:
@@ -174,7 +174,7 @@ class System:
                     "value": var.get_value(),
                     "full_name": var.full_name,
                 })
-            logger.info(f"📢 {len(result)} variable(s) found in '{namespace_name}'")
+            logger.info(f"{len(result)} variable(s) found in '{namespace_name}'")
             return result
         except Exception as e:
             raise PyCanoeError(f"Failed to enumerate variables in '{namespace_name}': {e}") from e
@@ -186,8 +186,8 @@ class System:
             for index in range(1, variables_files.count + 1):
                 variables_file = variables_files.item(index)
                 variables_files_dict[variables_file.full_name] = variables_file
-            logger.info(f"📢 total {variables_files.count} system variables files found.")
+            logger.info(f"total {variables_files.count} system variables files found.")
             return variables_files_dict
         except Exception as e:
-            logger.error(f"❌ Error getting system variables files: {e}")
+            logger.error(f"Error getting system variables files: {e}")
             return None

@@ -53,5 +53,5 @@ def fetch_database_info(db_path: str) -> Dict[str, Dict[str, Any]]:
                             db_info['pdus_signals'][pdu_signal_name] = pdu_signal_obj
         return db_info
     except Exception as e:
-        logger.error(f"❌ Error occurred while fetching database information: {e}")
+        logger.error(f"Error occurred while fetching database information: {e}")
         return {}

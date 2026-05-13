@@ -223,13 +223,13 @@ class Configuration:
     def save(self) -> bool:
         try:
             if self.saved:
-                logger.warning("⚠️ CANoe configuration is already saved.")
+                logger.warning("CANoe configuration is already saved.")
                 return True
             self.com_object.Save()
-            logger.info("📢 CANoe configuration saved 💾 successfully 🎉")
+            logger.info("CANoe configuration saved successfully ")
             return True
         except Exception as e:
-            logger.error(f"❌ Error saving CANoe configuration: {e}")
+            logger.error(f"Error saving CANoe configuration: {e}")
             return False
 
     def save_as(self, path: str, major: int, minor: int, prompt_user: bool = False, create_dir: bool = True) -> bool:
@@ -238,12 +238,12 @@ class Configuration:
                 dir_path = os.path.dirname(path)
                 if dir_path:
                     os.makedirs(dir_path, exist_ok=True)
-                    logger.info(f'📂 Created directory {dir_path} for saving configuration')
+                    logger.info(f'Created directory {dir_path} for saving configuration')
             self.com_object.SaveAs(path, major, minor, prompt_user)
-            logger.info(f"📢 CANoe configuration saved 💾 as {path} successfully 🎉")
+            logger.info(f"CANoe configuration saved as {path} successfully ")
             return True
         except Exception as e:
-            logger.error(f"❌ Error saving CANoe configuration as '{path}': {e}")
+            logger.error(f"Error saving CANoe configuration as '{path}': {e}")
             return False
 
     def get_can_bus_statistics(self, channel: int) -> dict:
@@ -256,30 +256,30 @@ class Configuration:
                 'TxErrorCount'
             ]
             can_bus_stat_info = {key.lower(): getattr(can_stat_obj, key) for key in keys}
-            logger.info(f'📜 CAN bus channel ({channel}) statistics:')
+            logger.info(f'CAN bus channel ({channel}) statistics:')
             for key, value in can_bus_stat_info.items():
                 logger.info(f"    {key}: {value}")
             return can_bus_stat_info
         except Exception as e:
-            logger.error(f"❌ Error retrieving CAN bus statistics for channel {channel}: {e}")
+            logger.error(f"Error retrieving CAN bus statistics for channel {channel}: {e}")
             return {}
 
     def add_offline_source_log_file(self, absolute_log_file_path: str) -> bool:
         try:
             if not os.path.isfile(absolute_log_file_path):
-                logger.error(f"❌ Error: Offline source log file '{absolute_log_file_path}' does not exist.")
+                logger.error(f"Error: Offline source log file '{absolute_log_file_path}' does not exist.")
                 return False
             offline_sources_obj = self.com_object.OfflineSetup.Source.Sources
             offline_sources_files = [offline_sources_obj.Item(i) for i in range(1, offline_sources_obj.Count + 1)]
             file_already_added = any([file == absolute_log_file_path for file in offline_sources_files])
             if file_already_added:
-                logger.warning(f"⚠️ Offline source log file '{absolute_log_file_path}' is already added.")
+                logger.warning(f"Offline source log file '{absolute_log_file_path}' is already added.")
             else:
                 offline_sources_obj.Add(absolute_log_file_path)
-                logger.info(f'📢 File "{absolute_log_file_path}" added as offline source')
+                logger.info(f'File "{absolute_log_file_path}" added as offline source')
             return True
         except Exception as e:
-            logger.error(f"❌ Error adding offline source log file '{absolute_log_file_path}': {e}")
+            logger.error(f"Error adding offline source log file '{absolute_log_file_path}': {e}")
             return False
 
     def set_replay_block_file(self, block_name: str, recording_file_path: str) -> bool:
@@ -291,13 +291,13 @@ class Configuration:
                 replay_blocks_obj_dict[replay_block_obj.name] = replay_block_obj
             if block_name in replay_blocks_obj_dict:
                 replay_blocks_obj_dict[block_name].path = recording_file_path
-                logger.info(f"📢 Replay block path for '{block_name}' set to '{recording_file_path}'")
+                logger.info(f"Replay block path for '{block_name}' set to '{recording_file_path}'")
                 return True
             else:
-                logger.warning(f"⚠️ Replay block '{block_name}' not found")
+                logger.warning(f"Replay block '{block_name}' not found")
                 return False
         except Exception as e:
-            logger.error(f"❌ Error setting replay block file for '{block_name}': {e}")
+            logger.error(f"Error setting replay block file for '{block_name}': {e}")
             return False
 
     def control_replay_block(self, block_name: str, start_stop: bool) -> bool:
@@ -310,16 +310,16 @@ class Configuration:
             if block_name in replay_blocks_obj_dict:
                 if start_stop:
                     replay_blocks_obj_dict[block_name].start()
-                    logger.info(f"📢 Replay block '{block_name}' started")
+                    logger.info(f"Replay block '{block_name}' started")
                 else:
                     replay_blocks_obj_dict[block_name].stop()
-                    logger.info(f"📢 Replay block '{block_name}' stopped")
+                    logger.info(f"Replay block '{block_name}' stopped")
                 return True
             else:
-                logger.warning(f"⚠️ Replay block '{block_name}' not found")
+                logger.warning(f"Replay block '{block_name}' not found")
                 return False
         except Exception as e:
-            logger.error(f"❌ Error controlling replay block '{block_name}': {e}")
+            logger.error(f"Error controlling replay block '{block_name}': {e}")
             return False
 
     def enable_disable_replay_block(self, block_name: str, enable_disable: bool) -> bool:
@@ -331,20 +331,20 @@ class Configuration:
                 replay_blocks_obj_dict[replay_block_obj.name] = replay_block_obj
             if block_name in replay_blocks_obj_dict:
                 replay_blocks_obj_dict[block_name].enabled = enable_disable
-                logger.info(f"📢 Replay block '{block_name}' {'enabled' if enable_disable else 'disabled'}")
+                logger.info(f"Replay block '{block_name}' {'enabled' if enable_disable else 'disabled'}")
                 return True
             else:
-                logger.warning(f"⚠️ Replay block '{block_name}' not found")
+                logger.warning(f"Replay block '{block_name}' not found")
                 return False
         except Exception as e:
-            logger.error(f"❌ Error enabling/disabling replay block '{block_name}': {e}")
+            logger.error(f"Error enabling/disabling replay block '{block_name}': {e}")
             return False
 
     def get_test_configurations(self) -> dict[str, 'TestConfiguration']:
         try:
             return self.__test_configurations
         except Exception as e:
-            logger.error(f'❌ failed to get test configurations. {e}')
+            logger.error(f'failed to get test configurations. {e}')
             return {}
 
     def execute_all_test_configurations(self, wait_for_completion: bool = True) -> bool:
@@ -354,10 +354,10 @@ class Configuration:
                 if wait_for_completion:
                     while tc_inst.running:
                         wait(1)
-                    logger.info(f'🧪🧍 completed executing test configuration ({tc_name}) with verdict 👉 {tc_inst.test_configuration_events.VERDICT.name}')
+                    logger.info(f'completed executing test configuration ({tc_name}) with verdict {tc_inst.test_configuration_events.VERDICT.name}')
                 return True
         except Exception as e:
-            logger.error(f'❌ failed to execute test configuration. {e}')
+            logger.error(f'failed to execute test configuration. {e}')
             return False
 
     def stop_all_test_configurations(self,) -> bool:
@@ -367,7 +367,7 @@ class Configuration:
                     tc_inst.stop()
             return True
         except Exception as e:
-            logger.error(f'❌ failed to stop test configuration. {e}')
+            logger.error(f'failed to stop test configuration. {e}')
             return False
 
     def execute_test_configuration(self, tc_name: str, wait_for_completion: bool = True) -> bool:
@@ -378,13 +378,13 @@ class Configuration:
                 if wait_for_completion:
                     while tc_inst.running:
                         wait(1)
-                    logger.info(f'🧪🧍 completed executing test configuration ({tc_name}) with verdict 👉 {tc_inst.test_configuration_events.VERDICT.name}')
+                    logger.info(f'completed executing test configuration ({tc_name}) with verdict {tc_inst.test_configuration_events.VERDICT.name}')
                 return True
             else:
-                logger.warning(f'⚠️ test configuration "{tc_name}" not found in configuration')
+                logger.warning(f'test configuration "{tc_name}" not found in configuration')
                 return False
         except Exception as e:
-            logger.error(f'❌ failed to execute test configuration. {e}')
+            logger.error(f'failed to execute test configuration. {e}')
             return False
 
     def stop_test_configuration(self, tc_name: str) -> bool:
@@ -394,20 +394,20 @@ class Configuration:
                 if tc_inst.running:
                     tc_inst.stop()
                 else:
-                    logger.warning(f'⚠️ test configuration "{tc_name}" is not running')
+                    logger.warning(f'test configuration "{tc_name}" is not running')
                 return True
             else:
-                logger.warning(f'⚠️ test configuration "{tc_name}" not found in configuration')
+                logger.warning(f'test configuration "{tc_name}" not found in configuration')
                 return False
         except Exception as e:
-            logger.error(f'❌ failed to stop test configuration. {e}')
+            logger.error(f'failed to stop test configuration. {e}')
             return False
 
     def get_test_environments(self) -> dict:
         try:
             return self.__test_setup_environments
         except Exception as e:
-            logger.error(f'❌ failed to get test environments. {e}')
+            logger.error(f'failed to get test environments. {e}')
             return {}
 
     def get_test_modules(self, env_name: str) -> dict:
@@ -417,13 +417,13 @@ class Configuration:
                 if env_name in test_environments.keys():
                     return test_environments[env_name].get_all_test_modules()
                 else:
-                    logger.warning(f'⚠️ "{env_name}" not found in configuration')
+                    logger.warning(f'"{env_name}" not found in configuration')
                     return {}
             else:
-                logger.warning('⚠️ Zero test environments found in configuration. Not possible to fetch test modules')
+                logger.warning('Zero test environments found in configuration. Not possible to fetch test modules')
                 return {}
         except Exception as e:
-            logger.error(f'❌ failed to get test modules. {e}')
+            logger.error(f'failed to get test modules. {e}')
             return {}
 
     def execute_test_module(self, test_module_name: str) -> int:
@@ -442,7 +442,7 @@ class Configuration:
                     test_module_found = True
                     tm_obj = tm['object']
                     test_env_name = tm['environment']
-                    logger.info(f'🔎 test module "{test_module_name}" found in "{test_env_name}"')
+                    logger.info(f'test module "{test_module_name}" found in "{test_env_name}"')
                     tm_obj.start()
                     tm_obj.wait_for_completion()
                     execution_result = tm_obj.verdict
@@ -450,14 +450,14 @@ class Configuration:
                 else:
                     continue
             if test_module_found and (execution_result == 1):
-                logger.info(f'🧪🟢 test module "{test_env_name}.{test_module_name}" verdict = {test_verdict[execution_result]}')
+                logger.info(f'test module "{test_env_name}.{test_module_name}" verdict = {test_verdict[execution_result]}')
             elif test_module_found and (execution_result != 1):
-                logger.info(f'🧪🔴 test module "{test_env_name}.{test_module_name}" verdict = {test_verdict[execution_result]}')
+                logger.info(f'test module "{test_env_name}.{test_module_name}" verdict = {test_verdict[execution_result]}')
             else:
-                logger.warning(f'🧪⚠️ test module "{test_module_name}" not found. not possible to execute')
+                logger.warning(f'test module "{test_module_name}" not found. not possible to execute')
             return execution_result
         except Exception as e:
-            logger.error(f'❌ failed to execute test module. {e}')
+            logger.error(f'failed to execute test module. {e}')
             return 0
 
     def stop_test_module(self, test_module_name: str):
@@ -466,11 +466,11 @@ class Configuration:
                 if tm['name'] == test_module_name:
                     tm['object'].stop()
                     test_env_name = tm['environment']
-                    logger.info(f'🧪⏹️ test module "{test_module_name}" in test environment "{test_env_name}" stopped 🧍‍♂️')
+                    logger.info(f'test module "{test_module_name}" in test environment "{test_env_name}" stopped ')
             else:
-                logger.warning(f'🧪⚠️ test module "{test_module_name}" not found. not possible to execute')
+                logger.warning(f'test module "{test_module_name}" not found. not possible to execute')
         except Exception as e:
-            logger.error(f'❌ failed to stop test module. {e}')
+            logger.error(f'failed to stop test module. {e}')
 
     def execute_all_test_modules_in_test_env(self, env_name: str):
         try:
@@ -479,9 +479,9 @@ class Configuration:
                 for tm_name in test_modules.keys():
                     self.execute_test_module(tm_name)
             else:
-                logger.warning(f'🧪⚠️ test modules not available in "{env_name}" test environment')
+                logger.warning(f'test modules not available in "{env_name}" test environment')
         except Exception as e:
-            logger.error(f'🧪❌ failed to execute all test modules in "{env_name}" test environment. {e}')
+            logger.error(f'failed to execute all test modules in "{env_name}" test environment. {e}')
 
     def stop_all_test_modules_in_test_env(self, env_name: str):
         try:
@@ -490,46 +490,46 @@ class Configuration:
                 for tm_name in test_modules.keys():
                     self.stop_test_module(tm_name)
             else:
-                logger.warning(f'🧪⚠️ test modules not available in "{env_name}" test environment')
+                logger.warning(f'test modules not available in "{env_name}" test environment')
         except Exception as e:
-            logger.error(f'🧪❌ failed to stop all test modules in "{env_name}" test environment. {e}')
+            logger.error(f'failed to stop all test modules in "{env_name}" test environment. {e}')
 
     def execute_all_test_environments(self):
         try:
             test_environments = self.get_test_environments()
             if len(test_environments) > 0:
                 for test_env_name in test_environments.keys():
-                    logger.info(f'🧐🏃🥱 executing test environment "{test_env_name}". please wait...')
+                    logger.info(f'executing test environment "{test_env_name}". please wait...')
                     self.execute_all_test_modules_in_test_env(test_env_name)
-                    logger.info(f'🧐🧍✔️ completed executing test environment "{test_env_name}"')
+                    logger.info(f'completed executing test environment "{test_env_name}"')
             else:
-                logger.warning('🧐⚠️ Zero test environments found in configuration')
+                logger.warning('Zero test environments found in configuration')
         except Exception as e:
-            logger.error(f'🧐❌ failed to execute all test environments. {e}')
+            logger.error(f'failed to execute all test environments. {e}')
 
     def stop_all_test_environments(self):
         try:
             test_environments = self.get_test_environments()
             if len(test_environments) > 0:
                 for test_env_name in test_environments.keys():
-                    logger.info(f'🧐⏹️🥱 stopping test environment "{test_env_name}" execution. please wait...')
+                    logger.info(f'stopping test environment "{test_env_name}" execution. please wait...')
                     self.stop_all_test_modules_in_test_env(test_env_name)
-                    logger.info(f'🧐🧍✔️ completed stopping test environment "{test_env_name}"')
+                    logger.info(f'completed stopping test environment "{test_env_name}"')
             else:
-                logger.warning('🧐⚠️ Zero test environments found in configuration')
+                logger.warning('Zero test environments found in configuration')
         except Exception as e:
-            logger.error(f'🧐❌ failed to stop all test environments. {e}')
+            logger.error(f'failed to stop all test environments. {e}')
 
     def add_database(self, database_file: str, database_channel: int, database_network: Union[str, None]=None) -> bool:
         try:
             if self.app.measurement.running:
-                logger.warning("⚠️ Cannot add database while measurement is running. Please stop the measurement first.")
+                logger.warning("Cannot add database while measurement is running. Please stop the measurement first.")
                 return False
             else:
                 databases = Databases(self.com_object.GeneralSetup.DatabaseSetup.Databases)
                 databases_info = {databases.item(index).full_name: databases.item(index) for index in range(1, databases.count + 1)}
                 if database_file in databases_info.keys():
-                    logger.warning(f'⚠️ database "{database_file}" already added')
+                    logger.warning(f'database "{database_file}" already added')
                     return False
                 else:
                     if database_network:
@@ -539,22 +539,22 @@ class Configuration:
                     wait(0.5)
                     database.channel = database_channel
                     wait(0.5)
-                    logger.info(f'📢 database "{database_file}" added successfully to channel {database_channel}')
+                    logger.info(f'database "{database_file}" added successfully to channel {database_channel}')
                     return True
         except Exception as e:
-            logger.error(f"❌ Error adding database '{database_file}': {e}")
+            logger.error(f"Error adding database '{database_file}': {e}")
             return False
 
     def remove_database(self, database_file: str, database_channel: int) -> bool:
         try:
             if self.app.measurement.running:
-                logger.warning("⚠️ Cannot remove database while measurement is running. Please stop the measurement first.")
+                logger.warning("Cannot remove database while measurement is running. Please stop the measurement first.")
                 return False
             else:
                 databases = Databases(self.com_object.GeneralSetup.DatabaseSetup.Databases)
                 databases_info = {databases.item(index).full_name: databases.item(index) for index in range(1, databases.count + 1)}
                 if database_file not in databases_info.keys():
-                    logger.warning(f'⚠️ database "{database_file}" not available to remove')
+                    logger.warning(f'database "{database_file}" not available to remove')
                     return False
                 else:
                     for index in range(1, databases.count + 1):
@@ -562,29 +562,29 @@ class Configuration:
                         if (database.full_name == database_file) and (database.channel == database_channel):
                             databases.remove(index)
                             wait(1)
-                            logger.info(f'📢 database "{database_file}" removed from channel "{database_channel}"')
+                            logger.info(f'database "{database_file}" removed from channel "{database_channel}"')
                             return True
-                    logger.warning(f'⚠️ unable to remove database "{database_file}" from channel "{database_channel}"')
+                    logger.warning(f'unable to remove database "{database_file}" from channel "{database_channel}"')
                     return False
         except Exception as e:
-            logger.error(f"❌ Error removing database '{database_file}': {e}")
+            logger.error(f"Error removing database '{database_file}': {e}")
             return False
 
     def get_mode(self) -> int:
-        logger.info(f"⚙️ CANoe Configuration mode = ({self.mode} - {'Offline mode' if self.mode == 1 else 'Online mode'})")
+        logger.info(f"CANoe Configuration mode = ({self.mode} - {'Offline mode' if self.mode == 1 else 'Online mode'})")
         return self.mode
 
     def set_mode(self, type: int) -> bool:
         try:
             if type in [0, 1]:
                 self.mode = type
-                logger.info(f"⚙️ CANoe Configuration mode set to ({type} - {'Offline mode' if type == 1 else 'Online mode'})")
+                logger.info(f"CANoe Configuration mode set to ({type} - {'Offline mode' if type == 1 else 'Online mode'})")
                 return True
             else:
-                logger.warning("⚠️ Invalid mode type. Use 0 for Offline mode and 1 for Online mode.")
+                logger.warning("Invalid mode type. Use 0 for Offline mode and 1 for Online mode.")
                 return False
         except Exception as e:
-            logger.error(f"❌ Error setting CANoe Configuration mode: {e}")
+            logger.error(f"Error setting CANoe Configuration mode: {e}")
             return False
 
     def get_logging_blocks(self) -> list['Logging']:
@@ -626,15 +626,15 @@ class Configuration:
                 if logging_block.full_name.lower() == full_name.lower():
                     if start_stop:
                         logging_block.trigger.start()
-                        logger.info(f'📢 logging block {full_name} started')
+                        logger.info(f'logging block {full_name} started')
                     else:
                         logging_block.trigger.stop()
-                        logger.info(f'📢 logging block {full_name} stopped')
+                        logger.info(f'logging block {full_name} stopped')
                     return True
-            logger.warning(f'⚠️ logging block {full_name} not found.')
+            logger.warning(f'logging block {full_name} not found.')
             return False
         except Exception as e:
-            logger.error(f"❌ Error starting/stopping logging block {full_name}. {e}")
+            logger.error(f"Error starting/stopping logging block {full_name}. {e}")
 
     def set_configuration_modified(self, modified: bool) -> None:
         self.modified = modified

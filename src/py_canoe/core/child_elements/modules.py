@@ -21,7 +21,7 @@ class Modules:
 
 
 class Module:
-    """The Module object represents the modules within a test module in CANoe's test setup or a »node of the Simulation Setup / System and Communication Setup of the CANoe application."""
+    """The Module object represents the modules within a test module in CANoe's test setup or a node of the Simulation Setup / System and Communication Setup of the CANoe application."""
     def __init__(self, module_com_obj):
         self.com_object = win32com.client.Dispatch(module_com_obj)
 

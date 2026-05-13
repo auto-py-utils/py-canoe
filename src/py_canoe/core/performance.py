@@ -18,4 +18,4 @@ class Performance:
         if not self.app.get_measurement_running_status():
             self.com_object.MaxNumMeasurementSetupThreads = num
         else:
-            logger.warning("⚠️ Cannot set MaxNumMeasurementSetupThreads while measurement is running.")
+            logger.warning("Cannot set MaxNumMeasurementSetupThreads while measurement is running.")

@@ -116,7 +116,7 @@ class Variable:
             self.variable_events.VARIABLE_UPDATED = False
             status = DoEventsUntil(lambda: self.variable_events.VARIABLE_UPDATED, timeout, "Variable Update")
             if status:
-                logger.info(f"📢 Variable '{self.full_name}' updated successfully to: {value}")
+                logger.info(f"Variable '{self.full_name}' updated successfully to: {value}")
         return status
 
     def begin_struct_update(self):

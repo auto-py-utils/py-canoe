@@ -50,7 +50,7 @@ class Networks:
                     except Exception:
                         pass
         except Exception as e:
-            logger.error(f"❌ Error fetching Diagnostic Devices: {e}")
+            logger.error(f"Error fetching Diagnostic Devices: {e}")
             return None
 
     def send_diag_request(self, diag_ecu_qualifier_name: str, request: str, request_in_bytes=True, return_sender_name=False, response_in_bytearray=False, timeout: float = 10.0, poll_s: float = 0.01) -> Union[str, dict]:
@@ -70,7 +70,7 @@ class Networks:
                 else:
                     diag_request = diag_device.create_request(request)
                 diag_request.send()
-                logger.info(f'💉 {diag_ecu_qualifier_name}: Diagnostic Request = {request}')
+                logger.info(f'{diag_ecu_qualifier_name}: Diagnostic Request = {request}')
                 start_time = time.time()
                 while (diag_request.responses.count == 0 and (time.time() - start_time) < timeout):
                     if (time.time() - start_time) >= timeout:
@@ -99,19 +99,19 @@ class Networks:
                     else:
                         diag_response_including_sender_name[response_sender] = response_stream_in_str
                     if diag_response_positive:
-                        logger.info(f'🟢 {response_sender}: Diagnostic Response = {response_stream_in_str}')
+                        logger.info(f'{response_sender}: Diagnostic Response = {response_stream_in_str}')
                     else:
-                        logger.info(f'🔴 {response_sender}: Diagnostic Response = {response_stream_in_str}')
+                        logger.info(f'{response_sender}: Diagnostic Response = {response_stream_in_str}')
                 if return_sender_name:
                     return diag_response_including_sender_name
                 if diag_ecu_qualifier_name in diag_response_including_sender_name:
                     return diag_response_including_sender_name[diag_ecu_qualifier_name]
                 return next(iter(diag_response_including_sender_name.values()), "")
             else:
-                logger.warning(f'⚠️ No responses received for request: {request}')
+                logger.warning(f'No responses received for request: {request}')
                 return {"error": "No responses received"}
         except Exception as e:
-            logger.error(f"❌ Error sending diagnostic request: {e}")
+            logger.error(f"Error sending diagnostic request: {e}")
             return {"error": str(e)}
 
     def control_tester_present(self, diag_ecu_qualifier_name: str, value: bool) -> bool:
@@ -120,14 +120,14 @@ class Networks:
             if diag_device:
                 if value:
                     diag_device.diag_start_tester_present()
-                    logger.info(f'✔️ {diag_ecu_qualifier_name}: Tester Present started 🏃')
+                    logger.info(f'{diag_ecu_qualifier_name}: Tester Present started ')
                 else:
                     diag_device.diag_stop_tester_present()
-                    logger.info(f'⏹️ {diag_ecu_qualifier_name}: Tester Present stopped 🧍')
+                    logger.info(f'{diag_ecu_qualifier_name}: Tester Present stopped ')
                 return True
             else:
-                logger.warning(f'⚠️ No diagnostic device found for: {diag_ecu_qualifier_name}')
+                logger.warning(f'No diagnostic device found for: {diag_ecu_qualifier_name}')
                 return False
         except Exception as e:
-            logger.error(f"❌ Error controlling tester present: {e}")
+            logger.error(f"Error controlling tester present: {e}")
             return False

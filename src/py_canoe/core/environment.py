@@ -34,9 +34,9 @@ class Environment:
         try:
             variable = self.get_variable(env_var_name)
             var_value = variable.value if variable.type != 3 else tuple(variable.value)
-            logger.info(f'🔢 environment variable({env_var_name}) value = {var_value}')
+            logger.info(f'environment variable({env_var_name}) value = {var_value}')
         except Exception as e:
-            logger.error(f"❌ Failed to get environment variable '{env_var_name}': {e}")
+            logger.error(f"Failed to get environment variable '{env_var_name}': {e}")
         finally:
             return var_value
 
@@ -52,8 +52,8 @@ class Environment:
             else:
                 converted_value = tuple(value)
             variable.value = converted_value
-            logger.info(f'🔢 environment variable({env_var_name}) set to 👉 {converted_value}')
+            logger.info(f'environment variable({env_var_name}) set to {converted_value}')
             return True
         except Exception as e:
-            logger.error(f"❌ Failed to set environment variable '{env_var_name}': {e}")
+            logger.error(f"Failed to set environment variable '{env_var_name}': {e}")
             return False

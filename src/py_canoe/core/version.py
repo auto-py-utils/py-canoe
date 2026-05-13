@@ -45,10 +45,10 @@ class Version:
                     'build': self.build,
                     'patch': self.patch
                 }
-                logger.info('📜 CANoe Version Information:')
+                logger.info('CANoe Version Information:')
                 for key, value in version_info.items():
                     logger.info(f"    {key}: {value}")
                 return version_info
             except Exception as e:
-                logger.error(f"❌ Error retrieving CANoe version information: {e}")
+                logger.error(f"Error retrieving CANoe version information: {e}")
                 return {}

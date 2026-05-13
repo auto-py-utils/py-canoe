@@ -37,7 +37,7 @@ class Bus:
             self.com_object = self.app.com_object.GetBus(bus_type)
             return self.com_object
         except Exception as e:
-            logger.error(f"❌ Error retrieving {bus_type} bus: {e}")
+            logger.error(f"Error retrieving {bus_type} bus: {e}")
             return self.com_object
 
     @property
@@ -98,7 +98,7 @@ class Bus:
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
-                logger.error(f"❌ Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
+                logger.error(f"Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
                 return {}
             databases_info = {}
             self.set_bus(bus_type)
@@ -124,21 +124,21 @@ class Bus:
                 }
                 databases_info[info['name']] = info
             if log_info:
-                logger.info(f'📜 {bus_type} bus databases information:')
+                logger.info(f'{bus_type} bus databases information:')
                 for db_name, db_info in databases_info.items():
                     logger.info(f"    {db_name}:")
                     for key, value in db_info.items():
                         logger.info(f"        {key}: {value}")
             return databases_info
         except Exception as e:
-            logger.error(f"❌ Error retrieving {bus} bus databases information: {e}")
+            logger.error(f"Error retrieving {bus} bus databases information: {e}")
             return {}
 
     def get_bus_nodes_info(self, bus: str = 'CAN', log_info: bool = False) -> dict:
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
-                logger.error(f"❌ Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
+                logger.error(f"Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
                 return {}
             nodes_info = {}
             self.set_bus(bus_type)
@@ -152,14 +152,14 @@ class Bus:
                 }
                 nodes_info[info['name']] = info
             if log_info:
-                logger.info(f'📜 {bus_type} bus nodes information:')
+                logger.info(f'{bus_type} bus nodes information:')
                 for node_name, node_info in nodes_info.items():
                     logger.info(f"    {node_name}:")
                     for key, value in node_info.items():
                         logger.info(f"        {key}: {value}")
             return nodes_info
         except Exception as e:
-            logger.error(f"❌ Error retrieving {bus} bus nodes information: {e}")
+            logger.error(f"Error retrieving {bus} bus nodes information: {e}")
             return {}
 
     def get_simulation_bus_names(self) -> list[str]:
@@ -170,7 +170,7 @@ class Bus:
                 sim_bus = sim_buses.item(i)
                 if sim_bus.name is not None:
                     bus_names.append(sim_bus.name)
-            logger.info(f'📜 simulation buses: {bus_names}')
+            logger.info(f'simulation buses: {bus_names}')
             return bus_names
         except Exception as e:
             raise ConfigurationNotLoadedError(f"Cannot access simulation buses: {e}") from e
@@ -186,7 +186,7 @@ class Bus:
                     db = dbs.item(j)
                     if db.full_name is not None:
                         paths.append(db.full_name)
-            logger.info(f'📜 simulation database paths: {paths}')
+            logger.info(f'simulation database paths: {paths}')
             return paths
         except Exception as e:
             raise ConfigurationNotLoadedError(f"Cannot access simulation databases: {e}") from e
@@ -195,22 +195,22 @@ class Bus:
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
-                logger.error(f"❌ Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
+                logger.error(f"Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
                 return None
             self.set_bus(bus_type)
             signal_obj = self.get_signal(channel, message, signal)
             value = signal_obj.raw_value if raw_value else signal_obj.value
-            logger.info(f"🚦Signal({signal_obj.full_name}) value = {value}")
+            logger.info(f"Signal({signal_obj.full_name}) value = {value}")
             return value
         except Exception as e:
-            logger.error(f"❌ Error retrieving {bus} bus signal value: {e}")
+            logger.error(f"Error retrieving {bus} bus signal value: {e}")
             return None
 
     def set_signal_value(self, bus: str, channel: int, message: str, signal: str, value: Union[int, float], raw_value: bool = False) -> bool:
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
-                logger.error(f"❌ Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
+                logger.error(f"Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
                 return False
             self.set_bus(bus_type)
             signal_obj = self.get_signal(channel, message, signal)
@@ -218,55 +218,55 @@ class Bus:
                 signal_obj.raw_value = int(value)
             else:
                 signal_obj.value = value
-            logger.info(f"🚦Signal({signal_obj.full_name}) value set to {value}")
+            logger.info(f"Signal({signal_obj.full_name}) value set to {value}")
             return True
         except Exception as e:
-            logger.error(f"❌ Error setting {bus} bus signal value: {e}")
+            logger.error(f"Error setting {bus} bus signal value: {e}")
             return False
 
     def get_signal_full_name(self, bus: str, channel: int, message: str, signal: str) -> Union[str, None]:
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
-                logger.error(f"❌ Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
+                logger.error(f"Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
                 return None
             self.set_bus(bus_type)
             signal_obj = self.get_signal(channel, message, signal)
             full_name = signal_obj.full_name
-            logger.info(f'🚦Signal full name = {full_name}')
+            logger.info(f'Signal full name = {full_name}')
             return full_name
         except Exception as e:
-            logger.error(f"❌ Error retrieving {bus} bus signal full name: {e}")
+            logger.error(f"Error retrieving {bus} bus signal full name: {e}")
             return None
 
     def check_signal_online(self, bus: str, channel: int, message: str, signal: str) -> bool:
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
-                logger.error(f"❌ Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
+                logger.error(f"Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
                 return False
             self.set_bus(bus_type)
             signal_obj = self.get_signal(channel, message, signal)
             is_online = signal_obj.is_online
-            logger.info(f'🚦Signal({signal_obj.full_name}) is online ?: {is_online} ({self.VALUE_TABLE_SIGNAL_IS_ONLINE[is_online]})')
+            logger.info(f'Signal({signal_obj.full_name}) is online ?: {is_online} ({self.VALUE_TABLE_SIGNAL_IS_ONLINE[is_online]})')
             return is_online
         except Exception as e:
-            logger.error(f"❌ Error checking {bus} bus signal online status: {e}")
+            logger.error(f"Error checking {bus} bus signal online status: {e}")
             return False
 
     def check_signal_state(self, bus: str, channel: int, message: str, signal: str) -> int:
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
-                logger.error(f"❌ Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
+                logger.error(f"Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
                 return -1
             self.set_bus(bus_type)
             signal_obj = self.get_signal(channel, message, signal)
             state = signal_obj.state
-            logger.info(f'🚦Signal({signal_obj.full_name}) state: {state} ({self.VALUE_TABLE_SIGNAL_STATE[state]})')
+            logger.info(f'Signal({signal_obj.full_name}) state: {state} ({self.VALUE_TABLE_SIGNAL_STATE[state]})')
             return state
         except Exception as e:
-            logger.error(f"❌ Error checking {bus} bus signal state: {e}")
+            logger.error(f"Error checking {bus} bus signal state: {e}")
             return -1
 
     def profile_signal_value(
@@ -296,14 +296,14 @@ class Bus:
 
         bus_type = bus.upper()
         if bus_type not in self.app.bus_types:
-            logger.error(f"❌ Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
+            logger.error(f"Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
             return {}
 
         self.set_bus(bus_type)
         try:
             signal_obj = self.get_signal(channel, message, signal)
         except Exception as e:
-            logger.error(f"❌ Error retrieving signal object for profiling: {e}")
+            logger.error(f"Error retrieving signal object for profiling: {e}")
             return {}
 
         value_getter = (lambda: signal_obj.raw_value) if raw_value else (lambda: signal_obj.value)
@@ -317,7 +317,7 @@ class Bus:
         max_value = float("-inf")
         samples = [] if include_samples else None
         timestamps = [] if include_timestamps else None
-        logger.info(f"📊 Starting signal profiling for {message}::{signal} on {bus} bus for duration {duration}s with interval {interval}s...")
+        logger.info(f"Starting signal profiling for {message}::{signal} on {bus} bus for duration {duration}s with interval {interval}s...")
         while True:
             now = time.perf_counter()
             if now >= end_time:
@@ -377,7 +377,7 @@ class Bus:
             **({"timestamps": timestamps} if include_timestamps else {}),
         }
         logger.info(
-            f"📊 Completed signal profiling for {message}::{signal} on {bus} bus: count={count}, duration={duration_actual:.2f}s, "
+            f"Completed signal profiling for {message}::{signal} on {bus} bus: count={count}, duration={duration_actual:.2f}s, "
             f"min={profiled_signal['min']}, max={profiled_signal['max']}, mean={profiled_signal['mean']}, std={profiled_signal['std']}"
         )
         return profiled_signal
@@ -386,22 +386,22 @@ class Bus:
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
-                logger.error(f"❌ Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
+                logger.error(f"Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
                 return None
             self.set_bus(bus_type)
             signal_obj = self.get_j1939_signal(channel, message, signal, source_addr, dest_addr)
             signal_value = signal_obj.raw_value if raw_value else signal_obj.value
-            logger.info(f'🚦J1939 Signal({signal_obj.full_name}) value = {signal_value}')
+            logger.info(f'J1939 Signal({signal_obj.full_name}) value = {signal_value}')
             return signal_value
         except Exception as e:
-            logger.error(f"❌ Error retrieving J1939 bus signal value: {e}")
+            logger.error(f"Error retrieving J1939 bus signal value: {e}")
             return None
 
     def set_j1939_signal_value(self, bus: str, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, value: Union[float, int], raw_value: bool = False) -> bool:
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
-                logger.error(f"❌ Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
+                logger.error(f"Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
                 return False
             self.set_bus(bus_type)
             signal_obj = self.get_j1939_signal(channel, message, signal, source_addr, dest_addr)
@@ -409,53 +409,53 @@ class Bus:
                 signal_obj.raw_value = int(value)
             else:
                 signal_obj.value = value
-            logger.info(f'🚦J1939 Signal({signal_obj.full_name}) value set to {value}')
+            logger.info(f'J1939 Signal({signal_obj.full_name}) value set to {value}')
             return True
         except Exception as e:
-            logger.error(f"❌ Error setting J1939 bus signal value: {e}")
+            logger.error(f"Error setting J1939 bus signal value: {e}")
             return False
 
     def get_j1939_signal_full_name(self, bus: str, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> Union[str, None]:
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
-                logger.error(f"❌ Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
+                logger.error(f"Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
                 return None
             self.set_bus(bus_type)
             signal_obj = self.get_j1939_signal(channel, message, signal, source_addr, dest_addr)
             full_name = signal_obj.full_name
-            logger.info(f'🚦J1939 Signal full name = {full_name}')
+            logger.info(f'J1939 Signal full name = {full_name}')
             return full_name
         except Exception as e:
-            logger.error(f"❌ Error retrieving J1939 bus signal full name: {e}")
+            logger.error(f"Error retrieving J1939 bus signal full name: {e}")
             return None
 
     def check_j1939_signal_online(self, bus: str, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> bool:
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
-                logger.error(f"❌ Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
+                logger.error(f"Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
                 return False
             self.set_bus(bus_type)
             signal_obj = self.get_j1939_signal(channel, message, signal, source_addr, dest_addr)
             is_online = signal_obj.is_online
-            logger.info(f'🚦J1939 Signal({signal_obj.full_name}) is online ?: {is_online} ({self.VALUE_TABLE_SIGNAL_IS_ONLINE[is_online]})')
+            logger.info(f'J1939 Signal({signal_obj.full_name}) is online ?: {is_online} ({self.VALUE_TABLE_SIGNAL_IS_ONLINE[is_online]})')
             return is_online
         except Exception as e:
-            logger.error(f"❌ Error checking J1939 bus signal online status: {e}")
+            logger.error(f"Error checking J1939 bus signal online status: {e}")
             return False
 
     def check_j1939_signal_state(self, bus: str, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> int:
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
-                logger.error(f"❌ Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
+                logger.error(f"Invalid bus type '{bus_type}'. Supported types: {', '.join(self.app.bus_types)}")
                 return -1
             self.set_bus(bus_type)
             signal_obj = self.get_j1939_signal(channel, message, signal, source_addr, dest_addr)
             state = signal_obj.state
-            logger.info(f'🚦J1939 Signal({signal_obj.full_name}) state: {state} ({self.VALUE_TABLE_SIGNAL_STATE[state]})')
+            logger.info(f'J1939 Signal({signal_obj.full_name}) state: {state} ({self.VALUE_TABLE_SIGNAL_STATE[state]})')
             return state
         except Exception as e:
-            logger.error(f"❌ Error checking J1939 bus signal state: {e}")
+            logger.error(f"Error checking J1939 bus signal state: {e}")
             return -1

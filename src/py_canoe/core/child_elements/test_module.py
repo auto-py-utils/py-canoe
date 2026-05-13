@@ -165,30 +165,30 @@ class TestModule:
         self.com_object.Start()
         status = DoEventsUntil(lambda: self.test_module_events.TM_STARTED, TEST_MODULE_START_EVENT_TIMEOUT, "Test Module Start")
         if status:
-            logger.info(f'🧪🏃 started executing test module ({self.name})...')
+            logger.info(f'started executing test module ({self.name})...')
 
     def wait_for_completion(self) -> bool:
         return_value = False
         if self.test_module_events.TM_STARTED:
-            logger.info(f'🧪🥱 waiting for test module ({self.name}) to complete...')
+            logger.info(f'waiting for test module ({self.name}) to complete...')
             while not self.test_module_events.TM_STOPPED:
                 wait(0.01)
-            logger.info(f'🧪🧍 test module ({self.name}) execution completed with stop reason 👉 {self.test_module_events.VALUE_TABLE_STOP_REASON[self.test_module_events.TM_STOP_REASON]}')
+            logger.info(f'test module ({self.name}) execution completed with stop reason {self.test_module_events.VALUE_TABLE_STOP_REASON[self.test_module_events.TM_STOP_REASON]}')
             return_value = True
         else:
-            logger.warning(f'🧪⚠️ Test Module ({self.name}) is not started. Start the Test Module first.')
+            logger.warning(f'Test Module ({self.name}) is not started. Start the Test Module first.')
         return return_value
 
     def pause(self) -> bool:
         if self.test_module_events.TM_STARTED:
             self.com_object.Pause()
-            logger.info(f'🧪🥱 pausing test module ({self.name}). please wait...')
+            logger.info(f'pausing test module ({self.name}). please wait...')
             while not self.test_module_events.TM_PAUSED:
                 wait(0.01)
-            logger.info(f'🧪⏸️ paused test module ({self.name}).')
+            logger.info(f'paused test module ({self.name}).')
             return True
         else:
-            logger.warning(f'🧪⚠️ Test Module ({self.name}) is not started. Start the Test Module first.')
+            logger.warning(f'Test Module ({self.name}) is not started. Start the Test Module first.')
             return False
 
     def resume(self) -> None:
@@ -197,13 +197,13 @@ class TestModule:
     def stop(self) -> bool:
         if self.test_module_events.TM_STARTED:
             self.com_object.Stop()
-            logger.info(f'🧪🥱 stopping test module ({self.name}). please wait...')
+            logger.info(f'stopping test module ({self.name}). please wait...')
             while not self.test_module_events.TM_STOPPED:
                 wait(0.01)
-            logger.info(f'🧪⏹️ stopped test module ({self.name}).')
+            logger.info(f'stopped test module ({self.name}).')
             return True
         else:
-            logger.warning(f'🧪⚠️ Test Module ({self.name}) is not started. Start the Test Module first.')
+            logger.warning(f'Test Module ({self.name}) is not started. Start the Test Module first.')
             return False
 
     def reload(self) -> None:

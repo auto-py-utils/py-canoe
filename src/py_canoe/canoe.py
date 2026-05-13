@@ -28,9 +28,9 @@ class CANoe:
             if clean_gen_py_cache:
                 self._clean_gen_py_cache()
         except pythoncom.com_error:
-            logger.warning("⚠️ COM already initialized in this thread.")
+            logger.warning("COM already initialized in this thread.")
         except Exception as e:
-            logger.error(f"❌ COM init error: {e}")
+            logger.error(f"COM init error: {e}")
         finally:
             self.user_capl_functions = user_capl_functions
 
@@ -48,7 +48,7 @@ class CANoe:
             if self.application is not None:
                 pythoncom.CoUninitialize()
         except Exception as e:
-            logger.error(f"❌ Error during COM uninitialization: {e}.")
+            logger.error(f"Error during COM uninitialization: {e}.")
         finally:
             self.application = None
 
@@ -59,22 +59,22 @@ class CANoe:
             gen_py_path = Path(win32com.__gen_path__)
             if gen_py_path.exists() and gen_py_path.is_dir():
                 shutil.rmtree(gen_py_path)
-                logger.info("🧹 Cleared win32com gen_py cache.")
+                logger.info("Cleared win32com gen_py cache.")
             else:
-                logger.info("ℹ️ win32com gen_py cache directory does not exist.")
+                logger.info("win32com gen_py cache directory does not exist.")
             # Remove all cached win32com.gen_py modules from sys.modules
             for module_name in list(sys.modules.keys()):
                 if re.match(r'win32com\.gen_py\..+', module_name):
                     del sys.modules[module_name]
-                    logger.info(f"🧹 Removed cached module: {module_name}")
+                    logger.info(f"Removed cached module: {module_name}")
         except Exception as e:
-            logger.error(f"❌ Error clearing win32com gen_py cache: {e}")
+            logger.error(f"Error clearing win32com gen_py cache: {e}")
 
     def _reset_application(self):
         try:
             self.application = None
         except Exception as e:
-            logger.error(f"❌ Error during application reset: {e}")
+            logger.error(f"Error during application reset: {e}")
 
     def new(self, auto_save=False, prompt_user=False, timeout=5) -> bool:
         """
@@ -758,7 +758,7 @@ class CANoe:
             start_status = self.start_measurement(timeout)
             return stop_status and start_status
         else:
-            logger.warning("⚠️ Measurement is not running, cannot reset.")
+            logger.warning("Measurement is not running, cannot reset.")
             return False
 
     def get_measurement_running_status(self) -> bool:

@@ -93,7 +93,7 @@ class Application:
             self.measurement.measurement_events.CAPL_FUNCTION_NAMES = self.user_capl_functions
             self._common_between_pre_and_post_cfg_open()
         except Exception as e:
-            logger.error(f"❌ Failed to launch CANoe application: {e}")
+            logger.error(f"Failed to launch CANoe application: {e}")
             raise
 
     def _setup_post_configuration_loading(self) -> None:
@@ -103,22 +103,22 @@ class Application:
             self.configuration.fetch_test_modules()
             self.configuration.fetch_test_units()
         except Exception as e:
-            logger.error(f"❌ Error initializing objects after loading configuration: {e}")
+            logger.error(f"Error initializing objects after loading configuration: {e}")
 
     def new(self, auto_save: bool = False, prompt_user: bool = False, timeout: int = 5) -> bool:
         """Create a new empty CANoe configuration."""
         self._launch_application()
         status = False
         try:
-            logger.info("📢 Opening new empty CANoe configuration...")
+            logger.info("Opening new empty CANoe configuration...")
             self.com_object.New(auto_save, prompt_user)
             status = DoEventsUntil(lambda: self.application_events.OPENED, timeout, "New CANoe configuration")
             if status:
-                logger.info("📢 New empty CANoe configuration Opened 🎉")
+                logger.info("New empty CANoe configuration Opened ")
                 self._setup_post_configuration_loading()
             return status
         except Exception as e:
-            logger.error(f"❌ Error creating new configuration: {e}")
+            logger.error(f"Error creating new configuration: {e}")
             status = False
             return status
 
@@ -128,15 +128,15 @@ class Application:
         status = False
         try:
             self.visible = visible
-            logger.info("📢 Opening CANoe configuration ...")
+            logger.info("Opening CANoe configuration ...")
             self.com_object.Open(canoe_cfg, auto_save, prompt_user)
             status = DoEventsUntil(lambda: self.application_events.OPENED, timeout, "Open CANoe configuration")
             if status:
-                logger.info(f"📢 CANoe Configuration {canoe_cfg} Opened 🎉")
+                logger.info(f"CANoe Configuration {canoe_cfg} Opened ")
                 self._setup_post_configuration_loading()
             return status
         except Exception as e:
-            logger.error(f"❌ Error opening configuration: {e}")
+            logger.error(f"Error opening configuration: {e}")
             status = False
             return status
 
@@ -148,10 +148,10 @@ class Application:
             self.com_object.Quit()
             status = DoEventsUntil(lambda: self.application_events.QUIT, timeout, "Quit CANoe application")
             if status:
-                logger.info("📢 CANoe Application Quit Successfully 🎉")
+                logger.info("CANoe Application Quit Successfully ")
             return status
         except Exception as e:
-            logger.error(f"❌ Error during CANoe quit: {e}")
+            logger.error(f"Error during CANoe quit: {e}")
             status = False
             return status
 
@@ -160,12 +160,12 @@ class Application:
         try:
             self._launch_application()
             if self.com_object:
-                logger.info("📢 Successfully attached to active CANoe application 🎉")
+                logger.info("Successfully attached to active CANoe application ")
                 self._setup_post_configuration_loading()
                 return True
             else:
-                logger.error("❌ Failed to attach to active CANoe application")
+                logger.error("Failed to attach to active CANoe application")
                 return False
         except Exception as e:
-            logger.error(f"❌ Error attaching to active CANoe application: {e}")
+            logger.error(f"Error attaching to active CANoe application: {e}")
             return False
