@@ -32,6 +32,12 @@ def setup_logger(name='py_canoe', filename='py_canoe.log'):
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setLevel(logging.INFO)
         console_handler.setFormatter(logging.Formatter(fmt))
+        # Configure UTF-8 encoding on Windows to support emoji in log messages
+        if sys.platform == "win32" and hasattr(console_handler.stream, 'reconfigure'):
+            try:
+                console_handler.stream.reconfigure(encoding='utf-8')
+            except Exception:
+                pass
         logger.addHandler(console_handler)
     logger.propagate = False
     return logger
