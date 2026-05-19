@@ -2,6 +2,7 @@ from pathlib import Path
 
 import win32com.client
 import win32com.client.gencache
+import pythoncom
 
 from py_canoe.core.bus import Bus
 from py_canoe.core.capl import Capl
@@ -30,7 +31,8 @@ class ApplicationEvents:
 
 
 class Application:
-    def __init__(self) -> None:
+    def __init__(self, enable_events: bool = True) -> None:
+        self._enable_events = enable_events
         self.bus_types = {'CAN': 1, 'J1939': 2, 'TTP': 4, 'LIN': 5, 'MOST': 6, 'Kline': 14}
         self.com_object = None
         self.application_events = None
@@ -87,8 +89,11 @@ class Application:
             # DispatchEx is not used because it would always start a new instance,
             # which is not what we want for the 'attach' functionality.
             self.com_object = win32com.client.gencache.EnsureDispatch("CANoe.Application")
-            self.application_events = win32com.client.WithEvents(self.com_object, ApplicationEvents)
-            self.measurement = Measurement(self)
+            if self._enable_events:
+                self.application_events = win32com.client.WithEvents(self.com_object, ApplicationEvents)
+            else:
+                self.application_events = ApplicationEvents()
+            self.measurement = Measurement(self, enable_events=self._enable_events)
             self.capl_function_objects = lambda: self.measurement.measurement_events.CAPL_FUNCTION_OBJECTS
             self.measurement.measurement_events.CAPL_FUNCTION_NAMES = self.user_capl_functions
             self._common_between_pre_and_post_cfg_open()
@@ -112,7 +117,11 @@ class Application:
         try:
             logger.info("Opening new empty CANoe configuration...")
             self.com_object.New(auto_save, prompt_user)
-            status = DoEventsUntil(lambda: self.application_events.OPENED, timeout, "New CANoe configuration")
+            if self._enable_events:
+                cond = lambda: self.application_events.OPENED
+            else:
+                cond = lambda: self.com_object.FullName != ""
+            status = DoEventsUntil(cond, timeout, "New CANoe configuration")
             if status:
                 logger.info("New empty CANoe configuration Opened ")
                 self._setup_post_configuration_loading()
@@ -129,8 +138,13 @@ class Application:
         try:
             self.visible = visible
             logger.info("Opening CANoe configuration ...")
+            canoe_cfg_str = str(canoe_cfg)
             self.com_object.Open(canoe_cfg, auto_save, prompt_user)
-            status = DoEventsUntil(lambda: self.application_events.OPENED, timeout, "Open CANoe configuration")
+            if self._enable_events:
+                cond = lambda: self.application_events.OPENED
+            else:
+                cond = lambda: self.com_object.FullName.lower() == canoe_cfg_str.lower()
+            status = DoEventsUntil(cond, timeout, "Open CANoe configuration")
             if status:
                 logger.info(f"CANoe Configuration {canoe_cfg} Opened ")
                 self._setup_post_configuration_loading()
@@ -169,3 +183,75 @@ class Application:
         except Exception as e:
             logger.error(f"Error attaching to active CANoe application: {e}")
             return False
+
+    def open_config(self, canoe_cfg: str | Path, auto_save: bool = True, prompt_user: bool = False, timeout: int = 60) -> bool:
+        """Switch to a different CANoe configuration without restarting CANoe.
+
+        This method switches configurations in an already-running CANoe instance.
+        Use this when CANoe is already running and you want to load a different .cfg file.
+
+        For starting CANoe with a configuration from scratch, use open() instead.
+
+        Args:
+            canoe_cfg: Path to the CANoe configuration (.cfg) file.
+            auto_save: If True, automatically save the current configuration before switching.
+            prompt_user: If True, prompt user for confirmation before switching.
+            timeout: Maximum time to wait for configuration to load (seconds).
+
+        Returns:
+            True if configuration was successfully loaded, False otherwise.
+        """
+        import time as _time
+        status = False
+        try:
+            abs_path = str(Path(canoe_cfg).resolve())
+            logger.info(f"Switching to CANoe configuration: {abs_path}")
+
+            # Reset OPENED flag before calling Open
+            self.application_events.OPENED = False
+
+            # Call COM Open() to switch configuration
+            self.com_object.Open(abs_path, auto_save, prompt_user)
+
+            if self._enable_events:
+                status = DoEventsUntil(
+                    lambda: self.application_events.OPENED and
+                            self.configuration.full_name.lower() == abs_path.lower(),
+                    timeout,
+                    f"Switch to configuration {canoe_cfg}"
+                )
+            else:
+                # Poll FullName without PumpWaitingMessages
+                poll_deadline = _time.monotonic() + timeout
+                while _time.monotonic() < poll_deadline:
+                    try:
+                        if self.configuration.full_name.lower() == abs_path.lower():
+                            status = True
+                            break
+                    except Exception:
+                        pass
+                    _time.sleep(0.2)
+
+            if status:
+                logger.info(f"Configuration switched successfully to {canoe_cfg}")
+                self._setup_post_configuration_loading()
+            else:
+                logger.warning(f"Configuration switch timed out after {timeout}s")
+
+            return status
+        except Exception as e:
+            logger.error(f"Error switching configuration: {e}")
+            return False
+
+    def pump_messages(self) -> None:
+        """Pump COM messages to prevent blocking.
+
+        This is a thin wrapper around pythoncom.PumpWaitingMessages().
+        Use this in custom wait loops to keep COM responsive.
+
+        Example:
+            >>> while not ready():
+            >>>     app.pump_messages()
+            >>>     time.sleep(0.1)
+        """
+        pythoncom.PumpWaitingMessages()

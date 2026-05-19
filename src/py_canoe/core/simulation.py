@@ -3,6 +3,14 @@ from typing import Union
 
 
 class SimulationEvents:
+    """COM event sink for CANoe Simulation events (OnIdle).
+
+    **Not registered by default** (Simulation.__init__ has enable_events=False).
+    OnIdle fires on every simulation step — registering this sink while also making
+    outgoing COM calls would cause RPC_E_CALL_REJECTED. Only enable if the caller
+    pumps the STA message queue continuously (via wait() / PumpWaitingMessages).
+    """
+
     EVENTS_INFORMATION = {}
 
     @staticmethod
