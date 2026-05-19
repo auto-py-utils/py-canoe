@@ -440,3 +440,68 @@ canoe_inst.stop_measurement()
 canoe_inst.set_configuration_modified(False)  # to avoid popup asking to save changes
 canoe_inst.quit()
 ```
+
+### server/headless mode (no GUI interaction)
+
+By default, py-canoe uses COM event sinks (`WithEvents`) to receive notifications from CANoe
+(e.g., measurement started, measurement stopped). This works well for interactive desktop applications,
+but can cause issues in server environments:
+
+**The Problem:**
+- Windows shows a "program is busy" dialog when COM callbacks are not processed in time
+- CANoe may reject COM calls with `RPC_E_CALL_REJECTED` when it's busy (e.g., during report generation)
+- Long-running server processes need robust error handling for these transient states
+
+**The Solution:**
+Use `enable_events=False` to disable COM event sinks. py-canoe will use polling instead,
+which is more reliable for server/headless operation:
+
+```python
+from py_canoe import CANoe
+
+# Create instance without COM event sinks (uses polling instead)
+canoe_inst = CANoe(enable_events=False)
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo.cfg')
+
+canoe_inst.start_measurement()
+# ... run your test ...
+canoe_inst.stop_measurement(timeout=60, post_stop_pump=10)
+canoe_inst.quit()
+```
+
+**Parameters explained:**
+- `enable_events=False`: Disables COM event sinks, uses polling to detect state changes
+- `timeout=60`: Maximum time to wait for the operation to complete (seconds)
+- `post_stop_pump=10`: Time to drain pending COM callbacks after stop (seconds). This prevents
+  the "busy" dialog that can appear when CANoe sends report-generation callbacks after measurement ends.
+  Set to `0` for faster shutdown if you don't need report generation.
+
+**Benefits:**
+- No "program is busy" dialog from Windows
+- Automatic retry when CANoe is temporarily busy (e.g., during report generation)
+- Safe for long-running server processes (REST APIs, MCP servers, scheduled tasks)
+- Configurable timeouts for all operations
+
+**Switching configurations without restarting CANoe:**
+
+Server applications often need to run tests with different CANoe configurations.
+Use `open_config()` to switch configurations while keeping CANoe running:
+
+```python
+# CANoe is already running with a configuration
+canoe_inst.open_config(r'tests\demo_cfg\another_config.cfg', timeout=60)
+# Now running with the new configuration
+```
+
+**Custom COM message pumping:**
+
+For advanced use cases where you need to pump COM messages in your own wait loops:
+
+```python
+import time
+
+# Custom wait loop with COM message pumping
+while not my_condition():
+    canoe_inst.pump_messages()  # Process pending COM messages
+    time.sleep(0.1)
+```
