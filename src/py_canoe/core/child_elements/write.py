@@ -11,9 +11,6 @@ class Write:
     def text(self) -> Union[str, None]:
         try:
             text_data: str = self.com_object.Text
-            logger.info("Text read successfully from write window")
-            for line in text_data.splitlines():
-                logger.info(f"    {line}")
             return text_data
         except Exception as e:
             logger.error(f"Error getting text from write window: {e}")
