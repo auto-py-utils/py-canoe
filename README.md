@@ -453,25 +453,25 @@ but can cause issues in server environments:
 - In some scenarios, Windows may show a "program is busy" dialog (reduced in recent versions)
 
 **The Solution:**
-Use `enable_events=False` to disable COM event sinks. py-canoe will use polling instead,
-which is more reliable for server/headless operation:
+Use the low-level `Application` class with `enable_events=False` to disable COM event sinks.
+py-canoe will use polling instead, which is more reliable for server/headless operation:
 
 ```python
-from py_canoe import CANoe
+from py_canoe.core.application import Application
 
 # Create instance without COM event sinks (uses polling instead)
-canoe_inst = CANoe(enable_events=False)
-canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo.cfg')
+app = Application(enable_events=False)
+app.open(r'tests\demo_cfg\demo.cfg', visible=True, auto_save=True, prompt_user=False)
 
-canoe_inst.start_measurement()
+app.measurement.start()
 # ... run your test ...
-canoe_inst.stop_measurement(timeout=60)
-canoe_inst.quit()
+app.measurement.stop()
+app.quit()
 ```
 
 **Parameters explained:**
 - `enable_events=False`: Disables COM event sinks, uses polling to detect state changes
-- `timeout=60`: Maximum time to wait for the operation to complete (seconds)
+- `timeout=60`: Available on `start()` and `stop()` methods - maximum time to wait (seconds)
 
 **Benefits:**
 - Reduced "program is busy" dialogs (internal COM proxy sharing)
