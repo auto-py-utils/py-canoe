@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="chaitu-ycr" /><link rel="canonical" href="https://chaitu-ycr.github.io/py-canoe/src_manual/core/configuration/" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>configuration - py-canoe</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../../assets/_mkdocstrings.css" rel="stylesheet" />
+        <link href="../../../_assets/extra.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "configuration";
+        var mkdocs_page_input_path = "src_manual\\core\\configuration.md";
+        var mkdocs_page_url = "/py-canoe/src_manual/core/configuration/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../.." class="icon icon-home"> py-canoe
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../../">Overview</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" >py_canoe</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="../../py_canoe/">CANoe</a>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" >core</a>
+    <ul class="current">
+                <li class="toctree-l3"><a class="reference internal" href="../application/">application</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../bus/">bus</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../capl/">capl</a>
+                </li>
+                <li class="toctree-l3 current"><a class="reference internal current" href="#">configuration</a>
+    <ul class="current">
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration">Configuration</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration.get_compilation_result">get_compilation_result</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration.run_compilation">run_compilation</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../environment/">environment</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../measurement/">measurement</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../networks/">networks</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../performance/">performance</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../simulation/">simulation</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../system/">system</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../ui/">ui</a>
+                </li>
+                <li class="toctree-l3"><a class="reference internal" href="../version/">version</a>
+                </li>
+    </ul>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">py-canoe</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">API Reference</li>
+          <li class="breadcrumb-item">py_canoe</li>
+          <li class="breadcrumb-item">core</li>
+      <li class="breadcrumb-item active">configuration</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/chaitu-ycr/py-canoe/blob/main/docs/src_manual/core/configuration.md">Edit</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="py_canoecoreconfigurationconfiguration">py_canoe.core.configuration.Configuration</h1>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<a id="src.py_canoe.core.configuration.Configuration"></a>
+    <div class="doc doc-contents first">
+
+
+
+        <p>The Configuration object represents the active configuration.</p>
+
+
+
+
+
+
+
+                  <details class="quote">
+                    <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">:</span> <span class="s1">&#39;Application&#39;</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">app</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">bus_types</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">bus_types</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">com_object</span> <span class="o">=</span> <span class="n">win32com</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">Dispatch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">com_object</span><span class="o">.</span><span class="n">Configuration</span><span class="p">)</span>
+    <span class="c1"># self.configuration_events: ConfigurationEvents = win32com.client.WithEvents(self.com_object, ConfigurationEvents)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">configuration_test_configurations</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_configurations</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">configuration_test_setup</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_setup</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">__test_setup_environments</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration_test_setup</span><span class="p">()</span><span class="o">.</span><span class="n">test_environments</span><span class="o">.</span><span class="n">fetch_all_test_environments</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">__test_configurations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration_test_configurations</span><span class="p">()</span><span class="o">.</span><span class="n">fetch_all_test_configurations</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">__test_modules</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">__test_units</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+                  </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="src.py_canoe.core.configuration.Configuration.get_compilation_result" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_compilation_result</span><span class="p">()</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get CAPL compilation result with error details.</p>
+<p>Compiles all CAPL code in the current configuration and returns
+detailed result including success status and error information.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>dict</code></b>(                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="object">object</span>]</code>
+)              –
+              <div class="doc-md-description">
+                <p>Dictionary with keys:
+- "success" (bool): True if compilation succeeded, False otherwise
+- "error" (str | None): Error message if compilation failed, None on success</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>result = config.get_compilation_result()
+if result["success"]:
+...     print("Compilation OK")
+... else:
+...     print(f"Compilation failed: {result['error']}")</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_compilation_result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get CAPL compilation result with error details.</span>
+
+<span class="sd">    Compiles all CAPL code in the current configuration and returns</span>
+<span class="sd">    detailed result including success status and error information.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Dictionary with keys:</span>
+<span class="sd">            - &quot;success&quot; (bool): True if compilation succeeded, False otherwise</span>
+<span class="sd">            - &quot;error&quot; (str | None): Error message if compilation failed, None on success</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; result = config.get_compilation_result()</span>
+<span class="sd">        &gt;&gt;&gt; if result[&quot;success&quot;]:</span>
+<span class="sd">        ...     print(&quot;Compilation OK&quot;)</span>
+<span class="sd">        ... else:</span>
+<span class="sd">        ...     print(f&quot;Compilation failed: {result[&#39;error&#39;]}&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compile_and_verify_internal</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;CAPL compilation succeeded&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;CAPL compilation failed: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="src.py_canoe.core.configuration.Configuration.run_compilation" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">run_compilation</span><span class="p">()</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Run CAPL compilation and return success status.</p>
+<p>Compiles all CAPL code in the current configuration.
+Use get_compilation_result() if you need error details.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>bool</code></b>(                  <code><span title="bool">bool</span></code>
+)              –
+              <div class="doc-md-description">
+                <p>True if compilation succeeded, False otherwise</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>if config.run_compilation():
+...     print("Compilation OK")</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_compilation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run CAPL compilation and return success status.</span>
+
+<span class="sd">    Compiles all CAPL code in the current configuration.</span>
+<span class="sd">    Use get_compilation_result() if you need error details.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if compilation succeeded, False otherwise</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; if config.run_compilation():</span>
+<span class="sd">        ...     print(&quot;Compilation OK&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compile_and_verify_internal</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;CAPL compilation passed&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;CAPL compilation failed: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../capl/" class="btn btn-neutral float-left" title="capl"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../environment/" class="btn btn-neutral float-right" title="environment">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../capl/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../environment/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../../..";</script>
+    <script src="../../../js/theme_extra.js"></script>
+    <script src="../../../js/theme.js"></script>
+      <script src="https://unpkg.com/mermaid@11.13.0/dist/mermaid.core.mjs" type="module"></script>
+      <script src="../../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
