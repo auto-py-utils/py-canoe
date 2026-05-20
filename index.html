@@ -50,7 +50,7 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#prerequisites">prerequisites</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#setup-and-installation">setup and installation</a>
+    <li class="toctree-l2"><a class="reference internal" href="#installation">installation</a>
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#standard-way">standard way</a>
     </li>
@@ -108,6 +108,8 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#working-with-logging-blocks">working with logging blocks</a>
     </li>
+    <li class="toctree-l3"><a class="reference internal" href="#serverheadless-mode-no-gui-interaction">server/headless mode (no GUI interaction)</a>
+    </li>
         </ul>
     </li>
     </ul>
@@ -164,44 +166,35 @@
 <li><a href="https://code.visualstudio.com/Download">visual studio code</a></li>
 <li>Windows PC(recommended windows 11 OS along with 16GB RAM)</li>
 </ul>
-<h2 id="setup-and-installation">setup and installation</h2>
-<p>create a python virtual environment and activate it. you can use any method to create a virtual environment; here are some examples.</p>
+<h2 id="installation">installation</h2>
 <h3 id="standard-way">standard way</h3>
-<pre><code class="language-bash"># create a new directory for your project (optional)
-mkdir my-project
-cd my-project
+<pre><code class="language-bash"># install py-canoe package
+pip install py-canoe
 
-# create virtual environment
-python -m venv .venv
-
-# activate virtual environment
-.venv\Scripts\activate
-
-# upgrade pip (optional but recommended)
-python -m pip install --upgrade pip
-
-# install/upgrade py-canoe package
+# upgrade py-canoe package
 pip install py-canoe --upgrade
+
+# install py-canoe package with all optional dependencies
+pip install py-canoe[all]
 </code></pre>
 <h3 id="using-astral-uv">using astral uv</h3>
-<pre><code class="language-bash"># install uv if not already installed (optional)
-powershell -ExecutionPolicy ByPass -c &quot;irm https://astral.sh/uv/install.ps1 | iex&quot;
+<pre><code class="language-bash"># install py-canoe package
+uv pip install py-canoe
 
-# create a new uv python package (optional)
-uv init my-project --package
-cd my-project
-
-# create virtual environment with uv
-uv venv .venv
-
-# activate virtual environment
-.venv\Scripts\activate
-
-# install/upgrade py-canoe package
+# upgrade py-canoe package
 uv pip install py-canoe --upgrade
 
-# add py-canoe as dependency to your pyproject.toml (optional)
+# install py-canoe package with all optional dependencies
+uv pip install py-canoe[all]
+
+# add py-canoe as dependency to your pyproject.toml
 uv add py-canoe
+
+# add py-canoe package with all optional dependencies in your pyproject.toml
+uv add py-canoe[all]
+
+# upgrade py-canoe package in your pyproject.toml
+uv update py-canoe
 </code></pre>
 <hr />
 <h2 id="example-use-cases">example use cases</h2>
@@ -500,6 +493,52 @@ canoe_inst.stop_measurement()
 canoe_inst.set_configuration_modified(False)  # to avoid popup asking to save changes
 canoe_inst.quit()
 </code></pre>
+<h3 id="serverheadless-mode-no-gui-interaction">server/headless mode (no GUI interaction)</h3>
+<p>By default, py-canoe uses COM event sinks (<code>WithEvents</code>) to receive notifications from CANoe
+(e.g., measurement started, measurement stopped). This works well for interactive desktop applications,
+but can cause issues in server environments:</p>
+<p><strong>The Problem:</strong>
+- CANoe may reject COM calls with <code>RPC_E_CALL_REJECTED</code> when it's busy (e.g., during report generation)
+- Long-running server processes need robust error handling for these transient states
+- In some scenarios, Windows may show a "program is busy" dialog (reduced in recent versions)</p>
+<p><strong>The Solution:</strong>
+Use the low-level <code>Application</code> class with <code>enable_events=False</code> to disable COM event sinks.
+py-canoe will use polling instead, which is more reliable for server/headless operation:</p>
+<pre><code class="language-python">from py_canoe.core.application import Application
+
+# Create instance without COM event sinks (uses polling instead)
+app = Application(enable_events=False)
+app.open(r'tests\demo_cfg\demo.cfg', visible=True, auto_save=True, prompt_user=False)
+
+app.measurement.start()
+# ... run your test ...
+app.measurement.stop()
+app.quit()
+</code></pre>
+<p><strong>Parameters explained:</strong>
+- <code>enable_events=False</code>: Disables COM event sinks, uses polling to detect state changes
+- <code>timeout</code>: Available on <code>start()</code> and <code>stop()</code> methods (default: 30s) - maximum time to wait</p>
+<p><strong>Benefits:</strong>
+- Reduced "program is busy" dialogs (internal COM proxy sharing)
+- Automatic retry when CANoe is temporarily busy (e.g., during report generation)
+- Safe for long-running server processes (REST APIs, MCP servers, scheduled tasks)
+- Configurable timeouts for all operations</p>
+<p><strong>Switching configurations without restarting CANoe:</strong></p>
+<p>Server applications often need to run tests with different CANoe configurations.
+Use <code>open_config()</code> to switch configurations while keeping CANoe running:</p>
+<pre><code class="language-python"># CANoe is already running with a configuration
+canoe_inst.open_config(r'tests\demo_cfg\another_config.cfg', timeout=60)
+# Now running with the new configuration
+</code></pre>
+<p><strong>Custom COM message pumping:</strong></p>
+<p>For advanced use cases where you need to pump COM messages in your own wait loops:</p>
+<pre><code class="language-python">import time
+
+# Custom wait loop with COM message pumping
+while not my_condition():
+    canoe_inst.pump_messages()  # Process pending COM messages
+    time.sleep(0.1)
+</code></pre>
               
             </div>
           </div><footer>
@@ -549,5 +588,5 @@ canoe_inst.quit()
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2026-05-13 15:22:40.883965+00:00
+Build Date UTC : 2026-05-20 17:43:43.850014+00:00
 -->
