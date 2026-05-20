@@ -23,51 +23,41 @@ Python 🐍 Package for accessing Vector CANoe 🛶 Tool via COM Interface
 - [visual studio code](https://code.visualstudio.com/Download)
 - Windows PC(recommended windows 11 OS along with 16GB RAM)
 
-## setup and installation
-
-create a python virtual environment and activate it. you can use any method to create a virtual environment; here are some examples.
+## installation
 
 ### standard way
 
 ```bash
-# create a new directory for your project (optional)
-mkdir my-project
-cd my-project
+# install py-canoe package
+pip install py-canoe
 
-# create virtual environment
-python -m venv .venv
-
-# activate virtual environment
-.venv\Scripts\activate
-
-# upgrade pip (optional but recommended)
-python -m pip install --upgrade pip
-
-# install/upgrade py-canoe package
+# upgrade py-canoe package
 pip install py-canoe --upgrade
+
+# install py-canoe package with all optional dependencies
+pip install py-canoe[all]
 ```
 
 ### using astral uv
 
 ```bash
-# install uv if not already installed (optional)
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+# install py-canoe package
+uv pip install py-canoe
 
-# create a new uv python package (optional)
-uv init my-project --package
-cd my-project
-
-# create virtual environment with uv
-uv venv .venv
-
-# activate virtual environment
-.venv\Scripts\activate
-
-# install/upgrade py-canoe package
+# upgrade py-canoe package
 uv pip install py-canoe --upgrade
 
-# add py-canoe as dependency to your pyproject.toml (optional)
+# install py-canoe package with all optional dependencies
+uv pip install py-canoe[all]
+
+# add py-canoe as dependency to your pyproject.toml
 uv add py-canoe
+
+# add py-canoe package with all optional dependencies in your pyproject.toml
+uv add py-canoe[all]
+
+# upgrade py-canoe package in your pyproject.toml
+uv update py-canoe
 ```
 
 ---
