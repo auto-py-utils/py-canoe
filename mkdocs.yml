@@ -8,8 +8,24 @@ repo_url: https://github.com/chaitu-ycr/py-canoe
 edit_uri: blob/main/docs/
 
 nav:
-  - py_canoe: index.md
-  - src_manual: src_manual.md
+  - Home: index.md
+  - API Reference:
+      - Overview: src_manual.md
+      - py_canoe:
+          - CANoe: src_manual/py_canoe.md
+          - core:
+              - application: src_manual/core/application.md
+              - bus: src_manual/core/bus.md
+              - capl: src_manual/core/capl.md
+              - configuration: src_manual/core/configuration.md
+              - environment: src_manual/core/environment.md
+              - measurement: src_manual/core/measurement.md
+              - networks: src_manual/core/networks.md
+              - performance: src_manual/core/performance.md
+              - simulation: src_manual/core/simulation.md
+              - system: src_manual/core/system.md
+              - ui: src_manual/core/ui.md
+              - version: src_manual/core/version.md
 
 plugins:
   - mkdocstrings:
