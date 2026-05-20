@@ -471,7 +471,7 @@ app.quit()
 
 **Parameters explained:**
 - `enable_events=False`: Disables COM event sinks, uses polling to detect state changes
-- `timeout=60`: Available on `start()` and `stop()` methods - maximum time to wait (seconds)
+- `timeout`: Available on `start()` and `stop()` methods (default: 30s) - maximum time to wait
 
 **Benefits:**
 - Reduced "program is busy" dialogs (internal COM proxy sharing)
