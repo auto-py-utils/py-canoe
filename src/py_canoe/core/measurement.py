@@ -54,7 +54,11 @@ class MeasurementEvents:
 
 class Measurement:
     def __init__(self, app, enable_events: bool = True):
-        self.com_object = win32com.client.Dispatch(app.com_object.Measurement)
+        # Use the Application's Measurement object directly - do NOT create a
+        # separate Dispatch wrapper. A separate Dispatch creates a different COM
+        # proxy that races with the Application's internal proxy, causing
+        # "Server Busy" dialogs during concurrent operations.
+        self.com_object = app.com_object.Measurement
         self._enable_events = enable_events
         if enable_events:
             self.measurement_events: MeasurementEvents = win32com.client.WithEvents(self.com_object, MeasurementEvents)
