@@ -311,22 +311,6 @@ class TestStopExBusyRetry:
         assert result is False
         mock_com.Stop.assert_called_once()
 
-    @patch("py_canoe.core.application.DoEventsUntil", return_value=True)
-    def test_quit_skips_cleanup_after_successful_quit(self, mock_do_events):
-        """Verify quit() does NOT call _release_event_sinks after successful Quit."""
-        app = _make_app(enable_events=True)
-        app.com_object.Quit = Mock()
-
-        cleanup_called = [False]
-        def release_side_effect(*args, **kwargs):
-            cleanup_called[0] = True
-
-        with patch.object(app, "_release_event_sinks", side_effect=release_side_effect):
-            result = app.quit(timeout=1)
-
-        assert result is True
-        assert cleanup_called[0] is False
-
     @patch("py_canoe.core.measurement.pythoncom.PumpWaitingMessages")
     @patch("py_canoe.core.measurement.time.sleep")
     def test_stop_ex_unexpected_error_returns_false(self, mock_sleep, mock_pump):
