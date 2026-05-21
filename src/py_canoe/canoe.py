@@ -877,7 +877,7 @@ class CANoe:
         """
         return self.application.system.add_variable(sys_var_name, value, read_only)
 
-    def get_system_variable_value(self, sys_var_name: str, return_symbolic_name: bool = False, return_timestamp: bool = False) -> Union[int, float, str, None, tuple]:
+    def get_system_variable_value(self, sys_var_name: str, return_symbolic_name: bool = False, return_timestamp: bool = False, enable_events: bool = True) -> Union[int, float, str, None, tuple]:
         """
         Gets the value of a system variable.
 
@@ -885,11 +885,12 @@ class CANoe:
             sys_var_name (str): The name of the system variable.
             return_symbolic_name (bool): Whether to return the symbolic name.
             return_timestamp (bool): Whether to return the timestamp in timezone utc along with the signal value. Defaults to False.
+            enable_events (bool): Whether to enable COM events on the Variable object. Defaults to True.
 
         Returns:
             Union[int, float, str, None, tuple]: The value of the system variable or None if not found. If return_timestamp is True, returns a tuple of (value, timestamp).
         """
-        variable_value = self.application.system.get_variable_value(sys_var_name, return_symbolic_name)
+        variable_value = self.application.system.get_variable_value(sys_var_name, return_symbolic_name, enable_events)
         if return_timestamp:
             return variable_value, datetime.now(timezone.utc).timestamp()
         return variable_value

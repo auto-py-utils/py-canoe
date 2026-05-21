@@ -74,7 +74,7 @@ class System:
             logger.error(f"Error removing System Variable '{sys_var_name}': {e}")
             return False
 
-    def get_variable_value(self, sys_var_name: str, return_symbolic_name=False) -> Union[int, float, str, None]:
+    def get_variable_value(self, sys_var_name: str, return_symbolic_name=False, enable_events: bool = True) -> Union[int, float, str, None]:
         try:
             parts = sys_var_name.split('::')
             if len(parts) < 2:
@@ -83,7 +83,7 @@ class System:
             namespace = '::'.join(parts[:-1])
             variable_name = parts[-1]
             namespace_obj = self.com_object.Namespaces(namespace)
-            variable_obj = Variable(namespace_obj.Variables(variable_name))
+            variable_obj = Variable(namespace_obj.Variables(variable_name), enable_events)
             value = variable_obj.get_value()
             if return_symbolic_name:
                 symbolic_value = variable_obj.get_symbolic_value_name(value)
