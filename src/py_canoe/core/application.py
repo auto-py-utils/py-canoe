@@ -9,6 +9,7 @@ from py_canoe.core.capl import Capl
 from py_canoe.core.configuration import Configuration
 from py_canoe.core.environment import Environment
 from py_canoe.core.measurement import Measurement
+from py_canoe.core.message_filter import COMRetryMessageFilter
 from py_canoe.core.networks import Networks
 from py_canoe.core.system import System
 from py_canoe.core.ui import Ui
@@ -31,6 +32,14 @@ class ApplicationEvents:
 
 
 class Application:
+    """Main interface to CANoe via COM automation.
+
+    The Application class automatically registers an IMessageFilter that suppresses
+    'Server Busy' dialogs when CANoe is temporarily unable to process COM calls
+    (e.g., during report generation after measurement stop). Rejected calls are
+    retried automatically with exponential backoff up to 60 seconds.
+    """
+
     def __init__(self, enable_events: bool = True) -> None:
         self._enable_events = enable_events
         self.bus_types = {'CAN': 1, 'J1939': 2, 'TTP': 4, 'LIN': 5, 'MOST': 6, 'Kline': 14}
@@ -46,6 +55,10 @@ class Application:
         self.version: Version = None
         self.capl_function_objects = object()
         self.user_capl_functions = tuple()
+        # Register IMessageFilter to suppress "Server Busy" dialogs and auto-retry
+        # rejected COM calls. The filter stays active for the Application's lifetime.
+        self._message_filter = COMRetryMessageFilter()
+        self._message_filter.register()
 
     @property
     def full_name(self) -> str:
