@@ -280,34 +280,28 @@ class TestMeasurementStartEventsDisabled:
 # ---------------------------------------------------------------------------
 
 class TestStopExBusyRetry:
-    """Test stop_ex() busy-retry logic."""
+    """Test stop_ex() error handling.
+
+    Note: Busy-retry is now handled by IMessageFilter (registered in Application.__init__).
+    In unit tests without COM, the filter is not active, so stop_ex() simply returns False
+    on any exception. The IMessageFilter tests verify the retry logic separately.
+    """
 
     @patch("py_canoe.core.measurement.pythoncom.PumpWaitingMessages")
     @patch("py_canoe.core.measurement.time.sleep")
-    def test_stop_ex_retries_on_busy(self, mock_sleep, mock_pump):
+    def test_stop_ex_busy_returns_false_without_filter(self, mock_sleep, mock_pump):
+        """Without IMessageFilter (unit tests), busy exception returns False."""
         m, mock_com = _make_measurement(enable_events=False)
         mock_com.Running = True
+        mock_com.Stop = Mock(side_effect=Exception("User interface is busy (-2147418113)"))
 
-        call_count = [0]
-        def stop_side_effect():
-            call_count[0] += 1
-            if call_count[0] == 1:
-                raise Exception("User interface is busy (-2147418113)")
-            mock_com.Running = False
-
-        mock_com.Stop = Mock(side_effect=stop_side_effect)
-
-        # monotonic: 0 (t0), 0 (deadline check), 0 (Running check),
-        # 0 (Stop fail), 0 (elapsed log), 5.1 (next loop deadline check),
-        # 5.1 (Running check), 5.1 (Stop success), 5.1 (elapsed),
-        # 5.2 (poll), 5.2 (Running=False), 5.2 (final elapsed)
-        times = [0] * 5 + [5.1] * 5 + [5.2] * 5
+        times = [0] * 10
         time_iter = iter(times)
         with patch("py_canoe.core.measurement.time.monotonic", side_effect=lambda: next(time_iter)):
             result = m.stop_ex(timeout=30, post_stop_pump=0)
 
-        assert result is True
-        assert call_count[0] == 2
+        assert result is False
+        mock_com.Stop.assert_called_once()
 
     @patch("py_canoe.core.measurement.pythoncom.PumpWaitingMessages")
     @patch("py_canoe.core.measurement.time.sleep")

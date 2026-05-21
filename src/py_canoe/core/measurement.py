@@ -129,31 +129,15 @@ class Measurement:
             return True
         logger.info("stop_ex: calling Stop()")
         self.measurement_events.STOP = False
-        retry_count = 0
-        deadline = time.monotonic() + timeout
-        while time.monotonic() < deadline:
-            if not self.com_object.Running:
-                elapsed = round(time.monotonic() - t0, 2)
-                logger.info(f"stop_ex: measurement stopped naturally after {elapsed}s (retries={retry_count})")
-                return True
-            try:
-                self.com_object.Stop()
-                elapsed = round(time.monotonic() - t0, 2)
-                logger.info(f"stop_ex: Stop() accepted after {elapsed}s (retries={retry_count})")
-                break
-            except Exception as e:
-                err_str = str(e)
-                if "busy" in err_str.lower() or "-2147418113" in err_str or "0x8000ffff" in err_str.lower():
-                    retry_count += 1
-                    elapsed = round(time.monotonic() - t0, 2)
-                    logger.warning(f"stop_ex: CANoe busy at {elapsed}s (retry #{retry_count}) — waiting 5s: {e}")
-                    time.sleep(5.0)
-                    continue
-                logger.error(f"stop_ex: unexpected error: {e}")
-                return False
-        else:
+        try:
+            # IMessageFilter (registered in Application.__init__) handles busy-retry
+            # automatically — no manual retry loop needed here.
+            self.com_object.Stop()
             elapsed = round(time.monotonic() - t0, 2)
-            logger.error(f"stop_ex: timeout after {elapsed}s — Stop() never accepted (retries={retry_count})")
+            logger.info(f"stop_ex: Stop() accepted after {elapsed}s")
+        except Exception as e:
+            elapsed = round(time.monotonic() - t0, 2)
+            logger.error(f"stop_ex: Stop() failed after {elapsed}s: {e}")
             return False
         if self._enable_events:
             status = DoEventsUntil(lambda: self.measurement_events.STOP, timeout, "CANoe Measurement Stop")
