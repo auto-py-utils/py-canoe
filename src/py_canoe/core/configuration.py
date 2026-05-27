@@ -227,7 +227,7 @@ class Configuration:
                 return True
             if path == "":
                 path = self.full_name
-            self.com_object.Save(path=path, promtUser=prompt_user)
+            self.com_object.Save(path, promptUser)
             logger.info("CANoe configuration saved successfully ")
             return True
         except Exception as e:
