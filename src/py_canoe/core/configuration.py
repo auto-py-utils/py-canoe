@@ -220,12 +220,14 @@ class Configuration:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def save(self, prompt_user: bool = False) -> bool:
+    def save(self, path: str = "", prompt_user: bool = False) -> bool:
         try:
             if self.saved:
                 logger.warning("CANoe configuration is already saved.")
                 return True
-            self.com_object.Save(promtUser = prompt_user)
+            if path == "":
+                path = self.full_name
+            self.com_object.Save(path=path, promtUser=prompt_user)
             logger.info("CANoe configuration saved successfully ")
             return True
         except Exception as e:
