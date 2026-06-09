@@ -109,7 +109,6 @@ class Application:
             self.measurement = Measurement(self, enable_events=self._enable_events)
             self.capl_function_objects = lambda: self.measurement.measurement_events.CAPL_FUNCTION_OBJECTS
             self.measurement.measurement_events.CAPL_FUNCTION_NAMES = self.user_capl_functions
-            self._common_between_pre_and_post_cfg_open()
         except Exception as e:
             logger.error(f"Failed to launch CANoe application: {e}")
             raise

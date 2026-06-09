@@ -74,10 +74,11 @@ class TestApplicationEnableEvents:
         mock_meas_cls.return_value = Mock(measurement_events=Mock())
 
         app = Application(enable_events=True)
-        with patch.object(app, "_common_between_pre_and_post_cfg_open"):
+        with patch.object(app, "_common_between_pre_and_post_cfg_open") as mock_common:
             app._launch_application()
 
         mock_with_events.assert_called_once()
+        mock_common.assert_not_called()
 
     @patch("py_canoe.core.application.Measurement")
     @patch("win32com.client.WithEvents")
@@ -89,10 +90,11 @@ class TestApplicationEnableEvents:
         mock_meas_cls.return_value = Mock(measurement_events=Mock())
 
         app = Application(enable_events=False)
-        with patch.object(app, "_common_between_pre_and_post_cfg_open"):
+        with patch.object(app, "_common_between_pre_and_post_cfg_open") as mock_common:
             app._launch_application()
 
         mock_with_events.assert_not_called()
+        mock_common.assert_not_called()
 
     @patch("py_canoe.core.application.Measurement")
     @patch("win32com.client.gencache.EnsureDispatch")
@@ -103,9 +105,10 @@ class TestApplicationEnableEvents:
         mock_meas_cls.return_value = Mock(measurement_events=Mock())
 
         app = Application(enable_events=False)
-        with patch.object(app, "_common_between_pre_and_post_cfg_open"):
+        with patch.object(app, "_common_between_pre_and_post_cfg_open") as mock_common:
             app._launch_application()
 
+        mock_common.assert_not_called()
         assert isinstance(app.application_events, ApplicationEvents)
         assert app.application_events.OPENED is False
 
@@ -118,9 +121,10 @@ class TestApplicationEnableEvents:
         mock_meas_cls.return_value = Mock(measurement_events=Mock())
 
         app = Application(enable_events=False)
-        with patch.object(app, "_common_between_pre_and_post_cfg_open"):
+        with patch.object(app, "_common_between_pre_and_post_cfg_open") as mock_common:
             app._launch_application()
 
+        mock_common.assert_not_called()
         mock_meas_cls.assert_called_once_with(app, enable_events=False)
 
 
