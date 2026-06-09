@@ -101,7 +101,7 @@ class CANoe:
             visible (bool): Whether to make the CANoe application visible. Defaults to True.
             auto_save (bool): Whether to automatically save the configuration. Defaults to True.
             prompt_user (bool): Whether to prompt the user for confirmation. Defaults to False.
-            auto_stop (bool): Whether to automatically stop the measurement. Defaults to True.
+            auto_stop (bool): This argument is deprecated and will be removed in a future version.
             timeout (int): The timeout in seconds for the operation. Defaults to 30.
 
         Returns:
