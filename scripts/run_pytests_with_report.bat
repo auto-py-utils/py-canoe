@@ -30,7 +30,7 @@ REM ----------------------------
 REM 2. Sync Dependencies
 REM ----------------------------
 echo Syncing dependencies with uv...
-uv sync --link-mode=copy
+uv sync --link-mode=copy --all-extras
 if %ERRORLEVEL% NEQ 0 goto ERROR
 echo Completed syncing dependencies.
 

@@ -122,6 +122,70 @@ class Application:
         except Exception as e:
             logger.error(f"Error initializing objects after loading configuration: {e}")
 
+    def _release_event_sinks(self, preserve_application_events: bool = False) -> None:
+        """Disconnect pywin32 event sinks before COM objects become unreachable."""
+        visited = set()
+
+        def walk(obj) -> None:
+            obj_id = id(obj)
+            if obj is None or obj_id in visited:
+                return
+            visited.add(obj_id)
+
+            # Avoid walking into COM proxy wrappers. These wrappers may expose
+            # nested attributes that are not owned by our Python object graph
+            # and can trigger unsafe COM activity during shutdown.
+            if hasattr(obj, "_oleobj_"):
+                return
+
+            if isinstance(obj, dict):
+                for value in obj.values():
+                    walk(value)
+                return
+
+            if isinstance(obj, (list, tuple, set)):
+                for value in obj:
+                    walk(value)
+                return
+
+            if not hasattr(obj, "__dict__"):
+                return
+
+            for name, value in tuple(vars(obj).items()):
+                if value is None or name == "com_object":
+                    continue
+                if preserve_application_events and name == "application_events":
+                    continue
+                if name.endswith("_events") or name == "events":
+                    close = getattr(value, "close", None)
+                    if callable(close):
+                        try:
+                            close()
+                        except pythoncom.com_error as e:
+                            # These errors commonly occur when the COM server has already shut down
+                            # and Python is still trying to disconnect stale event sink wrappers.
+                            if e.hresult in {
+                                -2147023170,  # RPC call failed
+                                -2147023174,  # RPC server unavailable
+                                -2147023175,  # No process is on the other end of the pipe
+                                -2147023169,  # The remote procedure call failed. (alternate code)
+                            }:
+                                logger.debug(
+                                    f"Stale COM event sink '{name}' disconnected after server shutdown: {e}"
+                                )
+                            else:
+                                logger.warning(f"Error disconnecting COM event sink '{name}': {e}")
+                        except Exception as e:
+                            logger.warning(f"Error disconnecting COM event sink '{name}': {e}")
+                    try:
+                        setattr(obj, name, None)
+                    except Exception:
+                        pass
+                    continue
+                walk(value)
+
+        walk(self)
+
     def new(self, auto_save: bool = False, prompt_user: bool = False, timeout: int = 5) -> bool:
         """Create a new empty CANoe configuration."""
         self._launch_application()
@@ -135,7 +199,7 @@ class Application:
                 cond = lambda: self.com_object.FullName != ""
             status = DoEventsUntil(cond, timeout, "New CANoe configuration")
             if status:
-                logger.info("New empty CANoe configuration Opened ")
+                logger.info("New empty CANoe configuration Opened")
                 self._setup_post_configuration_loading()
             return status
         except Exception as e:
@@ -150,15 +214,15 @@ class Application:
         try:
             self.visible = visible
             logger.info("Opening CANoe configuration ...")
-            canoe_cfg_str = str(canoe_cfg)
-            self.com_object.Open(canoe_cfg, auto_save, prompt_user)
+            canoe_cfg_str = str(Path(canoe_cfg).resolve())
+            self.com_object.Open(canoe_cfg_str, auto_save, prompt_user)
             if self._enable_events:
                 cond = lambda: self.application_events.OPENED
             else:
                 cond = lambda: self.com_object.FullName.lower() == canoe_cfg_str.lower()
             status = DoEventsUntil(cond, timeout, "Open CANoe configuration")
             if status:
-                logger.info(f"CANoe Configuration {canoe_cfg} Opened ")
+                logger.info(f"CANoe Configuration {canoe_cfg} Opened")
                 self._setup_post_configuration_loading()
             return status
         except Exception as e:
@@ -169,17 +233,23 @@ class Application:
     def quit(self, timeout: int = 5) -> bool:
         """Quit CANoe and clean up COM references."""
         status = False
+        quit_called = False
         try:
-            self.configuration.modified = False
+            if self.configuration is not None:
+                self.configuration.modified = False
             self.com_object.Quit()
+            quit_called = True
             status = DoEventsUntil(lambda: self.application_events.QUIT, timeout, "Quit CANoe application")
             if status:
-                logger.info("CANoe Application Quit Successfully ")
+                logger.info("CANoe Application Quit Successfully.")
             return status
         except Exception as e:
             logger.error(f"Error during CANoe quit: {e}")
             status = False
             return status
+        finally:
+            if not quit_called:
+                self._release_event_sinks()
 
     def attach_to_active_application(self) -> bool:
         """Attach to a active instance of the CANoe application."""

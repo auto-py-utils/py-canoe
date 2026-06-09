@@ -209,7 +209,7 @@ class TestStandalonePyCanoe:
 
     def test_replay_block_methods(self):
         logger.info("test_replay_block_methods started".center(120, '-'))
-        self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=True, prompt_user=False, auto_stop=True)
+        self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=True, prompt_user=False)
         assert self.canoe_inst.start_measurement()
         wait(1)
         assert self.canoe_inst.set_replay_block_file(block_name='DemoReplayBlock', recording_file_path=fr'{self.file_path}\demo_cfg\Logs\demo_log.blf')
@@ -222,7 +222,7 @@ class TestStandalonePyCanoe:
 
     def test_capl_methods(self):
         logger.info("test_capl_methods started".center(120, '-'))
-        self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=True, prompt_user=False, auto_stop=True)
+        self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=True, prompt_user=False)
         self.canoe_inst.compile_all_capl_nodes()
         assert self.canoe_inst.start_measurement()
         wait(1)
@@ -352,7 +352,7 @@ class TestStandalonePyCanoe:
         wait(5)
         assert self.canoe_inst.application.configuration.stop_all_test_configurations()
         assert self.canoe_inst.stop_measurement()
-    
+
     def test_profile_signal_performance(self):
         logger.info("test_profile_signal_performance started".center(120, '-'))
         self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=False, prompt_user=False)

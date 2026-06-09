@@ -71,10 +71,12 @@ class CANoe:
             logger.error(f"Error clearing win32com gen_py cache: {e}")
 
     def _reset_application(self):
-        try:
-            self.application = None
-        except Exception as e:
-            logger.error(f"Error during application reset: {e}")
+        """Reset application reference without trying to clean up event sinks.
+        
+        After a successful quit, the COM server is already shut down, so the event sinks
+        are invalid. We just release the Python reference here.
+        """
+        self.application = None
 
     def new(self, auto_save=False, prompt_user=False, timeout=5) -> bool:
         """

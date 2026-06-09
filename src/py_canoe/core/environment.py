@@ -30,15 +30,14 @@ class Environment:
         self.com_object.SetVariables(vars)
 
     def get_environment_variable_value(self, env_var_name: str) -> Union[int, float, str, tuple, None]:
-        var_value = None
         try:
             variable = self.get_variable(env_var_name)
             var_value = variable.value if variable.type != 3 else tuple(variable.value)
             logger.info(f'environment variable({env_var_name}) value = {var_value}')
+            return var_value
         except Exception as e:
             logger.error(f"Failed to get environment variable '{env_var_name}': {e}")
-        finally:
-            return var_value
+            return None
 
     def set_environment_variable_value(self, env_var_name: str, value: Union[int, float, str, tuple]) -> bool:
         try:

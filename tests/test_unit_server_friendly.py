@@ -9,6 +9,9 @@ Plus additional tests for pre-existing code to achieve full coverage.
 """
 
 import time
+import pythoncom
+from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import Mock, patch, MagicMock, call
 
 from py_canoe.core.capl import CaplFunction
@@ -17,6 +20,7 @@ import pytest
 
 from py_canoe.core.application import Application, ApplicationEvents
 from py_canoe.core.measurement import Measurement, MeasurementEvents
+from py_canoe.canoe import CANoe
 
 
 # ---------------------------------------------------------------------------
@@ -306,6 +310,22 @@ class TestStopExBusyRetry:
 
         assert result is False
         mock_com.Stop.assert_called_once()
+
+    @patch("py_canoe.core.application.DoEventsUntil", return_value=True)
+    def test_quit_skips_cleanup_after_successful_quit(self, mock_do_events):
+        """Verify quit() does NOT call _release_event_sinks after successful Quit."""
+        app = _make_app(enable_events=True)
+        app.com_object.Quit = Mock()
+
+        cleanup_called = [False]
+        def release_side_effect(*args, **kwargs):
+            cleanup_called[0] = True
+
+        with patch.object(app, "_release_event_sinks", side_effect=release_side_effect):
+            result = app.quit(timeout=1)
+
+        assert result is True
+        assert cleanup_called[0] is False
 
     @patch("py_canoe.core.measurement.pythoncom.PumpWaitingMessages")
     @patch("py_canoe.core.measurement.time.sleep")
@@ -706,6 +726,23 @@ class TestNewAndOpenEventsBranching:
         assert cond() is True
 
     @patch("py_canoe.core.application.DoEventsUntil", return_value=True)
+    def test_open_resolves_cfg_path_before_opening(self, mock_do_events):
+        app = _make_app(enable_events=False)
+        cfg_path = Path("tests/demo_cfg/demo_dev.cfg")
+        expected_path = str(cfg_path.resolve())
+        app.com_object.FullName = expected_path
+
+        with patch.object(app, "_launch_application"):
+            with patch.object(app, "_setup_post_configuration_loading"):
+                result = app.open(cfg_path, timeout=5)
+
+        assert result is True
+        app.com_object.Open.assert_called_once_with(expected_path, True, False)
+        cond = mock_do_events.call_args[0][0]
+        app.com_object.FullName = expected_path
+        assert cond() is True
+
+    @patch("py_canoe.core.application.DoEventsUntil", return_value=True)
     def test_open_events_enabled_uses_opened_flag(self, mock_do_events):
         app = _make_app(enable_events=True)
         app._enable_events = True
@@ -843,6 +880,79 @@ class TestApplicationQuit:
         result = app.quit(timeout=5)
 
         assert result is False
+
+    def test_release_event_sinks_closes_nested_sinks(self):
+        app = _make_app(enable_events=False)
+        application_events = SimpleNamespace(close=Mock())
+        test_module_events = SimpleNamespace(close=Mock())
+        app.application_events = application_events
+        nested = SimpleNamespace(test_module_events=test_module_events)
+        app.configuration = SimpleNamespace(test_modules=[{"object": nested}])
+
+        app._release_event_sinks()
+
+        application_events.close.assert_called_once()
+        test_module_events.close.assert_called_once()
+        assert app.application_events is None
+        assert nested.test_module_events is None
+
+    def test_release_event_sinks_ignores_close_errors(self):
+        app = _make_app(enable_events=False)
+        application_events = SimpleNamespace(
+            close=Mock(side_effect=pythoncom.com_error(-2147023174, None, None, None))
+        )
+        app.application_events = application_events
+
+        app._release_event_sinks()
+
+        application_events.close.assert_called_once()
+        assert app.application_events is None
+
+    def test_release_event_sinks_ignores_rpc_server_unavailable(self):
+        app = _make_app(enable_events=False)
+        application_events = SimpleNamespace(
+            close=Mock(side_effect=pythoncom.com_error(-2147023174, None, None, None))
+        )
+        app.application_events = application_events
+
+        app._release_event_sinks()
+
+        application_events.close.assert_called_once()
+        assert app.application_events is None
+
+    def test_release_event_sinks_skips_com_proxy_children(self):
+        app = _make_app(enable_events=False)
+        application_events = SimpleNamespace(close=Mock())
+        nested_sink = SimpleNamespace(close=Mock())
+        com_proxy = SimpleNamespace(_oleobj_=object(), test_module_events=nested_sink)
+        measurement_events = SimpleNamespace(close=Mock(), APP_COM_OBJ=com_proxy)
+        app.application_events = application_events
+        app.measurement = SimpleNamespace(measurement_events=measurement_events, com_object=Mock())
+
+        app._release_event_sinks()
+
+        application_events.close.assert_called_once()
+        measurement_events.close.assert_called_once()
+        nested_sink.close.assert_not_called()
+        assert app.application_events is None
+        assert app.measurement.measurement_events is None
+
+    def test_reset_application_clears_reference_only(self):
+        """Verify _reset_application() just clears the reference, doesn't try cleanup.
+        
+        After a successful quit, the COM server is already shut down, so attempting
+        to call _release_event_sinks() would fail. _reset_application() just removes
+        the Python reference.
+        """
+        canoe = CANoe.__new__(CANoe)
+        application = Mock()
+        canoe.application = application
+
+        canoe._reset_application()
+
+        # Should NOT call _release_event_sinks() - COM server is already shut down
+        application._release_event_sinks.assert_not_called()
+        assert canoe.application is None
 
 
 # ---------------------------------------------------------------------------

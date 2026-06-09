@@ -115,91 +115,91 @@ class McECU:
     @property
     def measurement_groups(self) -> str:
         return self.com_object.MeasurementGroups
-    
+
     @property
     def name(self) -> str:
         return self.com_object.Name
-    
+
     @property
     def number_of_connection_attempts(self) -> int:
         return self.com_object.NumberOfConnectionAttempts
-    
+
     @property
     def observer_active(self) -> bool:
         return self.com_object.ObserverActive
-    
+
     @property
     def page_switching_active(self) -> bool:
         return self.com_object.PageSwitchingActive
-    
+
     @property
     def protocol(self) -> int:
         return self.com_object.Protocol
-    
+
     @property
     def ram_page(self) -> int:
         return self.com_object.RAMPage
-    
+
     @property
     def reconnect_allowed_after_error(self) -> bool:
         return self.com_object.ReconnectAllowedAfterError
-    
+
     @reconnect_allowed_after_error.setter
     def reconnect_allowed_after_error(self, value: bool):
         self.com_object.ReconnectAllowedAfterError = value
-    
+
     @property
     def reset_variables_after_disconnect(self) -> bool:
         return self.com_object.ResetVariablesAfterDisconnect
-    
+
     @reset_variables_after_disconnect.setter
     def reset_variables_after_disconnect(self, value: bool):
         self.com_object.ResetVariablesAfterDisconnect = value
-    
+
     @property
     def response_timeout(self) -> int:
         return self.com_object.ResponseTimeout
-    
+
     @response_timeout.setter
     def response_timeout(self, value: int):
         self.com_object.ResponseTimeout = value
-    
+
     @property
     def seed_and_key_active(self) -> bool:
         return self.com_object.SeedAndKeyActive
-    
+
     @seed_and_key_active.setter
     def seed_and_key_active(self, value: bool):
         self.com_object.SeedAndKeyActive = value
-    
+
     @property
     def seed_and_key_active_cal(self) -> bool:
         return self.com_object.SeedAndKeyActiveCAL
-    
+
     @seed_and_key_active_cal.setter
     def seed_and_key_active_cal(self, value: bool):
         self.com_object.SeedAndKeyActiveCAL = value
-    
+
     @property
     def seed_and_key_file_name(self) -> str:
         return self.com_object.SeedAndKeyFileName
-    
+
     @seed_and_key_file_name.setter
     def seed_and_key_file_name(self, value: str):
         self.com_object.SeedAndKeyFileName = value
-    
+
     @property
     def seed_and_key_file_name_cal(self) -> str:
         return self.com_object.SeedAndKeyFileNameCAL
-    
+
     @seed_and_key_file_name_cal.setter
     def seed_and_key_file_name_cal(self, value: str):
         self.com_object.SeedAndKeyFileNameCAL = value
-    
+
     @property
     def seed_and_key_on_demand(self) -> bool:
         return self.com_object.SeedAndKeyOnDemand
-    
+
     @seed_and_key_on_demand.setter
     def seed_and_key_on_demand(self, value: bool):
         self.com_object.SeedAndKeyOnDemand = value
@@ -207,7 +207,7 @@ class McECU:
     @property
     def use_ccp_v2_0(self) -> bool:
         return self.com_object.UseCCP_V2_0
-    
+
     @use_ccp_v2_0.setter
     def use_ccp_v2_0(self, value: bool):
         self.com_object.UseCCP_V2_0 = value
@@ -215,16 +215,16 @@ class McECU:
     @property
     def use_daq_timestamps_of_ecu(self) -> bool:
         return self.com_object.UseDAQTimestampsOfECU
-    
+
     @use_daq_timestamps_of_ecu.setter
     def use_daq_timestamps_of_ecu(self, value: bool):
         self.com_object.UseDAQTimestampsOfECU = value
-    
+
     @property
     def use_daq_timestamps_of_ecu_div_operator(self) -> bool:
         return self.com_object.UseDAQTimestampsOfECUDivOperator
 
-    
+
 
 
 class McCANSettings:
@@ -350,7 +350,7 @@ class McMeasurementGroup:
     @property
     def name(self) -> str:
         return self.com_object.Name
-    
+
     @name.setter
     def name(self, value: str):
         self.com_object.Name = value
@@ -358,13 +358,13 @@ class McMeasurementGroup:
     @property
     def parameters(self) -> 'McParameters':
         return McParameters(self.com_object.Parameters)
-    
+
     def activate(self):
         self.com_object.Activate()
-    
+
     def begin_update(self):
         self.com_object.BeginUpdate()
-    
+
     def end_update(self):
         self.com_object.EndUpdate()
 

@@ -1,6 +1,6 @@
 [project]
 name = "py-canoe"
-version = "26.2.7"
+version = "26.2.8"
 description = "Python 🐍 Package for accessing Vector CANoe 🛶 Tool via COM Interface"
 license = { file = "LICENSE" }
 readme = "README.md"
@@ -22,15 +22,16 @@ dependencies = [
 
 [project.optional-dependencies]
 robot = ["robotframework"]
-database = ["canmatrix[arxml,kcd,ldf,xls,xlsx,yaml,eds]", "pandas"]
+database = ["canmatrix[arxml,ldf,xls,xlsx,yaml]", "lxml>=6.1.1"]
 restapi = ["fastapi[standard]"]
-plot = ["plotly", "pandas"]
-report = ["datapane", "plotly", "pandas"]
+plot = ["plotly",]
+report = ["plotly",]
 all = [
     "robotframework",
     "fastapi[standard]",
-    "canmatrix[arxml,kcd,ldf,xls,xlsx,yaml,eds]",
-    "plotly", "pandas", "datapane",
+    "canmatrix[arxml,ldf,xls,xlsx,yaml]",
+    "plotly",
+    "lxml>=6.1.1",
 ]
 
 [dependency-groups]

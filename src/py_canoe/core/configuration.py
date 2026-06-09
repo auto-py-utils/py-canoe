@@ -242,7 +242,7 @@ class Configuration:
                     os.makedirs(dir_path, exist_ok=True)
                     logger.info(f'Created directory {dir_path} for saving configuration')
             self.com_object.SaveAs(path, major, minor, prompt_user)
-            logger.info(f"CANoe configuration saved as {path} successfully ")
+            logger.info(f"CANoe configuration saved as {path} successfully")
             return True
         except Exception as e:
             logger.error(f"Error saving CANoe configuration as '{path}': {e}")
