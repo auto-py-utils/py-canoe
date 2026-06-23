@@ -12,15 +12,14 @@ class Diagnostic:
         return self.com_object.TesterPresentStatus
 
     def create_request(self, primitive_path, **kwargs) -> DiagnosticRequest:
-        req = self.com_object.CreateRequest(primitive_path)
+        request = self.com_object.CreateRequest(primitive_path)
         for key, value in kwargs.items():
             try:
-                req.SetParameter(key, value)
+                request.SetParameter(key, value)
             except com_error:
-                logger.error("Failed to create parametrized diagnostic request due to %s attribute.",
-                             key)
+                logger.error("Failed to create parametrized diagnostic request due to %s attribute.", key)
                 raise
-        return DiagnosticRequest(req)
+        return DiagnosticRequest(request)
 
     def create_request_from_stream(self, byte_stream: bytearray) -> DiagnosticRequest:
         return DiagnosticRequest(self.com_object.CreateRequestFromStream(byte_stream))

@@ -834,7 +834,7 @@ class CANoe:
         self.application.measurement.measurement_index = index
         return True
 
-    def send_diag_request(self, diag_ecu_qualifier_name: str, request: str, request_in_bytes=True, return_sender_name=False, response_in_bytearray=False, timeout: float = 30, poll_s: float = 0.01, parameters:Optional[dict[str,int|str]]=None) -> Union[str, dict]:
+    def send_diag_request(self, diag_ecu_qualifier_name: str, request: str, request_in_bytes=True, return_sender_name=False, response_in_bytearray=False, timeout: float = 30, poll_s: float = 0.01, parameters: Optional[dict[str, int|str]]=None) -> Union[str, dict]:
         """
         Sends a diagnostic request.
 

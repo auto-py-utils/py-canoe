@@ -53,7 +53,7 @@ class Networks:
             logger.error(f"Error fetching Diagnostic Devices: {e}")
             return None
 
-    def send_diag_request(self, diag_ecu_qualifier_name: str, request: str, request_in_bytes=True, return_sender_name=False, response_in_bytearray=False, timeout: float = 10.0, poll_s: float = 0.01, **kwargs:dict[str,int|str]) -> Union[str, dict]:
+    def send_diag_request(self, diag_ecu_qualifier_name: str, request: str, request_in_bytes=True, return_sender_name=False, response_in_bytearray=False, timeout: float = 10.0, poll_s: float = 0.01, **kwargs: dict[str, int|str]) -> Union[str, dict]:
         try:
             diag_devices = self.diagnostic_devices
             if not diag_devices or diag_ecu_qualifier_name not in diag_devices:
