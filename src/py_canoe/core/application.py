@@ -42,7 +42,7 @@ class Application:
 
     def __init__(self, enable_events: bool = True) -> None:
         self._enable_events = enable_events
-        self.bus_types = {'CAN': 1, 'J1939': 2, 'FLEXRAY': 3, 'TTP': 4, 'LIN': 5, 'MOST': 6, 'Kline': 14}
+        self.bus_types = {'CAN': 1, 'J1939': 2, 'FLEXRAY': 3, 'TTP': 4, 'LIN': 5, 'MOST': 6, 'ETH': 7, 'Kline': 14}
         self.com_object = None
         self.application_events = None
         self.bus: Bus = None
