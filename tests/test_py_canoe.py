@@ -1,5 +1,7 @@
 import os
 import pytest
+from win32com.universal import com_error
+
 from py_canoe import CANoe, wait
 from py_canoe.helpers.common import logger
 from tests.conftest import skip_if_no_canoe
@@ -205,6 +207,12 @@ class TestStandalonePyCanoe:
         assert resp.get('Door') == '50 03 00 00 00 00'
         resp = self.canoe_inst.send_diag_request('Door', '22 F1 AA', return_sender_name=True)
         assert '62 F1 AA' in resp.get('Door')
+        wait(2)
+        with pytest.raises(com_error):
+            self.canoe_inst.send_diag_request('Door', 'DefaultSession_Start', False, custom_parameter="CustomSetting")
+        wait(2)
+        resp = self.canoe_inst.send_diag_request('Door', 'Variant_Coding_Write', False, CountryType="Europe")
+        assert resp == '6E 00 A0'
         assert self.canoe_inst.stop_measurement()
 
     def test_replay_block_methods(self):
