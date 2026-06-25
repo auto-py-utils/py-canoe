@@ -1,5 +1,5 @@
 import time
-from typing import Union
+from typing import Union, Optional
 
 from py_canoe.helpers.common import logger
 from py_canoe.helpers.common import wait
@@ -53,7 +53,7 @@ class Networks:
             logger.error(f"Error fetching Diagnostic Devices: {e}")
             return None
 
-    def send_diag_request(self, diag_ecu_qualifier_name: str, request: str, request_in_bytes=True, return_sender_name=False, response_in_bytearray=False, timeout: float = 10.0, poll_s: float = 0.01) -> Union[str, dict]:
+    def send_diag_request(self, diag_ecu_qualifier_name: str, request: str, request_in_bytes=True, return_sender_name=False, response_in_bytearray=False, timeout: float = 10.0, poll_s: float = 0.01, **kwargs) -> Union[str, dict]:
         try:
             diag_devices = self.diagnostic_devices
             if not diag_devices or diag_ecu_qualifier_name not in diag_devices:
@@ -68,7 +68,7 @@ class Networks:
                         diag_req_in_bytes.append(int(byte_stream[i:i + 2], 16))
                     diag_request = diag_device.create_request_from_stream(diag_req_in_bytes)
                 else:
-                    diag_request = diag_device.create_request(request)
+                    diag_request = diag_device.create_request(request, **kwargs)
                 diag_request.send()
                 logger.info(f'{diag_ecu_qualifier_name}: Diagnostic Request = {request}')
                 start_time = time.time()

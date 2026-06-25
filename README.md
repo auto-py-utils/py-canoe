@@ -255,6 +255,8 @@ resp = canoe_inst.send_diag_request('Door', '10 02')
 canoe_inst.control_tester_present('Door', False)
 wait(2)
 resp = canoe_inst.send_diag_request('Door', '10 03', return_sender_name=True)
+wait(2)
+resp = canoe_inst.send_diag_request('Door', 'Variant_Coding_Write', False, CountryType="Europe")
 canoe_inst.stop_measurement()
 ```
 
