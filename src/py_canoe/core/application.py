@@ -170,9 +170,7 @@ class Application:
                                 -2147023175,  # No process is on the other end of the pipe
                                 -2147023169,  # The remote procedure call failed. (alternate code)
                             }:
-                                logger.debug(
-                                    f"Stale COM event sink '{name}' disconnected after server shutdown: {e}"
-                                )
+                                logger.debug(f"Stale COM event sink '{name}' disconnected after server shutdown: {e}")
                             else:
                                 logger.warning(f"Error disconnecting COM event sink '{name}': {e}")
                         except Exception as e:
@@ -234,7 +232,7 @@ class Application:
         """Quit CANoe and clean up COM references."""
         status = False
         try:
-            if self.configuration is not None:
+            if self.configuration is not None and self.configuration.modified:
                 self.configuration.modified = False
             self._release_event_sinks(preserve_application_events=True)
             self.com_object.Quit()
@@ -295,8 +293,7 @@ class Application:
 
             if self._enable_events:
                 status = DoEventsUntil(
-                    lambda: self.application_events.OPENED and
-                            self.configuration.full_name.lower() == abs_path.lower(),
+                    lambda: self.application_events.OPENED and self.configuration.full_name.lower() == abs_path.lower(),
                     timeout,
                     f"Switch to configuration {canoe_cfg}"
                 )
