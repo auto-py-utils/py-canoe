@@ -233,12 +233,11 @@ class Application:
     def quit(self, timeout: int = 5) -> bool:
         """Quit CANoe and clean up COM references."""
         status = False
-        quit_called = False
         try:
             if self.configuration is not None:
                 self.configuration.modified = False
+            self._release_event_sinks(preserve_application_events=True)
             self.com_object.Quit()
-            quit_called = True
             status = DoEventsUntil(lambda: self.application_events.QUIT, timeout, "Quit CANoe application")
             if status:
                 logger.info("CANoe Application Quit Successfully.")
@@ -248,8 +247,7 @@ class Application:
             status = False
             return status
         finally:
-            if not quit_called:
-                self._release_event_sinks()
+            self._release_event_sinks()
 
     def attach_to_active_application(self) -> bool:
         """Attach to a active instance of the CANoe application."""
