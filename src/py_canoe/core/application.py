@@ -42,7 +42,7 @@ class Application:
 
     def __init__(self, enable_events: bool = True) -> None:
         self._enable_events = enable_events
-        self.bus_types = {'CAN': 1, 'J1939': 2, 'TTP': 4, 'LIN': 5, 'MOST': 6, 'Kline': 14}
+        self.bus_types = {'CAN': 1, 'J1939': 2, 'FLEXRAY': 3, 'TTP': 4, 'LIN': 5, 'MOST': 6, 'ETH': 7, 'Kline': 14}
         self.com_object = None
         self.application_events = None
         self.bus: Bus = None
@@ -170,9 +170,7 @@ class Application:
                                 -2147023175,  # No process is on the other end of the pipe
                                 -2147023169,  # The remote procedure call failed. (alternate code)
                             }:
-                                logger.debug(
-                                    f"Stale COM event sink '{name}' disconnected after server shutdown: {e}"
-                                )
+                                logger.debug(f"Stale COM event sink '{name}' disconnected after server shutdown: {e}")
                             else:
                                 logger.warning(f"Error disconnecting COM event sink '{name}': {e}")
                         except Exception as e:
@@ -233,12 +231,11 @@ class Application:
     def quit(self, timeout: int = 5) -> bool:
         """Quit CANoe and clean up COM references."""
         status = False
-        quit_called = False
         try:
-            if self.configuration is not None:
+            if self.configuration is not None and self.configuration.modified:
                 self.configuration.modified = False
+            self._release_event_sinks(preserve_application_events=True)
             self.com_object.Quit()
-            quit_called = True
             status = DoEventsUntil(lambda: self.application_events.QUIT, timeout, "Quit CANoe application")
             if status:
                 logger.info("CANoe Application Quit Successfully.")
@@ -248,8 +245,7 @@ class Application:
             status = False
             return status
         finally:
-            if not quit_called:
-                self._release_event_sinks()
+            self._release_event_sinks()
 
     def attach_to_active_application(self) -> bool:
         """Attach to a active instance of the CANoe application."""
@@ -297,8 +293,7 @@ class Application:
 
             if self._enable_events:
                 status = DoEventsUntil(
-                    lambda: self.application_events.OPENED and
-                            self.configuration.full_name.lower() == abs_path.lower(),
+                    lambda: self.application_events.OPENED and self.configuration.full_name.lower() == abs_path.lower(),
                     timeout,
                     f"Switch to configuration {canoe_cfg}"
                 )
