@@ -865,6 +865,33 @@ class TestApplicationQuit:
 
         assert result is False
 
+    @patch("py_canoe.core.application.DoEventsUntil", return_value=True)
+    def test_quit_does_not_release_sinks_before_quit_call(self, mock_do_events):
+        """_release_event_sinks must NOT be called before Quit().
+
+        Releasing sinks pre-Quit leaves CANoe with a dangling vtable pointer for
+        OnExit/OnStop callbacks it fires during its own shutdown → access violation
+        → crash dialog. Sinks must only be released after CANoe has shut down
+        (i.e., in the finally block).
+        """
+        app = _make_app(enable_events=True)
+        app.com_object.Quit = Mock()
+        call_order = []
+
+        original_release = app._release_event_sinks
+        def track_release(*args, **kwargs):
+            call_order.append("release")
+            return original_release(*args, **kwargs)
+
+        app.com_object.Quit.side_effect = lambda: call_order.append("quit")
+
+        with patch.object(app, "_release_event_sinks", side_effect=track_release):
+            app.quit(timeout=1)
+
+        assert call_order[0] == "quit", (
+            "Quit() must be called before _release_event_sinks() to avoid crash"
+        )
+
     def test_release_event_sinks_closes_nested_sinks(self):
         app = _make_app(enable_events=False)
         application_events = SimpleNamespace(close=Mock())

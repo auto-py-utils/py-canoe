@@ -234,7 +234,11 @@ class Application:
         try:
             if self.configuration is not None and self.configuration.modified:
                 self.configuration.modified = False
-            self._release_event_sinks(preserve_application_events=True)
+            # Do NOT release event sinks before Quit(). CANoe fires OnExit (and
+            # potentially OnStop) as part of its internal shutdown sequence after
+            # Quit() is called. Releasing sinks beforehand leaves CANoe with a
+            # dangling vtable pointer → access violation → crash dialog.
+            # Sinks are released in the finally block after CANoe has shut down.
             self.com_object.Quit()
             status = DoEventsUntil(lambda: self.application_events.QUIT, timeout, "Quit CANoe application")
             if status:
