@@ -186,12 +186,11 @@
 </blockquote>
 <h2 id="useful-links">🔗 useful links</h2>
 <ul>
-<li><a href="https://chaitu-ycr.github.io/py-canoe/">github documentation</a></li>
+<li><a href="https://chaitu-ycr.github.io/py-canoe/">documentation</a></li>
 <li><a href="https://pypi.org/project/py-canoe/">pypi package</a></li>
 <li><a href="https://github.com/chaitu-ycr/py-canoe/releases">github releases</a></li>
-<li><a href="https://github.com/chaitu-ycr/py-canoe/discussions">for ideas💡/sugessions comment under discussions <strong>here</strong></a></li>
 <li><a href="https://github.com/chaitu-ycr/py-canoe/issues/new/choose">create issue/request feature <strong>here</strong></a></li>
-<li><a href="https://github.com/chaitu-ycr/py-canoe/fork">fork repo</a> and create pull request to contribute back to this project.</li>
+<li><a href="https://github.com/chaitu-ycr/py-canoe/fork">fork repo</a> and create pull request to contribute back to this project. or message me your GitHub username in LinkedIn to add you as collaborator.</li>
 <li><a href="https://help.vector.com/CANoeDEFamily/index.html">vector canoe documentation</a></li>
 </ul>
 <h2 id="prerequisites">prerequisites</h2>
@@ -386,6 +385,8 @@ resp = canoe_inst.send_diag_request('Door', '10 02')
 canoe_inst.control_tester_present('Door', False)
 wait(2)
 resp = canoe_inst.send_diag_request('Door', '10 03', return_sender_name=True)
+wait(2)
+resp = canoe_inst.send_diag_request('Door', 'Variant_Coding_Write', False, CountryType=&quot;Europe&quot;)
 canoe_inst.stop_measurement()
 </code></pre>
 <h3 id="set-replay-block-source-file-control-replay-block-start-stop">set replay block source file / control replay block start stop</h3>
@@ -623,5 +624,5 @@ while not my_condition():
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2026-05-20 18:27:48.324198+00:00
+Build Date UTC : 2026-07-02 18:08:53.237836+00:00
 -->
