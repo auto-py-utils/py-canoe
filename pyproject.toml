@@ -18,6 +18,7 @@ classifiers = [
 ]
 dependencies = [
     "pywin32",
+    "robotframework",
 ]
 
 [project.scripts]

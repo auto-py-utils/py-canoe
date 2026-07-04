@@ -493,3 +493,15 @@ while not my_condition():
     canoe_inst.pump_messages()  # Process pending COM messages
     time.sleep(0.1)
 ```
+
+## Regenerating Generated Robot Library
+
+The project includes a small generator that creates the Robot Framework Python
+library wrapper at `src/py_canoe/canoe_robot_lib.py`. Do not edit that file
+manually — it is auto-generated. To regenerate it run:
+
+```bash
+python -m py_canoe.helpers.gen_canoe_robot_lib
+```
+
+The generated file includes a timestamp and generator metadata in its header.

@@ -166,6 +166,18 @@ class CANoe:
         """
         return self.application.bus.get_bus_nodes_info(bus, log_info)
 
+    def get_all_network_names(self) -> list[str]:
+        """Returns all network names in the current application."""
+        return self.application.networks.get_all_network_names()
+
+    def get_simulation_bus_names(self) -> list[str]:
+        """Returns all simulation bus names from the current application."""
+        return self.application.bus.get_simulation_bus_names()
+
+    def get_simulation_database_paths(self) -> list[str]:
+        """Returns all simulation database paths from the current application."""
+        return self.application.bus.get_simulation_database_paths()
+
     def get_signal_value(self, bus: str, channel: int, message: str, signal: str, raw_value: bool = False, return_timestamp: bool = False) -> Union[int, float, None, tuple]:
         """
         Gets the value of a signal.
@@ -487,6 +499,14 @@ class CANoe:
     def get_test_configurations(self) -> dict[str, 'TestConfiguration']:
         """returns dictionary of test configuration names and its class object."""
         return self.application.configuration.get_test_configurations()
+
+    def get_capl_compilation_result(self) -> dict[str, object]:
+        """Returns the current configuration compilation result."""
+        return self.application.configuration.get_compilation_result()
+
+    def run_capl_compilation(self) -> bool:
+        """Runs compilation for the current configuration."""
+        return self.application.configuration.run_compilation()
 
     def execute_all_test_configurations(self, wait_for_completion: bool = True) -> bool:
         """executes all test configurations available in test setup.
@@ -900,6 +920,14 @@ class CANoe:
         if return_timestamp:
             return variable_value, datetime.now(timezone.utc).timestamp()
         return variable_value
+
+    def get_all_namespace_names(self) -> list[str]:
+        """Returns all namespace names from the current application."""
+        return self.application.system.get_all_namespace_names()
+
+    def get_all_variables_in_namespace(self, namespace_name: str) -> list[dict]:
+        """Returns all variables in the specified namespace."""
+        return self.application.system.get_all_variables_in_namespace(namespace_name)
 
     def set_system_variable_value(self, sys_var_name: str, value: Union[int, float, str]) -> bool:
         """
