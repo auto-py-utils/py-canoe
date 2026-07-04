@@ -112,6 +112,8 @@
     </li>
         </ul>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#regenerating-generated-robot-library">Regenerating Generated Robot Library</a>
+    </li>
     </ul>
                 </li>
               </ul>
@@ -575,6 +577,13 @@ while not my_condition():
     canoe_inst.pump_messages()  # Process pending COM messages
     time.sleep(0.1)
 </code></pre>
+<h2 id="regenerating-generated-robot-library">Regenerating Generated Robot Library</h2>
+<p>The project includes a small generator that creates the Robot Framework Python
+library wrapper at <code>src/py_canoe/canoe_robot_lib.py</code>. Do not edit that file
+manually — it is auto-generated. To regenerate it run:</p>
+<pre><code class="language-bash">python -m py_canoe.helpers.gen_canoe_robot_lib
+</code></pre>
+<p>The generated file includes a timestamp and generator metadata in its header.</p>
               
             </div>
           </div><footer>
@@ -624,5 +633,5 @@ while not my_condition():
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2026-07-02 18:08:53.237836+00:00
+Build Date UTC : 2026-07-04 10:21:16.665464+00:00
 -->
