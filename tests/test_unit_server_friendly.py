@@ -64,6 +64,13 @@ def _make_measurement(enable_events=False):
 # Application: enable_events
 # ---------------------------------------------------------------------------
 
+def _make_com_no_config() -> Mock:
+    """COM mock where CANoe is running but no project is loaded."""
+    com = Mock()
+    com.Configuration.FullName = ""
+    return com
+
+
 class TestApplicationEnableEvents:
     """Test Application with enable_events parameter."""
 
@@ -73,7 +80,7 @@ class TestApplicationEnableEvents:
     def test_enable_events_true_registers_with_events(
         self, mock_ensure, mock_with_events, mock_meas_cls
     ):
-        mock_ensure.return_value = Mock()
+        mock_ensure.return_value = _make_com_no_config()
         mock_with_events.return_value = Mock()
         mock_meas_cls.return_value = Mock(measurement_events=Mock())
 
@@ -90,7 +97,7 @@ class TestApplicationEnableEvents:
     def test_enable_events_false_skips_with_events(
         self, mock_ensure, mock_with_events, mock_meas_cls
     ):
-        mock_ensure.return_value = Mock()
+        mock_ensure.return_value = _make_com_no_config()
         mock_meas_cls.return_value = Mock(measurement_events=Mock())
 
         app = Application(enable_events=False)
@@ -105,7 +112,7 @@ class TestApplicationEnableEvents:
     def test_enable_events_false_creates_dummy_events(
         self, mock_ensure, mock_meas_cls
     ):
-        mock_ensure.return_value = Mock()
+        mock_ensure.return_value = _make_com_no_config()
         mock_meas_cls.return_value = Mock(measurement_events=Mock())
 
         app = Application(enable_events=False)
@@ -121,7 +128,7 @@ class TestApplicationEnableEvents:
     def test_measurement_created_with_enable_events_flag(
         self, mock_ensure, mock_meas_cls
     ):
-        mock_ensure.return_value = Mock()
+        mock_ensure.return_value = _make_com_no_config()
         mock_meas_cls.return_value = Mock(measurement_events=Mock())
 
         app = Application(enable_events=False)
@@ -130,6 +137,23 @@ class TestApplicationEnableEvents:
 
         mock_common.assert_not_called()
         mock_meas_cls.assert_called_once_with(app, enable_events=False)
+
+    @patch("py_canoe.core.application.Measurement")
+    @patch("win32com.client.gencache.EnsureDispatch")
+    def test_launch_initializes_config_when_already_loaded(
+        self, mock_ensure, mock_meas_cls
+    ):
+        """Attach to running CANoe with project loaded → _setup_post_configuration_loading called."""
+        com = Mock()
+        com.Configuration.FullName = "D:/path/to/GTS_Testing.cfg"
+        mock_ensure.return_value = com
+        mock_meas_cls.return_value = Mock(measurement_events=Mock())
+
+        app = Application(enable_events=False)
+        with patch.object(app, "_setup_post_configuration_loading") as mock_setup:
+            app._launch_application()
+
+        mock_setup.assert_called_once()
 
 
 # ---------------------------------------------------------------------------

@@ -109,6 +109,11 @@ class Application:
             self.measurement = Measurement(self, enable_events=self._enable_events)
             self.capl_function_objects = lambda: self.measurement.measurement_events.CAPL_FUNCTION_OBJECTS
             self.measurement.measurement_events.CAPL_FUNCTION_NAMES = self.user_capl_functions
+            # When attaching to an already-running CANoe instance that has a project
+            # loaded, initialize the configuration and related objects so callers don't
+            # receive None from self.configuration.
+            if self.com_object.Configuration.FullName:
+                self._setup_post_configuration_loading()
         except Exception as e:
             logger.error(f"Failed to launch CANoe application: {e}")
             raise
