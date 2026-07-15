@@ -96,6 +96,10 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#execute-test-setup-test-module-test-environment">execute test setup test module / test environment</a>
     </li>
+    <li class="toctree-l3"><a class="reference internal" href="#execute-test-module-with-selective-test-case-enabledisable">execute test module with selective test case enable/disable</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#get-test-module-result-report-path-test-case-verdicts">get test module result (report path + test case verdicts)</a>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="#getset-environment-variable-value">get/set environment variable value</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#addremove-database">add/remove database</a>
@@ -181,6 +185,9 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="py-canoe"><a href="https://github.com/chaitu-ycr/py-canoe">py-canoe</a></h1>
+<blockquote>
+<p>🇨🇳 <a href="https://github.com/chaitu-ycr/py-canoe/blob/main/README_CN.md">中文文档 / Chinese Documentation</a></p>
+</blockquote>
 <h2 id="about-package">about package</h2>
 <p>Python 🐍 Package for accessing Vector CANoe 🛶 Tool via COM Interface</p>
 <blockquote>
@@ -453,6 +460,48 @@ canoe_inst.execute_all_test_modules_in_test_env(demo_test_environment)
 canoe_inst.execute_test_module('demo_test_node_002')
 canoe_inst.stop_measurement()
 </code></pre>
+<h3 id="execute-test-module-with-selective-test-case-enabledisable">execute test module with selective test case enable/disable</h3>
+<p>The <code>execute_test_module</code> method supports selectively enabling or disabling test cases before execution using wildcard or regex patterns.</p>
+<p><strong>Pattern matching rules:</strong>
+- <strong>Wildcard</strong> (default): uses fnmatch-style patterns (<code>*</code> matches everything, <code>?</code> matches a single character, <code>[seq]</code> matches any character in seq)
+- <strong>Regex</strong>: patterns starting with <code>(?</code> or containing regex metacharacters (<code>^</code>, <code>$</code>, <code>[</code>, <code>]</code>, <code>+</code>, <code>{</code>, <code>}</code>) are treated as regular expressions
+- <strong>Priority</strong>: <code>disable_test_cases</code> takes precedence over <code>enable_test_cases</code></p>
+<pre><code class="language-python">from py_canoe import CANoe, wait
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
+
+canoe_inst.start_measurement()
+
+# enable only smoke test cases (wildcard)
+canoe_inst.execute_test_module('demo_test_node_002', enable_test_cases=[&quot;SmokeTest_*&quot;])
+
+# disable slow/stress tests, enable everything else (wildcard)
+canoe_inst.execute_test_module('demo_test_node_002', enable_test_cases=[&quot;*&quot;], disable_test_cases=[&quot;*slow*&quot;, &quot;*stress*&quot;])
+
+# use regex to enable specific test cases by number
+canoe_inst.execute_test_module('demo_test_node_002', enable_test_cases=[&quot;(?i)^tc_(001|002|003)$&quot;])
+
+canoe_inst.stop_measurement()
+</code></pre>
+<h3 id="get-test-module-result-report-path-test-case-verdicts">get test module result (report path + test case verdicts)</h3>
+<pre><code class="language-python">from py_canoe import CANoe, wait
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
+
+canoe_inst.start_measurement()
+canoe_inst.execute_test_module('demo_test_node_002')
+
+# get result: report path + all test case verdicts
+result = canoe_inst.get_test_module_result('demo_test_node_002')
+print(f&quot;Verdict: {result['verdict_name']}&quot;)
+print(f&quot;Report: {result['report']['generated_full_name']}&quot;)
+for name, tc in result['test_cases'].items():
+    print(f&quot;  {name}: {tc['verdict_name']} (enabled={tc['enabled']})&quot;)
+
+canoe_inst.stop_measurement()
+</code></pre>
 <h3 id="getset-environment-variable-value">get/set environment variable value</h3>
 <pre><code class="language-python">from py_canoe import CANoe, wait
 
@@ -633,5 +682,5 @@ manually — it is auto-generated. To regenerate it run:</p>
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2026-07-04 10:21:16.665464+00:00
+Build Date UTC : 2026-07-15 17:31:47.972712+00:00
 -->
