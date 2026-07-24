@@ -22,6 +22,8 @@ from py_canoe.core.child_elements.replay_collection import ReplayCollection
 from py_canoe.core.child_elements.simulation_setup import SimulationSetup
 from py_canoe.core.child_elements.test_configurations import TestConfigurations
 from py_canoe.core.child_elements.test_setup import TestSetup
+from py_canoe.core.child_elements.test_tree_elements import TestTreeElements, TestTreeElementType
+from py_canoe.core.child_elements.test_unit import TestUnit
 from py_canoe.helpers.common import logger, wait
 
 
@@ -356,15 +358,128 @@ class Configuration:
             logger.error(f'failed to get test configurations. {e}')
             return {}
 
-    def execute_all_test_configurations(self, wait_for_completion: bool = True) -> bool:
+    def get_test_configurations_cases_result(self, test_conf_name: str) -> dict:
+
+        if not test_conf_name: 
+            logger.warning("test_conf_name parameter is required.")
+            return {}
+        
+        verdict = {
+            0: "NotAvailable",
+            1: "Passed",
+            2: "Failed",
+            3: "None",
+            4: "Inconclusive",
+            5: "ErrorInTestSystem"
+        }
+        
+        test_cases = {}
+        for t_conf_name in self.__test_configurations.keys():
+            if t_conf_name != test_conf_name: continue
+            test_units_obj: dict[str, TestUnit] = self.__test_configurations[t_conf_name].test_units.fetch_all_test_units()
+            report_path = self.__test_configurations[t_conf_name].report.full_path
+            for tn_name in test_units_obj.keys():
+                test_elements: TestTreeElements = test_units_obj[tn_name].elements
+                test_elements.get_test_tree_element_cases(test_cases)
+        
+        return {
+            name: {
+                "enabled": value["tte_obj"].enabled,
+                "verdict": value["tte_obj"].verdict,
+                "verdict_name": verdict.get(value["tte_obj"].verdict, "Unknown"),
+                "report_path": report_path
+            }
+            for name, value in test_cases.items()
+        }
+    
+
+
+    def get_top_test_configurations_elements(self) -> dict:
+        return self.test_configurations.get_top_test_configurations_elements()
+    
+    def get_all_test_configurations_cases(self) -> dict:
+        return self.test_configurations.get_all_test_configurations_cases()
+
+    def enable_test_configurations_cases(self, tc_obj,
+                                         enable_patterns: Sequence[str] = (), 
+                                         disable_patterns: Sequence[str] = (), 
+                                         match_by: str = "name") -> None:
+        if match_by not in ("name","group", "fixture"):
+            logger.warning(f'Invalid match_by="{match_by}", falling back to "name".')
+            match_by = "name"
+
+        if isinstance(enable_patterns, str):
+            enable_patterns = [enable_patterns]
+        if isinstance(disable_patterns, str):
+            disable_patterns = [disable_patterns]
+
+        if not enable_patterns and not disable_patterns:
+            return
+
+        all_test_all_elements = self.get_top_test_configurations_elements()
+        all_test_cases = self.get_all_test_configurations_cases()
+
+        if not (all_test_cases or all_test_all_elements):
+            logger.warning(f'No test cases found in test module ({tc_obj}).')
+            return
+
+        if match_by in ("group", "fixture"):
+            match_flag =False
+            for all_ttes in all_test_all_elements.values():
+                for name, tts_obj in all_ttes.items():
+                    if tts_obj.type in (TestTreeElementType.TEST_GROUP, TestTreeElementType. TEST_FIXTURE):
+                        for pattern in enable_patterns:
+                            if self._match_test_case_name(name, pattern):
+                                match_flag = True
+                                tts_obj.enabled = True
+            if not match_flag:
+                logger.warning(f'Test configurations "{tc_obj}" has no test case titles available;'
+                                f'title patterns will not match anything, skipping selection.'
+                )
+                return
+
+        for tc_name, tc in all_test_cases.items():
+            should_enable = False
+            should_disable = False
+
+            for pattern in disable_patterns:
+                if self._match_test_case_name(tc_name, pattern):
+                    should_disable = True
+                    break
+
+            if not should_disable:
+                for pattern in enable_patterns:
+                    if self._match_test_case_name(tc_name, pattern):
+                        should_enable = True
+                        break
+
+            if should_disable:
+                if tc['tte_obj'].enabled:
+                    tc['tte_obj'].enabled = False
+                    logger.info(f'Test case "{tc_name}" disabled by pattern match.')
+            elif should_enable:
+                if not tc['tte_obj'].enabled:
+                    tc['tte_obj'].enabled = True
+                    logger.info(f'Test case "{tc_name}" enabled by pattern match.')
+
+
+
+    def execute_all_test_configurations(self, enable_test_case: Sequence[str] = (), 
+                                        disable_test_case: Sequence[str] = (),
+                                        match_by: str = "name",
+                                        wait_for_completion: bool = True) -> bool:
         try:
             for tc_name, tc_inst in self.__test_configurations.items():
+                self.enable_test_configurations_cases(self.__test_configurations[tc_name],
+                                                      enable_test_case,
+                                                      disable_test_case,
+                                                      match_by)
                 tc_inst.start()
                 if wait_for_completion:
                     while tc_inst.running:
                         wait(1)
                     logger.info(f'completed executing test configuration ({tc_name}) with verdict {tc_inst.test_configuration_events.VERDICT.name}')
-                return True
+            return True
         except Exception as e:
             logger.error(f'failed to execute test configuration. {e}')
             return False
@@ -379,9 +494,17 @@ class Configuration:
             logger.error(f'failed to stop test configuration. {e}')
             return False
 
-    def execute_test_configuration(self, tc_name: str, wait_for_completion: bool = True) -> bool:
+    def execute_test_configuration(self, tc_name: str, enable_test_case: Sequence[str] = (),
+                                   disable_test_case: Sequence[str] = (),
+                                   match_by: str = "name",
+                                   wait_for_completion: bool = True) -> bool:
         try:
             if tc_name in self.__test_configurations.keys():
+                self.enable_test_configurations_cases(self.__test_configurations[tc_name],
+                                                      enable_test_case,
+                                                      disable_test_case,
+                                                      match_by)
+                
                 tc_inst = self.__test_configurations[tc_name]
                 tc_inst.start()
                 if wait_for_completion:

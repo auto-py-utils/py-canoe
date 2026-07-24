@@ -508,16 +508,25 @@ class CANoe:
         """Runs compilation for the current configuration."""
         return self.application.configuration.run_compilation()
 
-    def execute_all_test_configurations(self, wait_for_completion: bool = True) -> bool:
+    def execute_all_test_configurations(self, enable_test_cases: Sequence[str] = (), 
+                                       disable_test_cases: Sequence[str] = (), 
+                                       match_by: str = "name", 
+                                       wait_for_completion: bool = True) -> bool:
         """executes all test configurations available in test setup.
 
         Args:
+            enable_test_cases (Sequence[str]): Patterns of test cases to enable before execution.
+            disable_test_cases (Sequence[str]): Patterns of test cases to disable before execution.
+            match_by (str): Matching mode for patterns. One of "name", "group", or "fixture". Defaults to "name".
             wait_for_completion (bool): whether to wait for test configuration execution to complete before returning. defaults to True.
 
         Returns:
             bool: True if the operation was successful, False otherwise.
         """
-        return self.application.configuration.execute_all_test_configurations(wait_for_completion)
+        return self.application.configuration.execute_all_test_configurations(enable_test_cases, 
+                                                                            disable_test_cases, 
+                                                                            match_by,
+                                                                            wait_for_completion)
 
     def stop_all_test_configurations(self) -> bool:
         """stops execution of all test configurations available in test setup.
@@ -527,18 +536,32 @@ class CANoe:
         """
         return self.application.configuration.stop_all_test_configurations()
 
-    def execute_test_configuration(self, test_configuration_name: str, wait_for_completion: bool = True) -> bool:
+    def execute_test_configuration(self, test_configuration_name: str, 
+                                   enable_test_cases: Sequence[str] = (), 
+                                   disable_test_cases: Sequence[str] = (), 
+                                   match_by: str = "name", 
+                                   wait_for_completion: bool = True) -> bool:
         """executes a specific test configuration.
 
         Args:
             test_configuration_name (str): The name of the test configuration to execute.
+            enable_test_cases (Sequence[str]): Patterns of test cases to enable before execution.
+            disable_test_cases (Sequence[str]): Patterns of test cases to disable before execution.
+            match_by (str): Matching mode for patterns. One of "name", "group", or "fixture". Defaults to "name".
             wait_for_completion (bool): Whether to wait for the test configuration execution to complete before returning. Defaults to True.
 
         Returns:
             bool: True if the operation was successful, False otherwise.
         """
-        return self.application.configuration.execute_test_configuration(test_configuration_name, wait_for_completion)
+        return self.application.configuration.execute_test_configuration(test_configuration_name, 
+                                                                         enable_test_cases, 
+                                                                         disable_test_cases, 
+                                                                         match_by,
+                                                                         wait_for_completion)
 
+    def get_test_configuration_cases_result(self, test_conf_name: str) -> dict:
+        return self.application.configuration.get_test_configurations_cases_result(test_conf_name)
+    
     def stop_test_configuration(self, test_configuration_name: str) -> bool:
         """stops execution of a specific test configuration.
 
