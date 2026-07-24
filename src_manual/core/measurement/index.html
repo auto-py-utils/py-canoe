@@ -69,6 +69,26 @@
     <ul class="current">
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.measurement.Measurement">Measurement</a>
     </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.measurement.Measurement.animation_delay">animation_delay</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.measurement.Measurement.measurement_index">measurement_index</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.measurement.Measurement.running">running</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.measurement.Measurement.break_measurement_in_offline_mode">break_measurement_in_offline_mode</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.measurement.Measurement.process_measurement_event_in_single_step">process_measurement_event_in_single_step</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.measurement.Measurement.reset_measurement_in_offline_mode">reset_measurement_in_offline_mode</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.measurement.Measurement.start">start</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.measurement.Measurement.start_measurement_in_animation_mode">start_measurement_in_animation_mode</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.measurement.Measurement.stop">stop</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.measurement.Measurement.stop_ex">stop_ex</a>
+    </li>
     </ul>
                 </li>
                 <li class="toctree-l3"><a class="reference internal" href="../networks/">networks</a>
@@ -135,8 +155,7 @@
 
                   <details class="quote">
                     <summary>Source code in <code>src\py_canoe\core\measurement.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">56</span>
-<span class="normal">57</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">57</span>
 <span class="normal">58</span>
 <span class="normal">59</span>
 <span class="normal">60</span>
@@ -147,7 +166,8 @@
 <span class="normal">65</span>
 <span class="normal">66</span>
 <span class="normal">67</span>
-<span class="normal">68</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">enable_events</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="normal">68</span>
+<span class="normal">69</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">:</span> <span class="s1">&#39;Application&#39;</span><span class="p">,</span> <span class="n">enable_events</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
     <span class="c1"># Use the Application&#39;s Measurement object directly - do NOT create a</span>
     <span class="c1"># separate Dispatch wrapper. A separate Dispatch creates a different COM</span>
     <span class="c1"># proxy that races with the Application&#39;s internal proxy, causing</span>
@@ -173,8 +193,465 @@
 
 
 
+<div class="doc doc-object doc-attribute">
 
 
+
+<h2 id="src.py_canoe.core.measurement.Measurement.animation_delay" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">animation_delay</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the current animation delay in milliseconds.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.measurement.Measurement.measurement_index" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">measurement_index</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the current measurement index. The measurement index is an integer that uniquely identifies the current measurement session.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.measurement.Measurement.running" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">running</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return True if the measurement is currently running, False otherwise.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="src.py_canoe.core.measurement.Measurement.break_measurement_in_offline_mode" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">break_measurement_in_offline_mode</span><span class="p">()</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Break the measurement in offline mode. This is typically used to pause the measurement for debugging or analysis purposes. Returns True if the break was applied successfully, False otherwise.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\measurement.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">break_measurement_in_offline_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Break the measurement in offline mode. This is typically used to pause the measurement for debugging or analysis purposes. Returns True if the break was applied successfully, False otherwise.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Measurement is not running, cannot break&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">com_object</span><span class="o">.</span><span class="n">Break</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Measurement break applied in Offline mode&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error breaking CANoe measurement in offline mode: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="src.py_canoe.core.measurement.Measurement.process_measurement_event_in_single_step" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">process_measurement_event_in_single_step</span><span class="p">()</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Process the next measurement event in single step mode. This is typically used for debugging or analysis purposes. Returns True if the event was processed successfully, False otherwise.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\measurement.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_measurement_event_in_single_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process the next measurement event in single step mode. This is typically used for debugging or analysis purposes. Returns True if the event was processed successfully, False otherwise.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">com_object</span><span class="o">.</span><span class="n">Step</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Processed a measurement event in single step &#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error processing CANoe measurement event in single step: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="src.py_canoe.core.measurement.Measurement.reset_measurement_in_offline_mode" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">reset_measurement_in_offline_mode</span><span class="p">()</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Reset the measurement in offline mode. This is typically used to reset the measurement state for debugging or analysis purposes. Returns True if the reset was applied successfully, False otherwise.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\measurement.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reset_measurement_in_offline_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reset the measurement in offline mode. This is typically used to reset the measurement state for debugging or analysis purposes. Returns True if the reset was applied successfully, False otherwise.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">com_object</span><span class="o">.</span><span class="n">Reset</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Measurement reset applied in Offline mode&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error resetting CANoe measurement in offline mode: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="src.py_canoe.core.measurement.Measurement.start" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">start</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Start the measurement and wait for it to be running. Returns True if the measurement started successfully, False otherwise.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\measurement.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Start the measurement and wait for it to be running. Returns True if the measurement started successfully, False otherwise.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Measurement is already running&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">measurement_events</span><span class="o">.</span><span class="n">START</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">com_object</span><span class="o">.</span><span class="n">Start</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_enable_events</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="n">DoEventsUntil</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurement_events</span><span class="o">.</span><span class="n">START</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="s2">&quot;CANoe Measurement Start&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">poll_deadline</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">+</span> <span class="n">timeout</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">while</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">poll_deadline</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">com_object</span><span class="o">.</span><span class="n">Running</span><span class="p">:</span>
+                    <span class="n">status</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">break</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">status</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Measurement Started&#39;</span><span class="p">)</span>
+            <span class="c1"># Stabilization wait: CAPL on start{} handlers and network interface</span>
+            <span class="c1"># initialization continue asynchronously after the measurement begins.</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Measurement stabilization complete&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">status</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error starting CANoe measurement: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="src.py_canoe.core.measurement.Measurement.start_measurement_in_animation_mode" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">start_measurement_in_animation_mode</span><span class="p">(</span><span class="n">animation_delay</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Start the measurement in animation mode with a specified animation delay (in milliseconds) and wait for it to start. Returns True if the measurement started successfully, False otherwise.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\measurement.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">start_measurement_in_animation_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">animation_delay</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Start the measurement in animation mode with a specified animation delay (in milliseconds) and wait for it to start. Returns True if the measurement started successfully, False otherwise.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Measurement is already running, cannot animate&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">measurement_events</span><span class="o">.</span><span class="n">START</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">animation_delay</span> <span class="o">=</span> <span class="n">animation_delay</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">com_object</span><span class="o">.</span><span class="n">Animate</span><span class="p">()</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">DoEventsUntil</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurement_events</span><span class="o">.</span><span class="n">START</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="s2">&quot;CANoe Measurement Animation Initialization&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">status</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Measurement started in Animation mode with animation delay </span><span class="si">{</span><span class="n">animation_delay</span><span class="si">}</span><span class="s1"> ms&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Measurement did not start in Animation mode within </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">status</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error starting CANoe measurement in animation mode: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="src.py_canoe.core.measurement.Measurement.stop" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">stop</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">post_stop_pump</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Stop the measurement and wait for it to be stopped. Returns True if the measurement stopped successfully, False otherwise.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\measurement.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">post_stop_pump</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stop the measurement and wait for it to be stopped. Returns True if the measurement stopped successfully, False otherwise.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_ex</span><span class="p">(</span><span class="n">timeout</span><span class="p">,</span> <span class="n">post_stop_pump</span><span class="o">=</span><span class="n">post_stop_pump</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="src.py_canoe.core.measurement.Measurement.stop_ex" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">stop_ex</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">post_stop_pump</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Stop the measurement and wait for it to be stopped. Returns True if the measurement stopped successfully, False otherwise. Optionally specify a timeout (in seconds) for waiting and a post-stop pump duration (in seconds) to drain COM callbacks after stopping.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\measurement.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop_ex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">post_stop_pump</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stop the measurement and wait for it to be stopped. Returns True if the measurement stopped successfully, False otherwise. Optionally specify a timeout (in seconds) for waiting and a post-stop pump duration (in seconds) to drain COM callbacks after stopping.&quot;&quot;&quot;</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Measurement is already stopped&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;stop_ex: calling Stop()&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">measurement_events</span><span class="o">.</span><span class="n">STOP</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># IMessageFilter (registered in Application.__init__) handles busy-retry</span>
+        <span class="c1"># automatically — no manual retry loop needed here.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">com_object</span><span class="o">.</span><span class="n">Stop</span><span class="p">()</span>
+        <span class="n">elapsed</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;stop_ex: Stop() accepted after </span><span class="si">{</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">elapsed</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;stop_ex: Stop() failed after </span><span class="si">{</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">s: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_enable_events</span><span class="p">:</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">DoEventsUntil</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">measurement_events</span><span class="o">.</span><span class="n">STOP</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="s2">&quot;CANoe Measurement Stop&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Poll Running without PumpWaitingMessages — pumping during post-stop</span>
+        <span class="c1"># report generation triggers Windows&#39; &quot;not responding&quot; dialog.</span>
+        <span class="n">poll_deadline</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">+</span> <span class="n">timeout</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">while</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">poll_deadline</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">com_object</span><span class="o">.</span><span class="n">Running</span><span class="p">:</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">break</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="n">elapsed</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">status</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;stop_ex: Running=False confirmed after </span><span class="si">{</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">s total&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Measurement Stopped&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;stop_ex: Running still True after </span><span class="si">{</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">s — timeout&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">post_stop_pump</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;stop_ex: draining COM callbacks for </span><span class="si">{</span><span class="n">post_stop_pump</span><span class="si">}</span><span class="s2">s...&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">post_stop_pump</span> <span class="o">*</span> <span class="mi">10</span><span class="p">):</span>
+            <span class="n">pythoncom</span><span class="o">.</span><span class="n">PumpWaitingMessages</span><span class="p">()</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">status</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
 
 
 

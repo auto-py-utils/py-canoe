@@ -75,6 +75,18 @@
     <ul class="current">
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.simulation.Simulation">Simulation</a>
     </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.simulation.Simulation.animation">animation</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.simulation.Simulation.current_time">current_time</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.simulation.Simulation.current_time_high">current_time_high</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.simulation.Simulation.notification_type">notification_type</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.simulation.Simulation.increment_time">increment_time</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.simulation.Simulation.increment_time_and_wait">increment_time_and_wait</a>
+    </li>
     </ul>
                 </li>
                 <li class="toctree-l3"><a class="reference internal" href="../system/">system</a>
@@ -139,10 +151,10 @@ CANoe automatically goes into Slave mode at the measurement start if you access 
 
                   <details class="quote">
                     <summary>Source code in <code>src\py_canoe\core\simulation.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">28</span>
-<span class="normal">29</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">29</span>
 <span class="normal">30</span>
-<span class="normal">31</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">enable_events</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="normal">31</span>
+<span class="normal">32</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">:</span> <span class="s1">&#39;Application&#39;</span><span class="p">,</span> <span class="n">enable_events</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">com_object</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">com_object</span><span class="o">.</span><span class="n">Simulation</span>
     <span class="k">if</span> <span class="n">enable_events</span><span class="p">:</span>
         <span class="n">win32com</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">WithEvents</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">com_object</span><span class="p">,</span> <span class="n">SimulationEvents</span><span class="p">)</span>
@@ -159,8 +171,152 @@ CANoe automatically goes into Slave mode at the measurement start if you access 
 
 
 
+<div class="doc doc-object doc-attribute">
 
 
+
+<h2 id="src.py_canoe.core.simulation.Simulation.animation" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">animation</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the current animation speed of the simulation. The value is a float between 0 and 1, where 0 means no animation and 1 means full animation speed.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.simulation.Simulation.current_time" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">current_time</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the current simulation time in ticks. The value is an integer representing the number of ticks since the start of the simulation.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.simulation.Simulation.current_time_high" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">current_time_high</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the high part of the current simulation time in ticks. The value is an integer representing the high part of the number of ticks since the start of the simulation.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.simulation.Simulation.notification_type" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">notification_type</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the current notification type of the simulation. The value is an integer representing the notification type.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="src.py_canoe.core.simulation.Simulation.increment_time" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">increment_time</span><span class="p">(</span><span class="n">ticks</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Increment the simulation time by the specified number of ticks.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\simulation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">increment_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ticks</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Increment the simulation time by the specified number of ticks.&quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">com_object</span><span class="o">.</span><span class="n">IncrementTime</span><span class="p">(</span><span class="n">ticks</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="src.py_canoe.core.simulation.Simulation.increment_time_and_wait" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">increment_time_and_wait</span><span class="p">(</span><span class="n">ticks</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Increment the simulation time by the specified number of ticks and wait for the simulation to process the time increment.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\simulation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">increment_time_and_wait</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ticks</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Increment the simulation time by the specified number of ticks and wait for the simulation to process the time increment.&quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">com_object</span><span class="o">.</span><span class="n">IncrementTimeAndWait</span><span class="p">(</span><span class="n">ticks</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
 
 
 

@@ -81,6 +81,20 @@
     <ul class="current">
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.version.Version">Version</a>
     </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.version.Version.build">build</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.version.Version.full_name">full_name</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.version.Version.major">major</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.version.Version.minor">minor</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.version.Version.name">name</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.version.Version.patch">patch</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.version.Version.get_canoe_version_info">get_canoe_version_info</a>
+    </li>
     </ul>
                 </li>
     </ul>
@@ -137,8 +151,8 @@
 
                   <details class="quote">
                     <summary>Source code in <code>src\py_canoe\core\version.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">):</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">11</span>
+<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">:</span> <span class="s1">&#39;Application&#39;</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">com_object</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">com_object</span><span class="o">.</span><span class="n">Version</span>
 </code></pre></div></td></tr></table></div>
                   </details>
@@ -153,8 +167,197 @@
 
 
 
+<div class="doc doc-object doc-attribute">
 
 
+
+<h2 id="src.py_canoe.core.version.Version.build" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">build</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the build number of the CANoe application.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.version.Version.full_name" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">full_name</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the full name of the CANoe application, including version and build information.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.version.Version.major" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">major</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the major version number of the CANoe application.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.version.Version.minor" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">minor</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the minor version number of the CANoe application.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.version.Version.name" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">name</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the name of the CANoe application.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.version.Version.patch" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">patch</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the patch version number of the CANoe application.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="src.py_canoe.core.version.Version.get_canoe_version_info" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_canoe_version_info</span><span class="p">()</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the version information of the CANoe application.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\version.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_canoe_version_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the version information of the CANoe application.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">version_info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s1">&#39;major&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">major</span><span class="p">,</span>
+            <span class="s1">&#39;minor&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">minor</span><span class="p">,</span>
+            <span class="s1">&#39;build&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">build</span><span class="p">,</span>
+            <span class="s1">&#39;patch&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch</span>
+        <span class="p">}</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;CANoe Version Information:&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">version_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">version_info</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error retrieving CANoe version information: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{}</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
 
 
 

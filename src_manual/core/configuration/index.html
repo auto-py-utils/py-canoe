@@ -65,6 +65,14 @@
     <ul class="current">
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration">Configuration</a>
     </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration.c_libraries">c_libraries</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration.comment">comment</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration.fetch_test_modules">fetch_test_modules</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration.fetch_test_units">fetch_test_units</a>
+    </li>
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration.get_compilation_result">get_compilation_result</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration.get_test_module_result">get_test_module_result</a>
@@ -177,8 +185,122 @@
 
 
 
+<div class="doc doc-object doc-attribute">
 
 
+
+<h2 id="src.py_canoe.core.configuration.Configuration.c_libraries" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">c_libraries</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return collection of C Libraries Object</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.configuration.Configuration.comment" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">comment</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return configuration comment.</p>
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="src.py_canoe.core.configuration.Configuration.fetch_test_modules" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">fetch_test_modules</span><span class="p">()</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get all test modules from all test environments and store them in self.__test_modules.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">fetch_test_modules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all test modules from all test environments and store them in self.__test_modules.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">te_name</span><span class="p">,</span> <span class="n">te_inst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__test_setup_environments</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">tm_name</span><span class="p">,</span> <span class="n">tm_inst</span> <span class="ow">in</span> <span class="n">te_inst</span><span class="o">.</span><span class="n">get_all_test_modules</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># A TestSetupItem object that either can be a TSTestModule object or a TestSetupFolder object.</span>
+            <span class="c1"># TestSetupFolder有items，包含TestSetupItems</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__test_modules</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">tm_name</span><span class="p">,</span> <span class="s1">&#39;object&#39;</span><span class="p">:</span> <span class="n">tm_inst</span><span class="p">,</span> <span class="s1">&#39;environment&#39;</span><span class="p">:</span> <span class="n">te_name</span><span class="p">})</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="src.py_canoe.core.configuration.Configuration.fetch_test_units" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">fetch_test_units</span><span class="p">()</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get all test units from all test configurations and store them in self.__test_units.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">fetch_test_units</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all test units from all test configurations and store them in self.__test_units.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">tc_name</span><span class="p">,</span> <span class="n">tc_inst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__test_configurations</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">tu_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">tc_inst</span><span class="o">.</span><span class="n">test_units</span><span class="o">.</span><span class="n">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">tu_inst</span> <span class="o">=</span> <span class="n">tc_inst</span><span class="o">.</span><span class="n">test_units</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">tu_index</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__test_units</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">tu_inst</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;object&#39;</span><span class="p">:</span> <span class="n">tu_inst</span><span class="p">,</span> <span class="s1">&#39;test_configuration&#39;</span><span class="p">:</span> <span class="n">tc_name</span><span class="p">})</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__test_units</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 
@@ -238,11 +360,7 @@ if result["success"]:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">184</span>
 <span class="normal">185</span>
 <span class="normal">186</span>
 <span class="normal">187</span>
@@ -261,7 +379,11 @@ if result["success"]:
 <span class="normal">200</span>
 <span class="normal">201</span>
 <span class="normal">202</span>
-<span class="normal">203</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_compilation_result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]:</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_compilation_result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get CAPL compilation result with error details.</span>
 
 <span class="sd">    Compiles all CAPL code in the current configuration and returns</span>
@@ -380,11 +502,7 @@ report-generated event before giving up. Defaults to 30.0.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">736</span>
-<span class="normal">737</span>
-<span class="normal">738</span>
-<span class="normal">739</span>
-<span class="normal">740</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">740</span>
 <span class="normal">741</span>
 <span class="normal">742</span>
 <span class="normal">743</span>
@@ -451,7 +569,11 @@ report-generated event before giving up. Defaults to 30.0.</p>
 <span class="normal">804</span>
 <span class="normal">805</span>
 <span class="normal">806</span>
-<span class="normal">807</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_test_module_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">report_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="normal">807</span>
+<span class="normal">808</span>
+<span class="normal">809</span>
+<span class="normal">810</span>
+<span class="normal">811</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_test_module_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">report_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get test module execution result including report path and test case verdicts.</span>
 
 <span class="sd">    Should be called after execute_test_module() to retrieve the results.</span>
@@ -582,11 +704,7 @@ Use get_compilation_result() if you need error details.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">209</span>
 <span class="normal">210</span>
 <span class="normal">211</span>
 <span class="normal">212</span>
@@ -600,7 +718,11 @@ Use get_compilation_result() if you need error details.</p>
 <span class="normal">220</span>
 <span class="normal">221</span>
 <span class="normal">222</span>
-<span class="normal">223</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_compilation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_compilation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run CAPL compilation and return success status.</span>
 
 <span class="sd">    Compiles all CAPL code in the current configuration.</span>
