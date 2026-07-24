@@ -1,5 +1,8 @@
-from typing import Union
-
+from typing import Union, TYPE_CHECKING
+if TYPE_CHECKING:
+    from py_canoe.core.application import Application
+    from py_canoe.core.child_elements.namespace import Namespace
+    from py_canoe.core.child_elements.variables_file import VariablesFile
 from py_canoe.helpers.common import logger
 from py_canoe.core.child_elements.namespaces import Namespaces
 from py_canoe.core.child_elements.variables import Variables
@@ -13,19 +16,22 @@ class System:
     The System object represents the system of the CANoe application.
     The System object offers access to the namespaces for data exchange with external applications.
     """
-    def __init__(self, app):
+    def __init__(self, app: 'Application'):
         self.com_object = app.com_object.System
 
     @property
-    def namespaces(self) -> Namespaces:
+    def namespaces(self) -> 'Namespaces':
+        """Return the Namespaces object for accessing system variable namespaces."""
         return Namespaces(self.com_object.Namespaces)
 
     @property
-    def variables_files(self) -> VariablesFiles:
+    def variables_files(self) -> 'VariablesFiles':
+        """Return the VariablesFiles object for accessing system variable files."""
         return VariablesFiles(self.com_object.VariablesFiles)
 
 
     def add_variable(self, sys_var_name: str, value: Union[int, float, str], read_only: bool = False) -> Union[object, None]:
+        """Add a new system variable to the CANoe system. If the namespace does not exist, it will be created."""
         new_var_com_obj = None
         try:
             parts = sys_var_name.split('::')
@@ -53,11 +59,12 @@ class System:
             return None
 
     def remove_variable(self, sys_var_name: str) -> bool:
+        """Remove a system variable from the CANoe system. If the variable does not exist, it will log an info message and return False."""
         try:
             parts = sys_var_name.split('::')
             if len(parts) < 2:
                 logger.error(f"Invalid system variable name '{sys_var_name}'. Must be in 'namespace::variable' format.")
-                return None
+                return False
             namespace = '::'.join(parts[:-1])
             variable_name = parts[-1]
             namespace_obj = self.com_object.Namespaces(namespace)
@@ -75,6 +82,7 @@ class System:
             return False
 
     def get_variable_value(self, sys_var_name: str, return_symbolic_name=False, enable_events: bool = True) -> Union[int, float, str, None]:
+        """Get the value of a system variable. If the variable does not exist, it will log an error message and return None."""
         try:
             parts = sys_var_name.split('::')
             if len(parts) < 2:
@@ -96,6 +104,7 @@ class System:
             return None
 
     def set_variable_value(self, sys_var_name: str, value: Union[int, float, str], timeout: Union[int, float] = 1) -> bool:
+        """Set the value of a system variable. If the variable does not exist, it will log an error message and return False."""
         try:
             parts = sys_var_name.split('::')
             if len(parts) < 2:
@@ -118,6 +127,7 @@ class System:
             return False
 
     def set_variable_array_values(self, sys_var_name: str, value: tuple, index: int = 0, timeout: Union[int, float] = 1) -> bool:
+        """Set the values of a system variable array starting from a specific index. If the variable does not exist or if there is not enough space in the array, it will log an error message and return False."""
         try:
             parts = sys_var_name.split('::')
             if len(parts) < 2:
@@ -139,7 +149,8 @@ class System:
             logger.error(f"Error setting System Variable Array '{sys_var_name}': {e}")
             return False
 
-    def get_namespaces(self) -> dict[str, "Namespace"] | None:
+    def get_namespaces(self) -> dict[str, 'Namespace'] | None:
+        """Get system root namespaces as a dictionary with namespace names as keys and Namespace objects as values. If an error occurs, it will log the error and return None."""
         try:
             namespaces_dict = {}
             namespaces = self.namespaces
@@ -153,6 +164,7 @@ class System:
             return None
 
     def get_all_namespace_names(self) -> list[str]:
+        """Get all system variable namespace names as a list. If an error occurs, it will raise a PyCanoeError."""
         try:
             names = [ns.name for ns in self.namespaces.fetch_all()]
         except Exception as e:
@@ -161,6 +173,7 @@ class System:
         return names
 
     def get_all_variables_in_namespace(self, namespace_name: str) -> list[dict]:
+        """Get all system variables in a specific namespace as a list of dictionaries with variable names, values, and full names. If the namespace does not exist, it will raise a NamespaceNotFoundError. If an error occurs while enumerating variables, it will raise a PyCanoeError."""
         try:
             ns_com = self.com_object.Namespaces(namespace_name)
         except Exception as e:
@@ -179,7 +192,8 @@ class System:
         except Exception as e:
             raise PyCanoeError(f"Failed to enumerate variables in '{namespace_name}': {e}") from e
 
-    def get_variables_files(self) -> dict[str, "VariablesFile"] | None:
+    def get_variables_files(self) -> dict[str, 'VariablesFile'] | None:
+        """Get system variables files as a dictionary with file full names as keys and VariablesFile objects as values. If an error occurs, it will log the error and return None."""
         try:
             variables_files_dict = {}
             variables_files = self.variables_files

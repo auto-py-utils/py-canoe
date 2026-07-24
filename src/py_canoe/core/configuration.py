@@ -56,6 +56,7 @@ class Configuration:
         self.__test_units = list()
 
     def fetch_test_modules(self):
+        """Get all test modules from all test environments and store them in self.__test_modules."""
         for te_name, te_inst in self.__test_setup_environments.items():
             for tm_name, tm_inst in te_inst.get_all_test_modules().items():
                 # A TestSetupItem object that either can be a TSTestModule object or a TestSetupFolder object.
@@ -63,6 +64,7 @@ class Configuration:
                 self.__test_modules.append({'name': tm_name, 'object': tm_inst, 'environment': te_name})
 
     def fetch_test_units(self):
+        """Get all test units from all test configurations and store them in self.__test_units."""
         for tc_name, tc_inst in self.__test_configurations.items():
             for tu_index in range(1, tc_inst.test_units.count + 1):
                 tu_inst = tc_inst.test_units.item(tu_index)
@@ -71,10 +73,12 @@ class Configuration:
 
     @property
     def c_libraries(self) -> 'CLibraries':
+        """Return collection of C Libraries Object"""
         return CLibraries(self.com_object.CLibraries)
 
     @property
     def comment(self) -> str:
+        """Return configuration comment."""
         return self.com_object.Comment
 
     @property
@@ -721,7 +725,7 @@ class Configuration:
             logger.error(f'failed to execute test module. {e}')
             return 0
 
-    def _find_test_module(self, test_module_name: str) -> TestModule:
+    def _find_test_module(self, test_module_name: str) -> Union[TestModule, None]:
         """Find a test module by name from the cached test modules list.
 
         Returns:
@@ -983,6 +987,7 @@ class Configuration:
             return False
         except Exception as e:
             logger.error(f"Error starting/stopping logging block {full_name}. {e}")
+            return False
 
     def set_configuration_modified(self, modified: bool) -> None:
         self.modified = modified

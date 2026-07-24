@@ -1,6 +1,7 @@
 import time
-from typing import Optional, Union
-
+from typing import Optional, Union, TYPE_CHECKING
+if TYPE_CHECKING:
+    from py_canoe.core.application import Application
 from py_canoe.core.child_elements.channels import Channels
 from py_canoe.core.child_elements.database_setup import Databases
 from py_canoe.core.child_elements.nodes import Nodes
@@ -17,7 +18,7 @@ class Bus:
     """
     The Bus object represents a bus of the CANoe application.
     """
-    def __init__(self, app):
+    def __init__(self, app: 'Application'):
         self.app = app
         self.com_object = self.set_bus('CAN')
         self.VALUE_TABLE_SIGNAL_IS_ONLINE = {
@@ -32,6 +33,7 @@ class Bus:
         }
 
     def set_bus(self, bus_type: str = 'CAN'):
+        """Set Bus type to CAN, LIN, FlexRay, MOST, or J1939. Default is CAN."""
         try:
             self.com_object = self.app.com_object.GetBus(bus_type)
             return self.com_object
@@ -41,59 +43,74 @@ class Bus:
 
     @property
     def active(self) -> bool:
+        """Returns whether the bus is active."""
         return self.com_object.Active
 
     @property
     def baudrate(self) -> int:
+        """Returns baudrate of the bus."""
         return self.com_object.Baudrate()
 
     @baudrate.setter
     def baudrate(self, value: int):
+        """Set baudrate of the bus."""
         self.com_object.SetBaudrate(value)
 
     @property
     def channels(self) -> 'Channels':
+        """Returns the channels of the bus."""
         return Channels(self.com_object.Channels)
 
     @property
     def databases(self) -> 'Databases':
+        """Returns the databases of the bus."""
         return Databases(self.com_object.Databases)
 
     @property
     def name(self) -> str:
+        """Returns the name of the bus."""
         return self.com_object.Name
 
     @name.setter
     def name(self, name: str):
+        """Set the name of the bus."""
         self.com_object.Name = name
 
     @property
     def nodes(self) -> 'Nodes':
+        """Returns the nodes of the bus."""
         return Nodes(self.com_object.Nodes)
 
     @property
     def ports(self) -> 'Ports':
+        """Returns the ports of the bus."""
         return Ports(self.com_object.Port)
 
     @property
     def ports_of_channel(self) -> 'Ports':
+        """Returns the ports of the bus for each channel."""
         return Ports(self.com_object.PortsOfChannel)
 
     @property
     def replay_collection(self) -> 'ReplayCollection':
+        """Returns replay collection of the bus."""
         return ReplayCollection(self.com_object.ReplayCollection)
 
     @property
     def security_configuration(self) -> 'SecurityConfiguration':
+        """Returns security configuration of the bus."""
         return SecurityConfiguration(self.com_object.SecurityConfiguration)
 
     def get_signal(self, channel: int, message: str, signal: str) -> Signal:
+        """Get a signal object from the bus based on channel, message, and signal name."""
         return Signal(self.com_object.GetSignal(channel, message, signal))
 
     def get_j1939_signal(self, channel: int, message: str, signal: str, source_address: int, destination_address: int) -> Signal:
+        """Get a J1939 signal object from the bus based on channel, message, signal name, source address, and destination address."""
         return Signal(self.com_object.GetJ1939Signal(channel, message, signal, source_address, destination_address))
 
     def get_bus_databases_info(self, bus: str = 'CAN', log_info: bool = False) -> dict:
+        """Get information about all databases on the specified bus. Returns a dictionary with database names as keys and their information as values."""
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
@@ -134,6 +151,7 @@ class Bus:
             return {}
 
     def get_bus_nodes_info(self, bus: str = 'CAN', log_info: bool = False) -> dict:
+        """Get information about all nodes on the specified bus. Returns a dictionary with node names as keys and their information as values."""
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
@@ -162,6 +180,7 @@ class Bus:
             return {}
 
     def get_simulation_bus_names(self) -> list[str]:
+        """Get the names of all buses in the simulation setup. Returns a list of bus names."""
         try:
             sim_buses = self.app.configuration.simulation_setup.buses
             bus_names: list[str] = []
@@ -175,6 +194,7 @@ class Bus:
             raise ConfigurationNotLoadedError(f"Cannot access simulation buses: {e}") from e
 
     def get_simulation_database_paths(self) -> list[str]:
+        """Get the full paths of all databases in the simulation setup. Returns a list of database paths."""
         try:
             sim_buses = self.app.configuration.simulation_setup.buses
             paths: list[str] = []
@@ -191,6 +211,7 @@ class Bus:
             raise ConfigurationNotLoadedError(f"Cannot access simulation databases: {e}") from e
 
     def get_signal_value(self, bus: str, channel: int, message: str, signal: str, raw_value: bool = False) -> Union[int, float, None]:
+        """Get the value of a signal from the specified bus, channel, message, and signal name. Returns the signal value as an integer or float, or None if an error occurs."""
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
@@ -206,6 +227,7 @@ class Bus:
             return None
 
     def set_signal_value(self, bus: str, channel: int, message: str, signal: str, value: Union[int, float], raw_value: bool = False) -> bool:
+        """Set the value of a signal on the specified bus, channel, message, and signal name. Returns True if successful, False otherwise."""
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
@@ -224,6 +246,7 @@ class Bus:
             return False
 
     def get_signal_full_name(self, bus: str, channel: int, message: str, signal: str) -> Union[str, None]:
+        """Get the full name of a signal from the specified bus, channel, message, and signal name. Returns the full name as a string, or None if an error occurs."""
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
@@ -239,6 +262,7 @@ class Bus:
             return None
 
     def check_signal_online(self, bus: str, channel: int, message: str, signal: str) -> bool:
+        """Check if a signal is online on the specified bus, channel, message, and signal name. Returns True if online, False otherwise."""
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
@@ -254,6 +278,7 @@ class Bus:
             return False
 
     def check_signal_state(self, bus: str, channel: int, message: str, signal: str) -> int:
+        """Check the state of a signal on the specified bus, channel, message, and signal name. Returns the state as an integer, or -1 if an error occurs."""
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
@@ -268,19 +293,8 @@ class Bus:
             logger.error(f"Error checking {bus} bus signal state: {e}")
             return -1
 
-    def profile_signal_value(
-        self,
-        bus: str,
-        channel: int,
-        message: str,
-        signal: str,
-        duration: float = 1.0,
-        interval: float = 0.0,
-        raw_value: bool = False,
-        max_samples: Optional[int] = None,
-        include_samples: bool = False,
-        include_timestamps: bool = False,
-    ) -> dict:
+    def profile_signal_value(self, bus: str, channel: int, message: str, signal: str, duration: float = 1.0, interval: float = 0.0, raw_value: bool = False, max_samples: Optional[int] = None, include_samples: bool = False, include_timestamps: bool = False,) -> dict:
+        """Profile the value of a signal over a specified duration and interval. Returns a dictionary containing statistics and optionally samples and timestamps."""
         if duration <= 0:
             return {
                 "count": 0,
@@ -382,6 +396,7 @@ class Bus:
         return profiled_signal
 
     def get_j1939_signal_value(self, bus: str, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, raw_value=False) -> Union[float, int, None]:
+        """Get the value of a J1939 signal from the specified bus, channel, message, signal name, source address, and destination address. Returns the signal value as an integer or float, or None if an error occurs."""
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
@@ -397,6 +412,7 @@ class Bus:
             return None
 
     def set_j1939_signal_value(self, bus: str, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, value: Union[float, int], raw_value: bool = False) -> bool:
+        """Set the value of a J1939 signal on the specified bus, channel, message, signal name, source address, and destination address. Returns True if successful, False otherwise."""
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
@@ -415,6 +431,7 @@ class Bus:
             return False
 
     def get_j1939_signal_full_name(self, bus: str, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> Union[str, None]:
+        """Get the full name of a J1939 signal from the specified bus, channel, message, signal name, source address, and destination address. Returns the full name as a string, or None if an error occurs."""
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
@@ -430,6 +447,7 @@ class Bus:
             return None
 
     def check_j1939_signal_online(self, bus: str, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> bool:
+        """Check if a J1939 signal is online on the specified bus, channel, message, signal name, source address, and destination address. Returns True if online, False otherwise."""
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:
@@ -445,6 +463,7 @@ class Bus:
             return False
 
     def check_j1939_signal_state(self, bus: str, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> int:
+        """Check the state of a J1939 signal on the specified bus, channel, message, signal name, source address, and destination address. Returns the state as an integer, or -1 if an error occurs."""
         try:
             bus_type = bus.upper()
             if bus_type not in self.app.bus_types:

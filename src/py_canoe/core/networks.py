@@ -1,7 +1,8 @@
 import time
-from typing import Union, Optional
+from typing import Union, Optional, TYPE_CHECKING
 from win32com.universal import com_error
-
+if TYPE_CHECKING:
+    from py_canoe.core.application import Application
 from py_canoe.helpers.common import logger
 from py_canoe.helpers.common import wait
 from py_canoe.core.child_elements.diagnostic import Diagnostic
@@ -12,18 +13,21 @@ class Networks:
     """
     The Networks object represents the networks of CANoe.
     """
-    def __init__(self, app):
+    def __init__(self, app: 'Application'):
         self.com_object = app.com_object.Networks
         self.diagnostic_devices: dict[str, Diagnostic] = dict()
 
     @property
     def count(self) -> int:
+        """Return the number of networks in the CANoe application."""
         return self.com_object.Count
 
     def item(self, index: int) -> Network:
+        """Get a specific network by index (1-based)."""
         return Network(self.com_object.Item(index))
 
     def get_all_network_names(self) -> list[str]:
+        """Get all network names in the CANoe application."""
         try:
             count = self.count
             names = []
@@ -39,6 +43,7 @@ class Networks:
             return []
 
     def fetch_diagnostic_devices(self):
+        """Get all diagnostic devices from the networks and store them in the diagnostic_devices dictionary."""
         try:
             for i in range(1, self.count + 1):
                 network = self.item(i)
@@ -55,6 +60,7 @@ class Networks:
             return None
 
     def send_diag_request(self, diag_ecu_qualifier_name: str, request: str, request_in_bytes=True, return_sender_name=False, response_in_bytearray=False, timeout: float = 10.0, poll_s: float = 0.01, **kwargs) -> Union[str, dict]:
+        """Send diagnostic request to the specified ECU and return the response."""
         try:
             diag_devices = self.diagnostic_devices
             if not diag_devices or diag_ecu_qualifier_name not in diag_devices:
@@ -119,6 +125,7 @@ class Networks:
             return {"error": str(e)}
 
     def control_tester_present(self, diag_ecu_qualifier_name: str, value: bool) -> bool:
+        """Enable or Disable tester present."""
         try:
             diag_device: Diagnostic = self.diagnostic_devices.get(diag_ecu_qualifier_name)
             if diag_device:
