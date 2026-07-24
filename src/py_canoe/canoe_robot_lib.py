@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 # THIS FILE IS AUTO-GENERATED - DO NOT EDIT MANUALLY
-# Generated: 2026-07-15T17:23:31.341774+00:00
-# py-canoe package version: 26.3.3
+# Generated: 2026-07-24T10:55:15.105094+00:00
+# py-canoe package version: 26.3.4
 # To update this file, run the generator: python -m py_canoe.helpers.gen_canoe_robot_lib
 # ---------------------------------------------------------------------------
 
@@ -476,6 +476,10 @@ class CanoeRobotLib:
             bool: True if the operation was successful, False otherwise.
         """
         return self._source.execute_test_configuration(test_configuration_name, enable_test_cases, disable_test_cases, match_by, wait_for_completion)
+
+    def canoe_get_test_configuration_cases_result(self, test_conf_name: str) -> dict:
+        """Wrapper for CANoe.get_test_configuration_cases_result."""
+        return self._source.get_test_configuration_cases_result(test_conf_name)
 
     def canoe_stop_test_configuration(self, test_configuration_name: str) -> bool:
         """
