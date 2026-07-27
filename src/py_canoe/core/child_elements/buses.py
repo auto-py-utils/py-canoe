@@ -1,4 +1,7 @@
+from typing import List
+
 from py_canoe.core.child_elements.bus import Bus
+from py_canoe.helpers.bus_type import BusType
 
 
 class Buses:
@@ -9,10 +12,13 @@ class Buses:
     def count(self) -> int:
         return self.com_object.Count
 
-    def item(self, index: int) -> 'Bus':
-        return Bus(self.com_object.Item(index))
+    def item(self, index: int | None = None) -> Bus | List[Bus]:
+        if index is None:
+            return [Bus(self.com_object.Item(i)) for i in range(1, self.count + 1)]
+        else:
+            return Bus(self.com_object.Item(index))
     
-    def add(self, name: str, bus_type: int = 1) -> 'Bus':
+    def add(self, name: str, bus_type: BusType = BusType.CAN) -> 'Bus':
         """Adds a new bus with a specified type to the configuration. default bus_type is 1 (CAN).
 
         Args:
@@ -25,7 +31,7 @@ class Buses:
         for index in range(1, self.count + 1):
             if self.item(index).name == name:
                 return None # Bus with the same name already exists
-        return Bus(self.com_object.AddWithType(name, bus_type))
+        return Bus(self.com_object.AddWithType(name, bus_type.value))
     
     def remove(self, index: int = None, name: str = None) -> None:
         """Removes an existing bus.

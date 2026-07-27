@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Iterable, Optional, Sequence
 from py_canoe.core.bus import Bus
 from py_canoe.core.child_elements.channel import Channel
 from py_canoe.core.child_elements.test_environment import TestEnvironment
+from py_canoe.helpers.bus_type import BusType
 if TYPE_CHECKING:
     from py_canoe.core.child_elements.measurement_setup import Logging, ExporterSymbol, Message
     from py_canoe.core.child_elements.test_configurations import TestConfiguration
@@ -704,15 +705,14 @@ class CANoe:
         """stops execution of all test environments available in test setup."""
         return self.application.configuration.stop_all_test_environments()
 
-    def add_database(self, database_file: str, database_channel: int, database_network: Union[str, None]=None) -> bool:
+    def add_database(self, database_file: str, network: str | int) -> bool:
         """adds database file to a network channel
-
+        
         Args:
             database_file (str): database file to attach. give full file path.
-            database_network (str): network name on which you want to add this database.
-            database_channel (int): channel name on which you want to add this database.
+            network (str | int): network name or channel number on which you want to add database.
         """
-        return self.application.configuration.add_database(database_file, database_channel, database_network)
+        return self.application.configuration.add_database(database_file, network)
 
     def remove_database(self, database_file: str, database_channel: int) -> bool:
         """remove database file from a channel
@@ -734,14 +734,44 @@ class CANoe:
         """
         return self.application.configuration.add_testEnvironments(name)
     
-    def add_NetWork(self, network_name: str, network_type: int = 1) -> Bus:
+    def add_netWork(self, network_name: str, network_type: BusType = BusType.CAN) -> Bus:
         """adds a new network to the configuration.
         
         Args:
             network_name (str): name of the new network.
-            network_type (str): type of the new network (1 for CAN, 5 for LIN, 6 for MOST, 7 for FlexRay, 9 for J1708, 11 for Ethernet, 13 for WLAN). Defaults to 1 (CAN).
+            network_type (BusType): type of the new network (BusType.CAN for CAN, BusType.LIN for LIN, BusType.MOST for MOST, BusType.FlexRay for FlexRay, BusType.J1708 for J1708, BusType.Ethernet for Ethernet, BusType.WLAN for WLAN). Defaults to BusType.CAN.
         """
-        return self.application.configuration.add_NetWork(network_name, network_type)
+        return self.application.configuration.add_netWork(network_name, network_type)
+    
+    def get_channelUsage(self, channel_type:BusType = BusType.CAN) -> list[dict]:
+        """returns all available channels of a specific type.
+
+        Args:
+            channel_type (BusType): type of the channel (BusType.CAN for CAN, BusType.LIN for LIN, BusType.MOST for MOST, BusType.FlexRay for FlexRay, BusType.J1708 for J1708, BusType.Ethernet for Ethernet, BusType.WLAN for WLAN). Defaults to BusType.CAN.
+        """
+        return self.application.configuration.general_setup.get_channels_count(channel_type.value)
+    
+    def set_channelUsage(self, channel_type:BusType, channel_count:int) -> bool:
+        """sets the number of channels of a specific type.
+
+        Args:
+            channel_type (BusType): type of the channel (BusType.CAN for CAN, BusType.LIN for LIN, BusType.MOST for MOST, BusType.FlexRay for FlexRay, BusType.J1708 for J1708, BusType.Ethernet for Ethernet, BusType.WLAN for WLAN).
+            channel_count (int): number of channels to set.
+        """
+        self.application.configuration.general_setup.set_channels_count(channel_type.value, channel_count)
+
+        return self.get_channelUsage(channel_type) == channel_count
+    
+    def get_networks(self,network_name: str = None) -> Bus:
+        """returns all available networks or a specific network by name.
+
+        Args:
+            network_name (str): name of the network to retrieve. If None, returns all networks. Defaults to None.
+        """
+        for bus in self.application.configuration.simulation_setup.buses.item():
+            if bus.name == network_name:
+                return bus
+        return None
 
     def get_logging_blocks(self) -> list['Logging']:
         """Return all available logging blocks."""
