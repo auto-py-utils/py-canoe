@@ -1,10 +1,10 @@
-from typing import TYPE_CHECKING, Iterable, Sequence, Sequence, Union
+from typing import TYPE_CHECKING, Iterable, Sequence
 
 from py_canoe.core.bus import Bus
+from py_canoe.core.child_elements.channel import Channel
 from py_canoe.core.child_elements.test_environment import TestEnvironment
 from py_canoe.core.child_elements.test_module import TestModule
-
-from py_canoe.core.child_elements.test_module import TestModule
+from py_canoe.helpers.bus_type import BusType
 if TYPE_CHECKING:
     from py_canoe.core.application import Application
     from py_canoe.core.child_elements.measurement_setup import Logging, ExporterSymbol, Message
@@ -21,7 +21,7 @@ from py_canoe.core.child_elements.distributed_mode import DistributedMode
 from py_canoe.core.child_elements.fdx_files import FDXFiles
 from py_canoe.core.child_elements.general_setup import GeneralSetup
 from py_canoe.core.child_elements.measurement_setup import MeasurementSetup
-from py_canoe.core.child_elements.database_setup import Databases,Database
+from py_canoe.core.child_elements.databases import Databases
 from py_canoe.core.child_elements.replay_collection import ReplayCollection
 from py_canoe.core.child_elements.simulation_setup import SimulationSetup
 from py_canoe.core.child_elements.test_configurations import TestConfigurations
@@ -748,18 +748,13 @@ class Configuration:
         except Exception as e:
             logger.error(f'failed to stop all test environments. {e}')
 
-    def add_database(self, database_file: str, database_channel: int, database_network: Union[str, None]=None) -> bool:
+    def add_database(self, database_file: str, network: str | int) -> bool:
         """
         添加db文件到指定通道
 
-        注意：
-            * database_network 应该是CANoe工程中不存在的网络名字，否则会报错
-            * 给指定channel添加dbc文件时，应该使用 database_file + database_channel参数来指定，否则会添加到所有网络中
-
         Args:
-            database_file: db文件地址
-            database_channel: db文件要绑定的通道
-            database_network: 要添加的网络
+            database_file (str): db文件地址
+            network (str | int): 网络名字或通道号
 
         Returns:
             bool: True 表示成功，False 表示失败
@@ -769,21 +764,34 @@ class Configuration:
                 logger.warning("Cannot add database while measurement is running. Please stop the measurement first.")
                 return False
             else:
-                databases = Databases(self.com_object.GeneralSetup.DatabaseSetup.Databases)
-                for db in databases.item():
-                    db:Database
-                    if db.channel == database_channel and db.full_name == database_file:
-                        logger.warning(f'database "{database_file}" already added')
-                        return False
-                if database_network:
-                    database = databases.add_network(database_file, database_network)
+                # 判断是网络名字还是通道号
+                if isinstance(network, str):
+                    # 根据网络名字获取通道号
+                    for bus in self.simulation_setup.buses.item():
+                        bus: Bus
+                        if bus.name == network:
+                            bus.databases.add(database_file)
+                            logger.info(f'Database "{database_file}" added successfully to network "{network}".')
+                            return True
+                    logger.warning(f'Network "{network}" not found. Cannot add database.')
+                    return False
+                elif isinstance(network, int):
+                    for bus in self.simulation_setup.buses.item():
+                        bus: Bus
+                        for channel in bus.channels.item():
+                            channel: Channel
+                            if channel.number == network:
+                                bus.databases.add(database_file)
+                                logger.info(f'Database "{database_file}" added successfully to channel {channel.number}, bus.name: {bus.name}.')
+                                return True
+                    logger.warning(f'Channel {network} not found. Cannot add database.')
+                    return False
                 else:
-                    database = databases.add(database_file)
-                    wait(0.5)
-                    database.channel = database_channel
-                logger.info(f'database "{database_file}" added successfully to channel {database_channel}')
-                return True
+                    logger.warning(f'Invalid network type: {type(network)}. Must be str (network name) or int (channel number).')
+                    return False
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             logger.error(f"Error adding database '{database_file}': {e}")
             return False
 
@@ -820,16 +828,13 @@ class Configuration:
             logger.info(f"add TestEnvironment: {name}")
         return te
 
-    def add_NetWork(self, network_name: str, network_type: int = 1) -> Bus:
+    def add_netWork(self, network_name: str, network_type: BusType = BusType.CAN) -> Bus:
         """adds a new network to the configuration. defaults to CAN (1) if no type is specified.
         
         Args:
             network_name (str): name of the new network.
-            network_type (int): type of the new network (1 for CAN, 5 for LIN, 6 for MOST, 7 for FlexRay, 9 for J1708, 11 for Ethernet, 13 for WLAN). Defaults to 1 (CAN).
+            network_type (BusType): type of the new network (BusType.CAN for CAN, BusType.LIN for LIN, BusType.MOST for MOST, BusType.FlexRay for FlexRay, BusType.J1708 for J1708, BusType.Ethernet for Ethernet, BusType.WLAN for WLAN). Defaults to BusType.CAN.
         """
-        if network_type not in [1, 5, 6, 7, 9, 11, 13]:
-            logger.warning(f"Invalid network type {network_type}.")
-            return None
         bus = self.simulation_setup.buses.add(network_name, network_type)
         if bus is None:
             logger.warning(f"Network {network_name} already exists.")
