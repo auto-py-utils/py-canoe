@@ -905,6 +905,7 @@ class Configuration:
                 elif isinstance(network, int):
                     for bus in self.simulation_setup.buses.item():
                         bus: Bus
+                        logger.info(f"Checking bus: {bus.name}, channels: {[channel.number for channel in bus.channels.item()]}")
                         for channel in bus.channels.item():
                             channel: Channel
                             if channel.number == network:

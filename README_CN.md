@@ -381,7 +381,7 @@ result = canoe_inst.get_test_module_result('demo_test_node_002')
 print(f"判定结果: {result['verdict_name']}")
 print(f"测试报告: {result['report']['generated_full_name']}")
 for name, tc in result['test_cases'].items():
-    print(f"  {name}: {tc['verdict_name']} (已启用={tc['enabled']})")
+    print(f"  {name}: {tc.verdict_name} (已启用={tc.enabled})")
 
 canoe_inst.stop_measurement()
 ```
@@ -415,10 +415,12 @@ canoe_inst = CANoe()
 canoe_inst.open(canoe_cfg=r"tests\demo_cfg\demo_conf_gen_db_setup.cfg")
 
 canoe_inst.start_measurement()
-# 添加数据库
-canoe_inst.add_database(fr"{file_path}\demo_cfg\DBs\sample_databases\XCP.dbc", 'CAN1', 1)
+# 按网络名添加数据库
+canoe_inst.add_database(r"path\to\DBs\XCP.dbc", 'CAN1')
+# 按通道号添加数据库
+canoe_inst.add_database(r"path\to\DBs\XCP.dbc", 1)
 # 移除数据库
-canoe_inst.remove_database(fr"{file_path}\demo_cfg\DBs\sample_databases\XCP.dbc', 1)
+canoe_inst.remove_database(r"path\to\DBs\XCP.dbc", 1)
 ```
 
 ### 获取已配置的网络名称
@@ -440,8 +442,8 @@ from py_canoe import CANoe, wait
 canoe_inst = CANoe()
 canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
 
-bus_names = canoe_inst.application.bus.get_simulation_bus_names()
-db_paths = canoe_inst.application.bus.get_simulation_database_paths()
+bus_names = canoe_inst.get_simulation_bus_names()
+db_paths = canoe_inst.get_simulation_database_paths()
 ```
 
 ### 启动/停止在线日志记录块
@@ -505,6 +507,38 @@ app.measurement.start()
 # ... 运行测试 ...
 app.measurement.stop()
 app.quit()
+```
+
+### 添加网络 / 获取网络信息
+
+```python
+from py_canoe import CANoe
+from py_canoe.helpers.bus_type import BusType
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
+
+# 添加 CAN 网络
+canoe_inst.add_netWork('NewCAN', BusType.CAN)
+# 添加 LIN 网络
+canoe_inst.add_netWork('NewLIN', BusType.LIN)
+# 获取网络对象
+bus = canoe_inst.get_networks('CAN1')
+```
+
+### 获取/设置通道使用情况
+
+```python
+from py_canoe import CANoe
+from py_canoe.helpers.bus_type import BusType
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
+
+# 获取 CAN 通道使用情况
+usage = canoe_inst.get_channelUsage(BusType.CAN)
+# 设置 CAN 通道数量
+canoe_inst.set_channelUsage(BusType.CAN, 3)
 ```
 
 **参数说明：**
