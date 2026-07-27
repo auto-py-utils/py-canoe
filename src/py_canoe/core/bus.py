@@ -2,7 +2,7 @@ import time
 from typing import Optional, Union
 
 from py_canoe.core.child_elements.channels import Channels
-from py_canoe.core.child_elements.database_setup import Databases
+from py_canoe.core.child_elements.databases import Databases
 from py_canoe.core.child_elements.nodes import Nodes
 from py_canoe.core.child_elements.ports import Ports
 from py_canoe.core.child_elements.replay_collection import ReplayCollection
@@ -53,6 +53,9 @@ class Bus:
 
     @property
     def channels(self) -> 'Channels':
+        """
+        实际Channels里面只包含了一个channel对象，如果想要换channel，需要先使用remove方法，然后再使用add方法
+        """
         return Channels(self.com_object.Channels)
 
     @property
