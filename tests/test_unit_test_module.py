@@ -9,10 +9,11 @@ Unit tests for test module and test case features:
 - Configuration.get_test_module_result (report + test case verdicts)
 """
 
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, patch, PropertyMock
 
 from py_canoe.core.child_elements.test_case import TestCase
 from py_canoe.core.child_elements.test_module import TestModule
+from py_canoe.core.child_elements.test_tree_element import TestTreeElement, TestTreeElementType
 from py_canoe.core.configuration import Configuration
 
 
@@ -850,4 +851,423 @@ class TestGetTestModuleResult:
         cfg._Configuration__test_modules = []
         with patch("py_canoe.core.configuration.Configuration._find_test_module", side_effect=Exception("error")):
             assert cfg.get_test_module_result("TestMod1") == {}
+
+
+# ===========================================================================
+# Configuration.enable_test_configurations_cases
+# ===========================================================================
+
+class TestEnableTestConfigurationsCases:
+    """Test enable_test_configurations_cases with mocked elements/cases."""
+
+    def _make_cfg(self):
+        cfg = Configuration.__new__(Configuration)
+        cfg._Configuration__test_configurations = {}
+        return cfg
+
+    # --- Empty patterns ---
+
+    def test_empty_patterns_does_nothing(self):
+        cfg = self._make_cfg()
+        tc_obj = MagicMock()
+
+        with patch.object(cfg, "get_top_test_configurations_elements") as mock_el, \
+             patch.object(cfg, "get_all_test_configurations_cases") as mock_cases:
+            cfg.enable_test_configurations_cases(tc_obj, (), ())
+
+        mock_el.assert_not_called()
+        mock_cases.assert_not_called()
+
+    def test_no_patterns_does_nothing(self):
+        cfg = self._make_cfg()
+        tc_obj = MagicMock()
+
+        with patch.object(cfg, "get_top_test_configurations_elements") as mock_el, \
+             patch.object(cfg, "get_all_test_configurations_cases") as mock_cases:
+            cfg.enable_test_configurations_cases(tc_obj)
+
+        mock_el.assert_not_called()
+        mock_cases.assert_not_called()
+
+    # --- match_by="name" with enable patterns ---
+
+    def test_enable_pattern_enables_matching_cases(self):
+        cfg = self._make_cfg()
+        tc_obj = MagicMock()
+
+        tce1 = MagicMock(spec=TestTreeElement)
+        tce1.enabled = False
+        tce2 = MagicMock(spec=TestTreeElement)
+        tce2.enabled = False
+
+        cfg.get_top_test_configurations_elements = MagicMock(return_value={})
+        cfg.get_all_test_configurations_cases = MagicMock(return_value={
+            "TC_001": {"tte_obj": tce1},
+            "TC_002": {"tte_obj": tce2},
+        })
+
+        cfg.enable_test_configurations_cases(tc_obj, enable_patterns=["TC_001"])
+
+        assert tce1.enabled is True
+        assert tce2.enabled is False
+
+    def test_enable_wildcard_pattern(self):
+        cfg = self._make_cfg()
+        tc_obj = MagicMock()
+
+        tce1 = MagicMock(spec=TestTreeElement)
+        tce1.enabled = False
+        tce2 = MagicMock(spec=TestTreeElement)
+        tce2.enabled = False
+
+        cfg.get_top_test_configurations_elements = MagicMock(return_value={})
+        cfg.get_all_test_configurations_cases = MagicMock(return_value={
+            "TC_001": {"tte_obj": tce1},
+            "TC_002": {"tte_obj": tce2},
+        })
+
+        cfg.enable_test_configurations_cases(tc_obj, enable_patterns=["TC_00*"])
+
+        assert tce1.enabled is True
+        assert tce2.enabled is True
+
+    # --- match_by="name" with disable patterns ---
+
+    def test_disable_pattern_disables_matching_cases(self):
+        cfg = self._make_cfg()
+        tc_obj = MagicMock()
+
+        tce1 = MagicMock(spec=TestTreeElement)
+        tce1.enabled = True
+        tce2 = MagicMock(spec=TestTreeElement)
+        tce2.enabled = True
+
+        cfg.get_top_test_configurations_elements = MagicMock(return_value={})
+        cfg.get_all_test_configurations_cases = MagicMock(return_value={
+            "TC_001": {"tte_obj": tce1},
+            "TC_slow": {"tte_obj": tce2},
+        })
+
+        cfg.enable_test_configurations_cases(tc_obj, disable_patterns=["*slow*"])
+
+        assert tce1.enabled is True
+        assert tce2.enabled is False
+
+    # --- Disable takes precedence ---
+
+    def test_disable_takes_precedence(self):
+        cfg = self._make_cfg()
+        tc_obj = MagicMock()
+
+        tce = MagicMock(spec=TestTreeElement)
+        tce.enabled = True
+
+        cfg.get_top_test_configurations_elements = MagicMock(return_value={})
+        cfg.get_all_test_configurations_cases = MagicMock(return_value={
+            "TC_slow_001": {"tte_obj": tce},
+        })
+
+        cfg.enable_test_configurations_cases(tc_obj, enable_patterns=["*"], disable_patterns=["*slow*"])
+
+        assert tce.enabled is False
+
+    # --- String pattern (not list) ---
+
+    def test_string_pattern_not_iterated_char_by_char(self):
+        cfg = self._make_cfg()
+        tc_obj = MagicMock()
+
+        tce1 = MagicMock(spec=TestTreeElement)
+        tce1.enabled = False
+        tce2 = MagicMock(spec=TestTreeElement)
+        tce2.enabled = False
+
+        cfg.get_top_test_configurations_elements = MagicMock(return_value={})
+        cfg.get_all_test_configurations_cases = MagicMock(return_value={
+            "TC_001": {"tte_obj": tce1},
+            "TC_071": {"tte_obj": tce2},
+        })
+
+        cfg.enable_test_configurations_cases(tc_obj, enable_patterns="TC_001")
+
+        assert tce1.enabled is True
+        assert tce2.enabled is False
+
+    # --- match_by="group" / "fixture" ---
+
+    def test_match_by_group_enables_matching_groups(self):
+        cfg = self._make_cfg()
+        tc_obj = MagicMock()
+
+        group_tte = MagicMock(spec=TestTreeElement)
+        group_tte.type = TestTreeElementType.TEST_GROUP
+        group_tte.enabled = False
+        case_tte = MagicMock(spec=TestTreeElement)
+        case_tte.enabled = False
+
+        cfg.get_top_test_configurations_elements = MagicMock(return_value={
+            "TU1": {"Group1": group_tte, "TC_001": case_tte},
+        })
+        cfg.get_all_test_configurations_cases = MagicMock(return_value={})
+
+        cfg.enable_test_configurations_cases(tc_obj, enable_patterns=["Group*"], match_by="group")
+
+        assert group_tte.enabled is True
+        assert case_tte.enabled is False
+
+    def test_match_by_fixture_enables_matching_fixtures(self):
+        cfg = self._make_cfg()
+        tc_obj = MagicMock()
+
+        fix_tte = MagicMock(spec=TestTreeElement)
+        fix_tte.type = TestTreeElementType.TEST_FIXTURE
+        fix_tte.enabled = False
+        case_tte = MagicMock(spec=TestTreeElement)
+        case_tte.enabled = False
+
+        cfg.get_top_test_configurations_elements = MagicMock(return_value={
+            "TU1": {"Fixture1": fix_tte, "TC_001": case_tte},
+        })
+        cfg.get_all_test_configurations_cases = MagicMock(return_value={})
+
+        cfg.enable_test_configurations_cases(tc_obj, enable_patterns=["Fixture*"], match_by="fixture")
+
+        assert fix_tte.enabled is True
+        assert case_tte.enabled is False
+
+    # --- Invalid match_by ---
+
+    def test_invalid_match_by_falls_back_to_name(self):
+        cfg = self._make_cfg()
+        tc_obj = MagicMock()
+
+        tce = MagicMock(spec=TestTreeElement)
+        tce.enabled = False
+
+        cfg.get_top_test_configurations_elements = MagicMock(return_value={})
+        cfg.get_all_test_configurations_cases = MagicMock(return_value={
+            "TC_001": {"tte_obj": tce},
+        })
+
+        cfg.enable_test_configurations_cases(tc_obj, enable_patterns=["TC_001"], match_by="invalid")
+
+        assert tce.enabled is True
+
+    # --- No test cases ---
+
+    def test_no_test_cases_warns_and_returns(self):
+        cfg = self._make_cfg()
+        tc_obj = MagicMock()
+
+        cfg.get_top_test_configurations_elements = MagicMock(return_value={})
+        cfg.get_all_test_configurations_cases = MagicMock(return_value={})
+
+        with patch("py_canoe.core.configuration.logger.warning") as mock_warn:
+            cfg.enable_test_configurations_cases(tc_obj, enable_patterns=["*"])
+
+        mock_warn.assert_called_once()
+        assert "No test cases found" in mock_warn.call_args[0][0]
+
+    # --- group/fixture with no match ---
+
+    def test_group_mode_no_match_warns_and_returns(self):
+        cfg = self._make_cfg()
+        tc_obj = MagicMock()
+
+        group_tte = MagicMock(spec=TestTreeElement)
+        group_tte.type = TestTreeElementType.TEST_GROUP
+        group_tte.enabled = False
+
+        cfg.get_top_test_configurations_elements = MagicMock(return_value={
+            "TU1": {"Group1": group_tte},
+        })
+        cfg.get_all_test_configurations_cases = MagicMock(return_value={})
+
+        with patch("py_canoe.core.configuration.logger.warning") as mock_warn:
+            cfg.enable_test_configurations_cases(tc_obj, enable_patterns=["NoMatch*"], match_by="group")
+
+        mock_warn.assert_called_once()
+        assert "no test case titles" in mock_warn.call_args[0][0]
+        assert group_tte.enabled is False
+
+
+# ===========================================================================
+# Configuration.get_test_configurations_cases_result
+# ===========================================================================
+
+class TestGetTestConfigurationsCasesResult:
+    """Test get_test_configurations_cases_result."""
+
+    def _make_test_conf_mock(self, name, report_path, test_units_data=None):
+        """Create a mocked TestConfiguration with test_units and report."""
+        if test_units_data is None:
+            test_units_data = {"TU1": {"TC_001": MagicMock(spec=TestTreeElement)}}
+
+        tc = MagicMock()
+        tc.name = name
+
+        # Mock test_units.fetch_all_test_units -> returns dict of TestUnit mocks
+        tu_mocks = {}
+        for tu_name, cases in test_units_data.items():
+            tu = MagicMock()
+            elements = MagicMock()
+            elements.get_test_tree_element_cases = lambda cases_dict, c=cases: cases_dict.update(c)
+            tu.elements = elements
+            tu_mocks[tu_name] = tu
+
+        tc.test_units.fetch_all_test_units = MagicMock(return_value=tu_mocks)
+
+        # Mock report.full_path
+        tc.report.full_path = report_path
+
+        return tc
+
+    def test_returns_verdict_info_for_matching_config(self):
+        cfg = Configuration.__new__(Configuration)
+        tce = MagicMock(spec=TestTreeElement)
+        tce.enabled = True
+        tce.verdict = 1
+
+        test_conf = self._make_test_conf_mock(
+            "TC1", "C:/report.xml",
+            {"TU1": {"TCase1": {"tte_obj": tce}}}
+        )
+        cfg._Configuration__test_configurations = {"TC1": test_conf}
+
+        result = cfg.get_test_configurations_cases_result("TC1")
+
+        assert "TCase1" in result
+        assert result["TCase1"]["enabled"] is True
+        assert result["TCase1"]["verdict"] == 1
+        assert result["TCase1"]["verdict_name"] == "Passed"
+        assert result["TCase1"]["report_path"] == "C:/report.xml"
+
+    def test_empty_string_returns_empty_dict(self):
+        cfg = Configuration.__new__(Configuration)
+        cfg._Configuration__test_configurations = {}
+
+        with patch("py_canoe.core.configuration.logger.warning") as mock_warn:
+            result = cfg.get_test_configurations_cases_result("")
+
+        assert result == {}
+        mock_warn.assert_called_once()
+
+    def test_nonexistent_config_returns_empty_dict(self):
+        cfg = Configuration.__new__(Configuration)
+        cfg._Configuration__test_configurations = {"TC1": MagicMock()}
+
+        result = cfg.get_test_configurations_cases_result("NonExistent")
+
+        assert result == {}
+
+    def test_verdict_mapping_all_values(self):
+        cfg = Configuration.__new__(Configuration)
+
+        cases = {}
+        for verdict_val, expected_name in [(0, "NotAvailable"), (1, "Passed"), (2, "Failed"),
+                                           (3, "None"), (4, "Inconclusive"), (5, "ErrorInTestSystem")]:
+            tce = MagicMock(spec=TestTreeElement)
+            tce.enabled = True
+            tce.verdict = verdict_val
+            cases[f"TC_{verdict_val}"] = {"tte_obj": tce}
+
+        test_conf = self._make_test_conf_mock("TC1", "C:/r.xml", {"TU1": cases})
+        cfg._Configuration__test_configurations = {"TC1": test_conf}
+
+        result = cfg.get_test_configurations_cases_result("TC1")
+
+        for verdict_val, expected_name in [(0, "NotAvailable"), (1, "Passed"), (2, "Failed"),
+                                           (3, "None"), (4, "Inconclusive"), (5, "ErrorInTestSystem")]:
+            assert result[f"TC_{verdict_val}"]["verdict_name"] == expected_name
+
+    def test_unknown_verdict_defaults_to_unknown(self):
+        cfg = Configuration.__new__(Configuration)
+
+        tce = MagicMock(spec=TestTreeElement)
+        tce.enabled = True
+        tce.verdict = 99
+
+        test_conf = self._make_test_conf_mock("TC1", "C:/r.xml", {"TU1": {"TC_X": {"tte_obj": tce}}})
+        cfg._Configuration__test_configurations = {"TC1": test_conf}
+
+        result = cfg.get_test_configurations_cases_result("TC1")
+
+        assert result["TC_X"]["verdict_name"] == "Unknown"
+
+
+# ===========================================================================
+# Configuration.execute_all_test_configurations with patterns
+# ===========================================================================
+
+class TestExecuteAllTestConfigurationsWithPatterns:
+    """Test execute_all_test_configurations forwards patterns correctly."""
+
+    def test_forwards_enable_disable_patterns(self):
+        cfg = Configuration.__new__(Configuration)
+        cfg._Configuration__test_configurations = {"TC1": MagicMock(), "TC2": MagicMock()}
+
+        with patch.object(cfg, "enable_test_configurations_cases") as mock_enable:
+            cfg.execute_all_test_configurations(
+                enable_test_case=["*"],
+                disable_test_case=["*slow*"],
+                match_by="name",
+                wait_for_completion=False
+            )
+
+        assert mock_enable.call_count == 2
+        for call in mock_enable.call_args_list:
+            assert call.args[1] == ["*"]
+            assert call.args[2] == ["*slow*"]
+            assert call.args[3] == "name"
+
+    def test_defaults_empty_patterns(self):
+        cfg = Configuration.__new__(Configuration)
+        tc1 = MagicMock()
+        cfg._Configuration__test_configurations = {"TC1": tc1}
+
+        with patch.object(cfg, "enable_test_configurations_cases") as mock_enable:
+            cfg.execute_all_test_configurations(wait_for_completion=False)
+
+        mock_enable.assert_called_once()
+        assert mock_enable.call_args[0][1] == ()
+        assert mock_enable.call_args[0][2] == ()
+        assert mock_enable.call_args[0][3] == "name"
+
+
+# ===========================================================================
+# Configuration.execute_test_configuration with patterns
+# ===========================================================================
+
+class TestExecuteTestConfigurationWithPatterns:
+    """Test execute_test_configuration forwards patterns correctly."""
+
+    def test_forwards_enable_disable_patterns(self):
+        cfg = Configuration.__new__(Configuration)
+        cfg._Configuration__test_configurations = {"TC1": MagicMock()}
+
+        with patch.object(cfg, "enable_test_configurations_cases") as mock_enable:
+            cfg.execute_test_configuration(
+                "TC1",
+                enable_test_case=["*"],
+                disable_test_case=["*slow*"],
+                match_by="name",
+                wait_for_completion=False
+            )
+
+        mock_enable.assert_called_once()
+        assert mock_enable.call_args[0][1] == ["*"]
+        assert mock_enable.call_args[0][2] == ["*slow*"]
+        assert mock_enable.call_args[0][3] == "name"
+
+    def test_defaults_empty_patterns(self):
+        cfg = Configuration.__new__(Configuration)
+        cfg._Configuration__test_configurations = {"TC1": MagicMock()}
+
+        with patch.object(cfg, "enable_test_configurations_cases") as mock_enable:
+            cfg.execute_test_configuration("TC1", wait_for_completion=False)
+
+        mock_enable.assert_called_once()
+        assert mock_enable.call_args[0][1] == ()
+        assert mock_enable.call_args[0][2] == ()
+        assert mock_enable.call_args[0][3] == "name"
 

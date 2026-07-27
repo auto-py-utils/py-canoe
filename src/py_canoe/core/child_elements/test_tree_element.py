@@ -41,8 +41,8 @@ class TestTreeElement:
         return self.com_object.Id
 
     @property
-    def name(self) -> str:
-        return self.com_object.Name
+    def verdict(self) -> int:
+        return self.com_object.Verdict
 
     @property
     def type(self) -> TestTreeElementType:

@@ -1,7 +1,8 @@
-
 import win32com.client
 
 from py_canoe.core.child_elements.test_configuration import TestConfiguration
+from py_canoe.core.child_elements.test_unit import TestUnit
+from py_canoe.core.child_elements.test_tree_elements import TestTreeElements
 
 
 class TestConfigurations:
@@ -28,3 +29,22 @@ class TestConfigurations:
             tc_inst = self.item(index)
             test_configurations[tc_inst.name] = tc_inst
         return test_configurations
+
+    def __get_elements_or_cases(self, title:str):
+        test_elements_or_cases = {}
+        test_confs = self.fetch_all_test_configurations()
+        for t_conf_name in test_confs.keys():
+            test_units_obj: dict[str, TestUnit] = test_confs[t_conf_name].test_units.fetch_all_test_units()
+            for tn_name in test_units_obj.keys():
+                test_elements: TestTreeElements= test_units_obj[tn_name].elements
+                if title == "elements":
+                    test_elements_or_cases[tn_name] = test_elements.fetch_all_test_tree_elements()
+                elif title == "case":
+                    test_elements.get_test_tree_element_cases(test_elements_or_cases)
+        return test_elements_or_cases
+    
+    def get_top_test_configurations_elements(self) -> dict:
+        return self.__get_elements_or_cases("elements")
+    
+    def get_all_test_configurations_cases(self) -> dict:
+        return self.__get_elements_or_cases("case")

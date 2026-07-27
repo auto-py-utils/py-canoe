@@ -1,8 +1,9 @@
-from typing import Union
+from typing import Union, TYPE_CHECKING
 import time
 import win32com.client
 import pythoncom
-
+if TYPE_CHECKING:
+    from py_canoe.core.application import Application
 from py_canoe.core.capl import CaplFunction
 from py_canoe.helpers.common import DoEventsUntil
 from py_canoe.helpers.common import logger, wait
@@ -53,7 +54,7 @@ class MeasurementEvents:
 
 
 class Measurement:
-    def __init__(self, app, enable_events: bool = True):
+    def __init__(self, app: 'Application', enable_events: bool = True):
         # Use the Application's Measurement object directly - do NOT create a
         # separate Dispatch wrapper. A separate Dispatch creates a different COM
         # proxy that races with the Application's internal proxy, causing
@@ -69,29 +70,35 @@ class Measurement:
 
     @property
     def animation_delay(self) -> int:
+        """Returns the current animation delay in milliseconds."""
         return self.com_object.AnimationDelay
 
     @animation_delay.setter
     def animation_delay(self, delay: int):
+        """Set the animation delay in milliseconds. This controls the speed of the measurement when running in animation mode."""
         self.com_object.AnimationDelay = delay
         logger.info(f"Animation Delay set to: {delay} ms")
 
     @property
     def measurement_index(self) -> int:
+        """Return the current measurement index. The measurement index is an integer that uniquely identifies the current measurement session."""
         index = self.com_object.MeasurementIndex
         logger.info(f"Measurement Index value: {index}")
         return index
 
     @measurement_index.setter
     def measurement_index(self, index: int):
+        """Set the measurement index. The measurement index is an integer that uniquely identifies the current measurement session."""
         self.com_object.MeasurementIndex = index
         logger.info(f"Measurement Index set to: {index}")
 
     @property
     def running(self) -> bool:
+        """Return True if the measurement is currently running, False otherwise."""
         return self.com_object.Running
 
     def start(self, timeout=30) -> bool:
+        """Start the measurement and wait for it to be running. Returns True if the measurement started successfully, False otherwise."""
         try:
             if self.running:
                 logger.warning("Measurement is already running")
@@ -120,9 +127,11 @@ class Measurement:
             return False
 
     def stop(self, timeout=30, post_stop_pump: int = 10) -> bool:
+        """Stop the measurement and wait for it to be stopped. Returns True if the measurement stopped successfully, False otherwise."""
         return self.stop_ex(timeout, post_stop_pump=post_stop_pump)
 
     def stop_ex(self, timeout=30, post_stop_pump: int = 10) -> bool:
+        """Stop the measurement and wait for it to be stopped. Returns True if the measurement stopped successfully, False otherwise. Optionally specify a timeout (in seconds) for waiting and a post-stop pump duration (in seconds) to drain COM callbacks after stopping."""
         t0 = time.monotonic()
         if not self.running:
             logger.warning("Measurement is already stopped")
@@ -165,6 +174,7 @@ class Measurement:
         return status
 
     def start_measurement_in_animation_mode(self, animation_delay=100, timeout=30) -> bool:
+        """Start the measurement in animation mode with a specified animation delay (in milliseconds) and wait for it to start. Returns True if the measurement started successfully, False otherwise."""
         try:
             if self.running:
                 logger.warning("Measurement is already running, cannot animate")
@@ -183,6 +193,7 @@ class Measurement:
             return False
 
     def break_measurement_in_offline_mode(self) -> bool:
+        """Break the measurement in offline mode. This is typically used to pause the measurement for debugging or analysis purposes. Returns True if the break was applied successfully, False otherwise."""
         try:
             if not self.running:
                 logger.warning("Measurement is not running, cannot break")
@@ -195,6 +206,7 @@ class Measurement:
             return False
 
     def reset_measurement_in_offline_mode(self) -> bool:
+        """Reset the measurement in offline mode. This is typically used to reset the measurement state for debugging or analysis purposes. Returns True if the reset was applied successfully, False otherwise."""
         try:
             self.com_object.Reset()
             logger.info('Measurement reset applied in Offline mode')
@@ -204,6 +216,7 @@ class Measurement:
             return False
 
     def process_measurement_event_in_single_step(self) -> bool:
+        """Process the next measurement event in single step mode. This is typically used for debugging or analysis purposes. Returns True if the event was processed successfully, False otherwise."""
         try:
             self.com_object.Step()
             logger.info('Processed a measurement event in single step ')

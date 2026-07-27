@@ -1,5 +1,5 @@
 from pathlib import Path
-
+from typing import Any, Union
 import win32com
 import win32com.client
 from win32com.client import gencache
@@ -34,23 +34,23 @@ class ApplicationEvents:
 
 class Application:
     """
-    Main interface to CANoe via COM automation.
+    Main interface to CANoe Application via COM automation.
     """
 
     def __init__(self, enable_events: bool = True) -> None:
         self.CANOE_APP_NAME = "CANoe.Application"
         self._enable_events = enable_events
         self.bus_types = {'CAN': 1, 'J1939': 2, 'FLEXRAY': 3, 'TTP': 4, 'LIN': 5, 'MOST': 6, 'ETH': 7, 'Kline': 14}
-        self.com_object = None
-        self.application_events = None
-        self.bus: Bus = None
-        self.capl: Capl = None
-        self.configuration: Configuration = None
-        self.environment: Environment = None
-        self.measurement: Measurement = None
-        self.system: System = None
-        self.ui: Ui = None
-        self.version: Version = None
+        self.com_object: Any = None
+        self.application_events: Union[ApplicationEvents, Any] = None
+        self.bus: Union[Bus, Any] = None
+        self.capl: Union[Capl, Any] = None
+        self.configuration: Union[Configuration, Any] = None
+        self.environment: Union[Environment, Any] = None
+        self.measurement: Union[Measurement, Any] = None
+        self.system: Union[System, Any] = None
+        self.ui: Union[Ui, Any] = None
+        self.version: Union[Version, Any] = None
         self.capl_function_objects = object()
         self.user_capl_functions = tuple()
         # Register IMessageFilter to suppress "Server Busy" dialogs and auto-retry
@@ -60,22 +60,27 @@ class Application:
 
     @property
     def full_name(self) -> str:
+        """Returns full path of the currently loaded CANoe configuration."""
         return self.com_object.FullName
 
     @property
     def name(self) -> str:
+        """Returns name of the currently loaded CANoe configuration."""
         return self.com_object.Name
 
     @property
     def path(self) -> str:
+        """Returns the directory path of the currently loaded CANoe configuration."""
         return self.com_object.Path
 
     @property
     def visible(self) -> bool:
+        """Returns whether the CANoe application window is visible."""
         return self.com_object.Visible
 
     @visible.setter
     def visible(self, visible: bool) -> None:
+        """Set the visibility of the CANoe application window."""
         self.com_object.Visible = visible
 
     def _common_between_pre_and_post_cfg_open(self) -> None:
@@ -198,7 +203,7 @@ class Application:
             return status
 
     def open(self, canoe_cfg: str | Path, visible: bool = True, auto_save: bool = True, prompt_user: bool = False, timeout: int = 5) -> bool:
-        """Open an existing CANoe configuration."""
+        """Open a CANoe configuration file (.cfg) in a new or existing CANoe instance."""
         self._launch_application()
         status = False
         try:
@@ -221,7 +226,7 @@ class Application:
             return status
 
     def quit(self, timeout: int = 5) -> bool:
-        """Quit CANoe and clean up COM references."""
+        """Quit the CANoe application gracefully."""
         status = False
         try:
             if self.configuration is not None and self.configuration.modified:
@@ -244,7 +249,7 @@ class Application:
             self._release_event_sinks()
 
     def attach_to_active_application(self) -> bool:
-        """Attach to a active instance of the CANoe application."""
+        """Attach to an already running CANoe application instance."""
         try:
             self._launch_application()
             if self.com_object:

@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 # THIS FILE IS AUTO-GENERATED - DO NOT EDIT MANUALLY
-# Generated: 2026-07-15T17:23:31.341774+00:00
-# py-canoe package version: 26.3.3
+# Generated: 2026-07-24T10:55:15.105094+00:00
+# py-canoe package version: 26.3.4
 # To update this file, run the generator: python -m py_canoe.helpers.gen_canoe_robot_lib
 # ---------------------------------------------------------------------------
 
@@ -437,17 +437,20 @@ class CanoeRobotLib:
         """Runs compilation for the current configuration."""
         return self._source.run_capl_compilation()
 
-    def canoe_execute_all_test_configurations(self, wait_for_completion: bool=True) -> bool:
+    def canoe_execute_all_test_configurations(self, enable_test_cases: Sequence[str]=(), disable_test_cases: Sequence[str]=(), match_by: str='name', wait_for_completion: bool=True) -> bool:
         """
         executes all test configurations available in test setup.
         
         Args:
+            enable_test_cases (Sequence[str]): Patterns of test cases to enable before execution.
+            disable_test_cases (Sequence[str]): Patterns of test cases to disable before execution.
+            match_by (str): Matching mode for patterns. One of "name", "group", or "fixture". Defaults to "name".
             wait_for_completion (bool): whether to wait for test configuration execution to complete before returning. defaults to True.
         
         Returns:
             bool: True if the operation was successful, False otherwise.
         """
-        return self._source.execute_all_test_configurations(wait_for_completion)
+        return self._source.execute_all_test_configurations(enable_test_cases, disable_test_cases, match_by, wait_for_completion)
 
     def canoe_stop_all_test_configurations(self) -> bool:
         """
@@ -458,18 +461,25 @@ class CanoeRobotLib:
         """
         return self._source.stop_all_test_configurations()
 
-    def canoe_execute_test_configuration(self, test_configuration_name: str, wait_for_completion: bool=True) -> bool:
+    def canoe_execute_test_configuration(self, test_configuration_name: str, enable_test_cases: Sequence[str]=(), disable_test_cases: Sequence[str]=(), match_by: str='name', wait_for_completion: bool=True) -> bool:
         """
         executes a specific test configuration.
         
         Args:
             test_configuration_name (str): The name of the test configuration to execute.
+            enable_test_cases (Sequence[str]): Patterns of test cases to enable before execution.
+            disable_test_cases (Sequence[str]): Patterns of test cases to disable before execution.
+            match_by (str): Matching mode for patterns. One of "name", "group", or "fixture". Defaults to "name".
             wait_for_completion (bool): Whether to wait for the test configuration execution to complete before returning. Defaults to True.
         
         Returns:
             bool: True if the operation was successful, False otherwise.
         """
-        return self._source.execute_test_configuration(test_configuration_name, wait_for_completion)
+        return self._source.execute_test_configuration(test_configuration_name, enable_test_cases, disable_test_cases, match_by, wait_for_completion)
+
+    def canoe_get_test_configuration_cases_result(self, test_conf_name: str) -> dict:
+        """Wrapper for CANoe.get_test_configuration_cases_result."""
+        return self._source.get_test_configuration_cases_result(test_conf_name)
 
     def canoe_stop_test_configuration(self, test_configuration_name: str) -> bool:
         """
