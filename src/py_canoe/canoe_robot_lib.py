@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 # THIS FILE IS AUTO-GENERATED - DO NOT EDIT MANUALLY
-# Generated: 2026-07-29T16:37:37.385816+00:00
-# py-canoe package version: 26.3.6
+# Generated: 2026-08-04T10:13:57.666632+00:00
+# py-canoe package version: 26.3.7
 # To update this file, run the generator: python -m py_canoe.helpers.gen_canoe_robot_lib
 # ---------------------------------------------------------------------------
 
@@ -1078,7 +1078,7 @@ class CanoeRobotLib:
             sys_var_name (str): The name of the system variable.
             return_symbolic_name (bool): Whether to return the symbolic name.
             return_timestamp (bool): Whether to return the timestamp in timezone utc along with the signal value. Defaults to False.
-            enable_events (bool): Whether to enable COM events on the Variable object. Defaults to True.
+            enable_events (bool): This argument is deprecated and will be removed in a future version.
         
         Returns:
             Union[int, float, str, None, tuple]: The value of the system variable or None if not found. If return_timestamp is True, returns a tuple of (value, timestamp).
@@ -1093,20 +1093,21 @@ class CanoeRobotLib:
         """Returns all variables in the specified namespace."""
         return self._source.get_all_variables_in_namespace(namespace_name)
 
-    def canoe_set_system_variable_value(self, sys_var_name: str, value: Union[int, float, str]) -> bool:
+    def canoe_set_system_variable_value(self, sys_var_name: str, value: Union[int, float, str], enable_events: bool=True) -> bool:
         """
         Sets the value of a system variable.
         
         Args:
             sys_var_name (str): The name of the system variable.
             value (Union[int, float, str]): The value to set.
+            enable_events (bool): Whether to enable COM events on the Variable object. Defaults to True. When False the write is not confirmed by an update event.
         
         Returns:
             bool: True if the operation was successful, False otherwise.
         """
-        return self._source.set_system_variable_value(sys_var_name, value)
+        return self._source.set_system_variable_value(sys_var_name, value, enable_events)
 
-    def canoe_set_system_variable_array_values(self, sys_var_name: str, value: tuple, index: int=0) -> bool:
+    def canoe_set_system_variable_array_values(self, sys_var_name: str, value: tuple, index: int=0, enable_events: bool=True) -> bool:
         """
         Sets the values of a system variable array.
         
@@ -1114,11 +1115,12 @@ class CanoeRobotLib:
             sys_var_name (str): The name of the system variable.
             value (tuple): The values to set.
             index (int): The index to set the values at.
+            enable_events (bool): Whether to enable COM events on the Variable object. Defaults to True. When False the write is not confirmed by an update event.
         
         Returns:
             bool: True if the operation was successful, False otherwise.
         """
-        return self._source.set_system_variable_array_values(sys_var_name, value, index)
+        return self._source.set_system_variable_array_values(sys_var_name, value, index, enable_events)
 
     def canoe_ui_activate_desktop(self, name: str) -> bool:
         """

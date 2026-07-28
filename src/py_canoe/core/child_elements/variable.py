@@ -1,4 +1,5 @@
 from typing import Union
+import pythoncom
 import win32com.client
 
 from py_canoe.helpers.common import logger, DoEventsUntil
@@ -10,8 +11,6 @@ class Variable:
     def __init__(self, com_object, enable_events: bool = True):
         self.com_object = win32com.client.Dispatch(com_object)
         self.enable_events = enable_events
-        if self.enable_events:
-            self.variable_events: VariableEvents = win32com.client.WithEvents(self.com_object, VariableEvents)
 
     @property
     def analysis_only(self) -> bool:
@@ -110,14 +109,23 @@ class Variable:
         return self.com_object.Value
 
     def set_value(self, value, timeout: Union[int, float]):
-        status: bool = False
-        self.com_object.Value = value
-        if hasattr(self, 'variable_events') and self.variable_events:
-            self.variable_events.VARIABLE_UPDATED = False
-            status = DoEventsUntil(lambda: self.variable_events.VARIABLE_UPDATED, timeout, "Variable Update")
+        if not self.enable_events:
+            self.com_object.Value = value
+            return True
+        # CANoe pins an advised sink alive, so its __del__ never runs and Unadvise has to be explicit
+        events = win32com.client.WithEvents(self.com_object, VariableEvents)
+        try:
+            events.VARIABLE_UPDATED = False
+            self.com_object.Value = value
+            status = DoEventsUntil(lambda: events.VARIABLE_UPDATED, timeout, "Variable Update")
             if status:
                 logger.info(f"Variable '{self.full_name}' updated successfully to: {value}")
-        return status
+            return status
+        finally:
+            try:
+                events.close()
+            except pythoncom.com_error as e:
+                logger.debug(f"Variable event sink already disconnected: {e}")
 
     def begin_struct_update(self):
         self.com_object.BeginStructUpdate()
