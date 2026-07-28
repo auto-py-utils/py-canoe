@@ -111,9 +111,61 @@ class TestSimulationSetupClasses:
         com = MagicMock()
         com.FullName = "C:/path/to/db.dbc"
         com.Name = "db"
+        com.Path = "C:/path/to"
+        com.Channel = 1
         db = Database(com)
         assert db.full_name == "C:/path/to/db.dbc"
         assert db.name == "db"
+        assert db.path == "C:/path/to"
+        assert db.channel == 1
+
+    def test_database_channel_setter(self):
+        com = MagicMock()
+        com.Channel = 1
+        db = Database(com)
+        db.channel = 2
+        assert com.Channel == 2
+
+    def test_database_full_name_setter(self):
+        com = MagicMock()
+        com.FullName = "old.dbc"
+        db = Database(com)
+        db.full_name = "new.dbc"
+        assert com.FullName == "new.dbc"
+
+    def test_databases_item_returns_list_when_no_index(self):
+        com = MagicMock()
+        com.Count = 2
+        db1, db2 = MagicMock(), MagicMock()
+        com.Item.side_effect = [db1, db2]
+        dbs = Databases(com)
+        result = dbs.item()
+        assert len(result) == 2
+        assert all(isinstance(r, Database) for r in result)
+
+    def test_databases_add(self):
+        com = MagicMock()
+        new_db_com = MagicMock()
+        com.Add.return_value = new_db_com
+        dbs = Databases(com)
+        result = dbs.add("C:/path/to/new.dbc")
+        com.Add.assert_called_once_with("C:/path/to/new.dbc")
+        assert isinstance(result, Database)
+
+    def test_databases_add_network(self):
+        com = MagicMock()
+        new_db_com = MagicMock()
+        com.AddNetwork.return_value = new_db_com
+        dbs = Databases(com)
+        result = dbs.add_network("my.dbc", "CAN1")
+        com.AddNetwork.assert_called_once_with("my.dbc", "CAN1")
+        assert isinstance(result, Database)
+
+    def test_databases_remove(self):
+        com = MagicMock()
+        dbs = Databases(com)
+        dbs.remove(1)
+        com.Remove.assert_called_once_with(1)
 
 
 class TestGetSimulationBusNames:

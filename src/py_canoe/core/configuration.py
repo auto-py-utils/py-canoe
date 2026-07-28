@@ -1,23 +1,27 @@
-from typing import TYPE_CHECKING, Iterable, Sequence, Union
-
-from py_canoe.core.child_elements.test_module import TestModule
-if TYPE_CHECKING:
-    from py_canoe.core.application import Application
-    from py_canoe.core.child_elements.measurement_setup import Logging, ExporterSymbol, Message
-    from py_canoe.core.child_elements.test_configurations import TestConfiguration
 import os
 import re
 import time
 from fnmatch import fnmatchcase
 import win32com.client
+from typing import TYPE_CHECKING, Iterable, Sequence
 
+if TYPE_CHECKING:
+    from py_canoe.core.application import Application
+    from py_canoe.core.child_elements.measurement_setup import Logging, ExporterSymbol, Message
+    from py_canoe.core.child_elements.test_configurations import TestConfiguration
+
+from py_canoe.core.bus import Bus
+from py_canoe.core.child_elements.channel import Channel
+from py_canoe.core.child_elements.test_environment import TestEnvironment
+from py_canoe.core.child_elements.test_module import TestModule
+from py_canoe.helpers.bus_type import BusType
 from py_canoe.core.child_elements.c_libraries import CLibraries
 from py_canoe.core.child_elements.communication_setup import CommunicationSetup
 from py_canoe.core.child_elements.distributed_mode import DistributedMode
 from py_canoe.core.child_elements.fdx_files import FDXFiles
 from py_canoe.core.child_elements.general_setup import GeneralSetup
 from py_canoe.core.child_elements.measurement_setup import MeasurementSetup
-from py_canoe.core.child_elements.database_setup import Databases
+from py_canoe.core.child_elements.databases import Databases
 from py_canoe.core.child_elements.replay_collection import ReplayCollection
 from py_canoe.core.child_elements.simulation_setup import SimulationSetup
 from py_canoe.core.child_elements.test_configurations import TestConfigurations
@@ -60,7 +64,7 @@ class Configuration:
         for te_name, te_inst in self.__test_setup_environments.items():
             for tm_name, tm_inst in te_inst.get_all_test_modules().items():
                 # A TestSetupItem object that either can be a TSTestModule object or a TestSetupFolder object.
-                # TestSetupFolder有items，包含TestSetupItems
+                # A TestSetupFolder has items that contain nested TestSetupItems.
                 self.__test_modules.append({'name': tm_name, 'object': tm_inst, 'environment': te_name})
 
     def fetch_test_units(self):
@@ -677,7 +681,6 @@ class Configuration:
 
         for tc_name, tc in all_test_cases.items():
             # Match against the requested attribute (name or title).
-            # print(f"Checking test case: {tc_name}, title: {tc.title}, ident: {tc.ident}, enabled: {tc.enabled}, verdict: {tc.verdict_name}")
             match_value = tc.title if match_by == "title" else tc.name
             should_enable = False
             should_disable = False
@@ -872,32 +875,55 @@ class Configuration:
         except Exception as e:
             logger.error(f'failed to stop all test environments. {e}')
 
-    def add_database(self, database_file: str, database_channel: int, database_network: Union[str, None]=None) -> bool:
+    def add_database(self, database_file: str, network: str | int) -> bool:
+        """
+        Add a database file to the specified channel/network
+
+        Args:
+            database_file (str): Path to the database file
+            network (str | int): Network name or channel number
+
+        Returns:
+            bool: True for success, False for failure
+        """
         try:
             if self.app.measurement.running:
                 logger.warning("Cannot add database while measurement is running. Please stop the measurement first.")
                 return False
             else:
-                databases = Databases(self.com_object.GeneralSetup.DatabaseSetup.Databases)
-                databases_info = {databases.item(index).full_name: databases.item(index) for index in range(1, databases.count + 1)}
-                if database_file in databases_info.keys():
-                    logger.warning(f'database "{database_file}" already added')
+                # Determine whether it is a network name or a channel number
+                if isinstance(network, str):
+                    # Get the channel number based on the network name
+                    for bus in self.simulation_setup.buses.item():
+                        bus: Bus
+                        if bus.name == network:
+                            bus.databases.add(database_file)
+                            logger.info(f'Database "{database_file}" added successfully to network "{network}".')
+                            return True
+                    logger.warning(f'Network "{network}" not found. Cannot add database.')
+                    return False
+                elif isinstance(network, int):
+                    for bus in self.simulation_setup.buses.item():
+                        bus: Bus
+                        logger.info(f"Checking bus: {bus.name}, channels: {[channel.number for channel in bus.channels.item()]}")
+                        for channel in bus.channels.item():
+                            channel: Channel
+                            if channel.number == network:
+                                bus.databases.add(database_file)
+                                logger.info(f'Database "{database_file}" added successfully to channel {channel.number}, bus.name: {bus.name}.')
+                                return True
+                    logger.warning(f'Channel {network} not found. Cannot add database.')
                     return False
                 else:
-                    if database_network:
-                        database = databases.add_network(database_file, database_network)
-                    else:
-                        database = databases.add(database_file)
-                    wait(0.5)
-                    database.channel = database_channel
-                    wait(0.5)
-                    logger.info(f'database "{database_file}" added successfully to channel {database_channel}')
-                    return True
+                    logger.warning(f'Invalid network type: {type(network)}. Must be str (network name) or int (channel number).')
+                    return False
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             logger.error(f"Error adding database '{database_file}': {e}")
             return False
 
-    def remove_database(self, database_file: str, database_channel: int) -> bool:
+    def remove_database(self, database_file: str, database_channel: int = -1) -> bool:
         try:
             if self.app.measurement.running:
                 logger.warning("Cannot remove database while measurement is running. Please stop the measurement first.")
@@ -921,6 +947,27 @@ class Configuration:
         except Exception as e:
             logger.error(f"Error removing database '{database_file}': {e}")
             return False
+
+    def add_testEnvironments(self, name:str) -> TestEnvironment:
+        te = self.test_setup.test_environments.add(name)
+        if te is None:
+            logger.warning(f"TestEnvironment {name} already exists.")
+        else:
+            logger.info(f"add TestEnvironment: {name}")
+        return te
+
+    def add_netWork(self, network_name: str, network_type: BusType = BusType.CAN) -> Bus:
+        """adds a new network to the configuration. defaults to CAN (1) if no type is specified.
+        
+        Args:
+            network_name (str): name of the new network.
+            network_type (BusType): type of the new network (BusType.CAN for CAN, BusType.LIN for LIN, BusType.MOST for MOST, BusType.FlexRay for FlexRay, BusType.J1708 for J1708, BusType.Ethernet for Ethernet, BusType.WLAN for WLAN). Defaults to BusType.CAN.
+        """
+        bus = self.simulation_setup.buses.add(network_name, network_type)
+        if bus is None:
+            logger.warning(f"Network {network_name} already exists.")
+            return None
+        return bus
 
     def get_mode(self) -> int:
         logger.info(f"CANoe Configuration mode = ({self.mode} - {'Offline mode' if self.mode == 1 else 'Online mode'})")

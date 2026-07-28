@@ -1,5 +1,6 @@
 import win32com.client
 
+from py_canoe.core.child_elements.channels import Channels
 from py_canoe.core.child_elements.databases import Databases
 
 
@@ -14,3 +15,8 @@ class Bus:
     @property
     def databases(self) -> 'Databases':
         return Databases(self.com_object.Databases)
+    
+    @property
+    def channels(self) -> Channels:
+        """Returns a Channels object associated with the bus."""
+        return Channels(self.com_object.Channels)

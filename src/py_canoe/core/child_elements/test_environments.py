@@ -2,7 +2,6 @@ import win32com.client
 
 from py_canoe.core.child_elements.test_environment import TestEnvironment
 
-
 class TestEnvironments:
     """The TestEnvironments object represents the test environments within CANoe's test setup."""
     def __init__(self, com_object):
@@ -11,8 +10,15 @@ class TestEnvironments:
     @property
     def count(self) -> int:
         return self.com_object.Count
+    
+    @property
+    def Item(self) -> list[TestEnvironment]:
+        return [TestEnvironment(self.com_object.Item(index)) for index in range(1, self.count + 1)]
 
     def add(self, name: str) -> 'TestEnvironment':
+        for te in self.Item:
+            if te.name == name:
+                return None
         return TestEnvironment(self.com_object.Add(name))
 
     def remove(self, index: int, prompt_user=False) -> None:

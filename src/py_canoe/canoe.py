@@ -1,8 +1,3 @@
-from typing import TYPE_CHECKING, Iterable, Optional, Sequence
-if TYPE_CHECKING:
-    from py_canoe.core.child_elements.measurement_setup import Logging, ExporterSymbol, Message
-    from py_canoe.core.child_elements.test_configurations import TestConfiguration
-
 import re
 import sys
 import shutil
@@ -11,10 +6,18 @@ import pythoncom
 from datetime import datetime, timezone
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Union
+from typing import Union, TYPE_CHECKING, Iterable, Optional, Sequence
+
+if TYPE_CHECKING:
+    from py_canoe.core.child_elements.measurement_setup import Logging, ExporterSymbol, Message
+    from py_canoe.core.child_elements.test_configurations import TestConfiguration
 
 from py_canoe.core.application import Application
+from py_canoe.core.bus import Bus
 from py_canoe.core.capl import CompileResult
+from py_canoe.core.child_elements.channel import Channel
+from py_canoe.core.child_elements.test_environment import TestEnvironment
+from py_canoe.helpers.bus_type import BusType
 from py_canoe.helpers.common import logger, update_logger_file_path
 
 
@@ -621,13 +624,22 @@ class CANoe:
         """
         return self.application.configuration.execute_test_module(test_module_name, enable_test_cases, disable_test_cases, match_by=match_by)
 
-    def get_test_module_result(self, test_module_name: str) -> dict:
+    def get_test_module_result(self, test_module_name: str, report_timeout: float = 30.0) -> dict:
         """Get test module execution result including report path and test case verdicts.
 
         Should be called after execute_test_module() to retrieve the results.
 
+        Note: This method does NOT depend on the module's started state. It reads
+        the verdict and report information directly from the test module object,
+        and waits (up to ``report_timeout`` seconds) for the report-generated
+        event if it has not fired yet. The returned ``test_cases`` are live
+        ``TestCase`` objects, so accessing their attributes (e.g. ``verdict``,
+        ``enabled``) reads the latest values from CANoe.
+
         Args:
             test_module_name (str): test module name.
+            report_timeout (float): maximum time in seconds to wait for the
+                report-generated event before giving up. Defaults to 30.0.
 
         Returns:
             dict: A dictionary with keys:
@@ -637,8 +649,8 @@ class CANoe:
                     - "success" (bool): whether report generation succeeded
                     - "source_full_name" (str): XML report path
                     - "generated_full_name" (str): HTML report path
-                - "test_cases" (dict[str, dict]): mapping of test case names to dicts
-                  with keys "name", "enabled", "verdict", "verdict_name", "title"
+                - "test_cases" (dict[str, TestCase]): mapping of test case names
+                  to live TestCase objects (use .name/.enabled/.verdict/.title)
 
         Example:
             >>> canoe.execute_test_module("MyModule")
@@ -646,9 +658,9 @@ class CANoe:
             >>> print(f"Verdict: {result['verdict_name']}")
             >>> print(f"Report: {result['report']['generated_full_name']}")
             >>> for name, tc in result['test_cases'].items():
-            ...     print(f"  {name}: {tc['verdict_name']}")
+            ...     print(f"  {name}: {tc.verdict_name}")
         """
-        return self.application.configuration.get_test_module_result(test_module_name)
+        return self.application.configuration.get_test_module_result(test_module_name, report_timeout=report_timeout)
 
     def stop_test_module(self, test_module_name: str):
         """stops execution of test module.
@@ -691,15 +703,14 @@ class CANoe:
         """stops execution of all test environments available in test setup."""
         return self.application.configuration.stop_all_test_environments()
 
-    def add_database(self, database_file: str, database_channel: int, database_network: Union[str, None]=None) -> bool:
+    def add_database(self, database_file: str, network: str | int) -> bool:
         """adds database file to a network channel
-
+        
         Args:
             database_file (str): database file to attach. give full file path.
-            database_network (str): network name on which you want to add this database.
-            database_channel (int): channel name on which you want to add this database.
+            network (str | int): network name or channel number on which you want to add database.
         """
-        return self.application.configuration.add_database(database_file, database_channel, database_network)
+        return self.application.configuration.add_database(database_file, network)
 
     def remove_database(self, database_file: str, database_channel: int) -> bool:
         """remove database file from a channel
@@ -709,6 +720,58 @@ class CANoe:
             database_channel (int): channel name on which you want to remove database.
         """
         return self.application.configuration.remove_database(database_file, database_channel)
+
+    def add_testEnvironments(self, name:str) -> TestEnvironment:
+        """
+        Add a new Test Environment to TestSetup.
+
+        If you need to create a new test environment, the name field contains the name of the new test environment.
+        If you need to load an existing test environment from a file, the name field contains the file path, 
+        which can be an absolute path or relative to the current configuration.
+
+        Args:
+            name (str): Name or path of the Test Environment
+        """
+        return self.application.configuration.add_testEnvironments(name)
+    
+    def add_netWork(self, network_name: str, network_type: BusType = BusType.CAN) -> Bus:
+        """adds a new network to the configuration.
+        
+        Args:
+            network_name (str): name of the new network.
+            network_type (BusType): type of the new network (BusType.CAN for CAN, BusType.LIN for LIN, BusType.MOST for MOST, BusType.FlexRay for FlexRay, BusType.J1708 for J1708, BusType.Ethernet for Ethernet, BusType.WLAN for WLAN). Defaults to BusType.CAN.
+        """
+        return self.application.configuration.add_netWork(network_name, network_type)
+    
+    def get_channelUsage(self, channel_type:BusType = BusType.CAN) -> list[dict]:
+        """returns all available channels of a specific type.
+
+        Args:
+            channel_type (BusType): type of the channel (BusType.CAN for CAN, BusType.LIN for LIN, BusType.MOST for MOST, BusType.FlexRay for FlexRay, BusType.J1708 for J1708, BusType.Ethernet for Ethernet, BusType.WLAN for WLAN). Defaults to BusType.CAN.
+        """
+        return self.application.configuration.general_setup.get_channels_count(channel_type.value)
+    
+    def set_channelUsage(self, channel_type:BusType, channel_count:int) -> bool:
+        """sets the number of channels of a specific type.
+
+        Args:
+            channel_type (BusType): type of the channel (BusType.CAN for CAN, BusType.LIN for LIN, BusType.MOST for MOST, BusType.FlexRay for FlexRay, BusType.J1708 for J1708, BusType.Ethernet for Ethernet, BusType.WLAN for WLAN).
+            channel_count (int): number of channels to set.
+        """
+        self.application.configuration.general_setup.set_channels_count(channel_type.value, channel_count)
+
+        return self.get_channelUsage(channel_type) == channel_count
+    
+    def get_networks(self,network_name: str = None) -> Bus:
+        """returns all available networks or a specific network by name.
+
+        Args:
+            network_name (str): name of the network to retrieve. If None, returns all networks. Defaults to None.
+        """
+        for bus in self.application.configuration.simulation_setup.buses.item():
+            if bus.name == network_name:
+                return bus
+        return None
 
     def get_logging_blocks(self) -> list['Logging']:
         """Return all available logging blocks."""
