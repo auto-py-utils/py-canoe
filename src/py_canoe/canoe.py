@@ -1,13 +1,3 @@
-from typing import TYPE_CHECKING, Iterable, Optional, Sequence
-
-from py_canoe.core.bus import Bus
-from py_canoe.core.child_elements.channel import Channel
-from py_canoe.core.child_elements.test_environment import TestEnvironment
-from py_canoe.helpers.bus_type import BusType
-if TYPE_CHECKING:
-    from py_canoe.core.child_elements.measurement_setup import Logging, ExporterSymbol, Message
-    from py_canoe.core.child_elements.test_configurations import TestConfiguration
-
 import re
 import sys
 import shutil
@@ -16,10 +6,18 @@ import pythoncom
 from datetime import datetime, timezone
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Union
+from typing import Union, TYPE_CHECKING, Iterable, Optional, Sequence
+
+if TYPE_CHECKING:
+    from py_canoe.core.child_elements.measurement_setup import Logging, ExporterSymbol, Message
+    from py_canoe.core.child_elements.test_configurations import TestConfiguration
 
 from py_canoe.core.application import Application
+from py_canoe.core.bus import Bus
 from py_canoe.core.capl import CompileResult
+from py_canoe.core.child_elements.channel import Channel
+from py_canoe.core.child_elements.test_environment import TestEnvironment
+from py_canoe.helpers.bus_type import BusType
 from py_canoe.helpers.common import logger, update_logger_file_path
 
 
@@ -724,13 +722,15 @@ class CANoe:
         return self.application.configuration.remove_database(database_file, database_channel)
 
     def add_testEnvironments(self, name:str) -> TestEnvironment:
-        """在TestSetup里面添加一个新的Test Environment
+        """
+        Add a new Test Environment to TestSetup.
 
-        如果需要创建一个新的测试环境，则 name 字段包含新测试环境的名称。
-        如果需要从文件中读取一个现有的测试环境，则 name 字段包含该文件的路径，路径可以是绝对路径，也可以是相对于当前配置的相对路径。
+        If you need to create a new test environment, the name field contains the name of the new test environment.
+        If you need to load an existing test environment from a file, the name field contains the file path, 
+        which can be an absolute path or relative to the current configuration.
 
         Args:
-            name(str): Test Environment的名字或路径
+            name (str): Name or path of the Test Environment
         """
         return self.application.configuration.add_testEnvironments(name)
     
