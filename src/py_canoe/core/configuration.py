@@ -1,20 +1,20 @@
+import os
+import re
+import time
+from fnmatch import fnmatchcase
+import win32com.client
 from typing import TYPE_CHECKING, Iterable, Sequence
+
+if TYPE_CHECKING:
+    from py_canoe.core.application import Application
+    from py_canoe.core.child_elements.measurement_setup import Logging, ExporterSymbol, Message
+    from py_canoe.core.child_elements.test_configurations import TestConfiguration
 
 from py_canoe.core.bus import Bus
 from py_canoe.core.child_elements.channel import Channel
 from py_canoe.core.child_elements.test_environment import TestEnvironment
 from py_canoe.core.child_elements.test_module import TestModule
 from py_canoe.helpers.bus_type import BusType
-if TYPE_CHECKING:
-    from py_canoe.core.application import Application
-    from py_canoe.core.child_elements.measurement_setup import Logging, ExporterSymbol, Message
-    from py_canoe.core.child_elements.test_configurations import TestConfiguration
-import os
-import re
-import time
-from fnmatch import fnmatchcase
-import win32com.client
-
 from py_canoe.core.child_elements.c_libraries import CLibraries
 from py_canoe.core.child_elements.communication_setup import CommunicationSetup
 from py_canoe.core.child_elements.distributed_mode import DistributedMode
@@ -877,23 +877,23 @@ class Configuration:
 
     def add_database(self, database_file: str, network: str | int) -> bool:
         """
-        添加db文件到指定通道
+        Add a database file to the specified channel/network
 
         Args:
-            database_file (str): db文件地址
-            network (str | int): 网络名字或通道号
+            database_file (str): Path to the database file
+            network (str | int): Network name or channel number
 
         Returns:
-            bool: True 表示成功，False 表示失败
+            bool: True for success, False for failure
         """
         try:
             if self.app.measurement.running:
                 logger.warning("Cannot add database while measurement is running. Please stop the measurement first.")
                 return False
             else:
-                # 判断是网络名字还是通道号
+                # Determine whether it is a network name or a channel number
                 if isinstance(network, str):
-                    # 根据网络名字获取通道号
+                    # Get the channel number based on the network name
                     for bus in self.simulation_setup.buses.item():
                         bus: Bus
                         if bus.name == network:
