@@ -1,10 +1,10 @@
 site_name: py-canoe
-site_url: https://chaitu-ycr.github.io/py-canoe/
+site_url: https://auto-py-utils.github.io/py-canoe/
 site_description: Python 🐍 Package for accessing Vector CANoe 🛶 Tool via COM Interface
-site_author: chaitu-ycr
+site_author: auto-py-utils
 
 repo_name: ""
-repo_url: https://github.com/chaitu-ycr/py-canoe
+repo_url: https://github.com/auto-py-utils/py-canoe
 edit_uri: blob/main/docs/
 
 nav:

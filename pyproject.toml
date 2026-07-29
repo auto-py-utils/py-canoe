@@ -5,7 +5,7 @@ description = "Python 🐍 Package for accessing Vector CANoe 🛶 Tool via COM 
 license = { file = "LICENSE" }
 readme = "README.md"
 requires-python = ">=3.10"
-authors = [{ name = "chaitu-ycr", email = "chaitu.ycr@gmail.com" }]
+authors = [{ name = "auto-py-utils", email = "chaitu.ycr@gmail.com" }]
 keywords = ["Vector", "CANoe", "Python","Test", "Automation"]
 classifiers = [
     "Programming Language :: Python :: 3.10",
@@ -52,9 +52,9 @@ dev = [
 ]
 
 [project.urls]
-homepage = "https://github.com/chaitu-ycr/py-canoe"
-repository = "https://github.com/chaitu-ycr/py-canoe"
-documentation = "https://chaitu-ycr.github.io/py-canoe/"
+homepage = "https://github.com/auto-py-utils/py-canoe"
+repository = "https://github.com/auto-py-utils/py-canoe"
+documentation = "https://auto-py-utils.github.io/py-canoe/"
 
 [tool.uv]
 package = true
