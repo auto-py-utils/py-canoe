@@ -380,9 +380,10 @@ canoe_inst.execute_test_module('demo_test_node_002')
 # get result: report path + all test case verdicts
 result = canoe_inst.get_test_module_result('demo_test_node_002')
 print(f"Verdict: {result['verdict_name']}")
+print(f"Pass rate: {result['pass_rate']:.1f}% ({result['passed']}/{result['total']})")
 print(f"Report: {result['report']['generated_full_name']}")
-for name, tc in result['test_cases'].items():
-    print(f"  {name}: {tc['verdict_name']} (enabled={tc['enabled']})")
+for tc in result['test_cases']:
+    print(f"  {tc['name']}: {tc['verdict_name']} (enabled={tc['enabled']})")
 
 canoe_inst.stop_measurement()
 ```
@@ -405,6 +406,54 @@ var_value = canoe_inst.get_environment_variable_value('float_var')
 var_value = canoe_inst.get_environment_variable_value('string_var')
 var_value = canoe_inst.get_environment_variable_value('data_var')
 canoe_inst.stop_measurement()
+```
+
+### add/remove network with channel control
+
+```python
+from py_canoe import CANoe, BusType
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
+
+# Add a CAN network with software channel 2
+canoe_inst.add_netWork('MyCAN', BusType.CAN, sw_channel=2)
+
+# Get or set channel count per bus type
+usage = canoe_inst.get_channelUsage(BusType.CAN)
+canoe_inst.set_channelUsage(BusType.CAN, 3)
+
+# Remove network by name (the last network cannot be removed)
+canoe_inst.remove_netWork('MyCAN')
+```
+
+### query and map hardware channels
+
+```python
+from py_canoe import CANoe, BusType
+
+# Hardware channel enumeration (before opening CANoe)
+can_channels = CANoe().get_hardware_channels(BusType.CAN)
+for ch in can_channels:
+    print(ch.label)  # "Ch00 idx=0 [VN1630 CAN/Piggy]"
+
+    # Map CANoe app-channel 0 to this physical channel
+    ch.apply_to("CANoe", 0, BusType.CAN)
+
+# Open CANoe and add network with hardware assignment
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
+
+# One-liner: add network + software channel + hardware channel
+canoe_inst.add_netWork_with_hardware(
+    'MyCAN2', BusType.CAN, sw_channel=1, hw_channel=can_channels[0])
+
+# Query current hardware-channel mapping
+hw = canoe_inst.get_hardware_config(0, BusType.CAN)
+print(hw.label if hw else "not mapped")
+
+# Clear all CANoe hardware mappings
+canoe_inst.clear_hardware_channels()
 ```
 
 ### add/remove database

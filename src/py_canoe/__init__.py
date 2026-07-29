@@ -2,6 +2,8 @@ from py_canoe.canoe import CANoe as CANoe
 from py_canoe.helpers.common import wait as wait
 from py_canoe.helpers.exceptions import PyCanoeError as PyCanoeError
 from py_canoe.helpers.exceptions import ConfigurationNotLoadedError as ConfigurationNotLoadedError
+from py_canoe.helpers.vxlapi import ChannelInfo as ChannelInfo
+from py_canoe.helpers.vxlapi import XlBusType as XlBusType
 
 
 sample_py_canoe_script = '''

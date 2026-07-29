@@ -3,7 +3,7 @@ import re
 import time
 from fnmatch import fnmatchcase
 import win32com.client
-from typing import TYPE_CHECKING, Iterable, Sequence
+from typing import TYPE_CHECKING, Iterable, Sequence, Union
 
 if TYPE_CHECKING:
     from py_canoe.core.application import Application
@@ -682,30 +682,44 @@ class Configuration:
         for tc_name, tc in all_test_cases.items():
             # Match against the requested attribute (name or title).
             match_value = tc.title if match_by == "title" else tc.name
-            should_enable = False
-            should_disable = False
+            matched_disable = False
+            matched_enable = False
 
             # Check disable patterns first (higher priority)
             for pattern in disable_patterns:
                 if self._match_test_case_name(match_value, pattern):
-                    should_disable = True
+                    matched_disable = True
                     break
 
-            # Check enable patterns only if not already matched by disable
-            if not should_disable:
+            # Check enable patterns only if not matched by disable
+            if not matched_disable:
                 for pattern in enable_patterns:
                     if self._match_test_case_name(match_value, pattern):
-                        should_enable = True
+                        matched_enable = True
                         break
 
-            if should_disable:
+            # Apply the decision:
+            #   - matched disable: always disable
+            #   - matched enable: always enable
+            #   - neither matched but enable patterns provided:
+            #     disable (user explicitly chose which cases to run)
+            #   - neither matched and no enable patterns:
+            #     leave as-is (disable-only mode, don't touch others)
+            if matched_disable:
                 if tc.enabled:
                     tc.enabled = False
-                    logger.info(f'Test case "{tc_name}" disabled by pattern match.')
-            elif should_enable:
+                    logger.debug(f'Test case "{tc_name}" disabled by pattern match.')
+            elif matched_enable:
                 if not tc.enabled:
                     tc.enabled = True
-                    logger.info(f'Test case "{tc_name}" enabled by pattern match.')
+                    logger.debug(f'Test case "{tc_name}" enabled by pattern match.')
+            elif enable_patterns:
+                # Enable patterns provided but this case didn't match any of
+                # them (and wasn't caught by a disable pattern either).
+                # Disable it so only the requested cases actually run.
+                if tc.enabled:
+                    tc.enabled = False
+                    logger.debug(f'Test case "{tc_name}" disabled (not in enable list).')
 
     def execute_test_module(self, test_module_name: str, enable_test_cases: Sequence[str] = (), disable_test_cases: Sequence[str] = (), match_by: str = "name") -> int:
         try:
@@ -741,16 +755,17 @@ class Configuration:
         return None
 
     def get_test_module_result(self, test_module_name: str, report_timeout: float = 30.0) -> dict:
-        """Get test module execution result including report path and test case verdicts.
+        """Get test module execution result including report path, test case
+        verdicts, and aggregated statistics.
 
         Should be called after execute_test_module() to retrieve the results.
 
         Note: This method does NOT depend on the module's started state. It reads
         the verdict and report information directly from the test module object,
         and waits (up to ``report_timeout`` seconds) for the report-generated
-        event if it has not fired yet. The returned ``test_cases`` are live
-        ``TestCase`` objects, so accessing their attributes (e.g. ``verdict``,
-        ``enabled``) reads the latest values from CANoe.
+        event if it has not fired yet. All returned data are plain Python objects
+        (snapshots), not live COM objects, so they remain valid after the CANoe
+        session ends.
 
         Args:
             test_module_name (str): name of the test module.
@@ -759,14 +774,33 @@ class Configuration:
 
         Returns:
             dict: A dictionary with keys:
+
+                - "test_module" (str): name of the test module
                 - "verdict" (int): overall test module verdict (0-5)
                 - "verdict_name" (str): human-readable verdict name
                 - "report" (dict): report information with keys:
                     - "success" (bool): whether report generation succeeded
                     - "source_full_name" (str): XML report path
                     - "generated_full_name" (str): HTML report path
-                - "test_cases" (dict[str, TestCase]): mapping of test case names
-                  to live TestCase objects (use .name/.enabled/.verdict/.title)
+                - "test_cases" (list[dict]): list of test case snapshots, each
+                  with keys: name, title, enabled, verdict, verdict_name
+                - "total" (int): total number of test cases
+                - "passed" (int): number of passed test cases
+                - "failed" (int): number of failed test cases
+                - "other" (int): number of test cases with other verdicts
+                  (NotAvailable, None, Inconclusive, ErrorInTestSystem)
+                - "pass_rate" (float): pass rate as a percentage (0.0-100.0),
+                  0.0 when there are no test cases
+
+        Example:
+            >>> result = cfg.get_test_module_result("MyModule")
+            >>> print(f"Module: {result['test_module']}")
+            >>> print(f"Verdict: {result['verdict_name']}")
+            >>> print(f"Pass rate: {result['pass_rate']:.1f}%")
+            >>> print(f"Passed: {result['passed']}/{result['total']}")
+            >>> print(f"Report: {result['report']['generated_full_name']}")
+            >>> for tc in result['test_cases']:
+            ...     print(f"  {tc['name']}: {tc['verdict_name']}")
         """
         try:
             tm_obj = self._find_test_module(test_module_name)
@@ -800,13 +834,29 @@ class Configuration:
                 "generated_full_name": report_info.get("generated_full_name", ""),
             }
 
-            test_cases = tm_obj.get_all_test_cases()
+            # Convert live COM objects to plain dicts so the data survives
+            # after the CANoe session ends and COM objects become invalid.
+            raw_cases = tm_obj.get_all_test_cases()
+            test_cases = [tc.to_dict() for tc in raw_cases.values()]
+
+            # Aggregate statistics
+            total = len(test_cases)
+            passed = sum(1 for tc in test_cases if tc["verdict"] == 1)
+            failed = sum(1 for tc in test_cases if tc["verdict"] == 2)
+            other = total - passed - failed
+            pass_rate = (passed / total * 100.0) if total > 0 else 0.0
 
             return {
+                "test_module": test_module_name,
                 "verdict": verdict,
                 "verdict_name": verdict_name,
                 "report": report,
-                "test_cases": test_cases
+                "test_cases": test_cases,
+                "total": total,
+                "passed": passed,
+                "failed": failed,
+                "other": other,
+                "pass_rate": pass_rate,
             }
 
         except Exception as e:
@@ -956,18 +1006,67 @@ class Configuration:
             logger.info(f"add TestEnvironment: {name}")
         return te
 
-    def add_netWork(self, network_name: str, network_type: BusType = BusType.CAN) -> Bus:
-        """adds a new network to the configuration. defaults to CAN (1) if no type is specified.
-        
+    def add_netWork(self, network_name: str, network_type: BusType = BusType.CAN,
+                    sw_channel: int = 1) -> Bus:
+        """Adds a new network to the configuration.
+
         Args:
-            network_name (str): name of the new network.
-            network_type (BusType): type of the new network (BusType.CAN for CAN, BusType.LIN for LIN, BusType.MOST for MOST, BusType.FlexRay for FlexRay, BusType.J1708 for J1708, BusType.Ethernet for Ethernet, BusType.WLAN for WLAN). Defaults to BusType.CAN.
+            network_name: Name of the new network.
+            network_type: Bus type.  Defaults to ``BusType.CAN``.
+            sw_channel: Software channel index (1-based) to assign.
+                Defaults to 1.
+
+        Returns:
+            The newly added :class:`Bus`, or *None* if a network with
+            the same name already exists.
         """
-        bus = self.simulation_setup.buses.add(network_name, network_type)
-        if bus is None:
-            logger.warning(f"Network {network_name} already exists.")
+        try:
+            bus = self.simulation_setup.buses.add(network_name, network_type)
+            if bus is None:
+                logger.warning(f"Network {network_name} already exists.")
+                return None
+            # Assign the software channel if it differs from the default (CAN 1)
+            if sw_channel != 1 and bus.channels.count > 0:
+                bus.channels.remove(1)
+            bus.channels.add(1, sw_channel)
+            return bus
+        except Exception as e:
+            logger.error(f"Failed to add network '{network_name}': {e}")
             return None
-        return bus
+
+    def remove_netWork(self, name: str) -> bool:
+        """Remove a network by name.
+
+        Args:
+            name: Network name to remove.
+
+        Returns:
+            True if found and removed.
+        """
+        try:
+            self.simulation_setup.buses.remove(name=name)
+            logger.info(f"Network '{name}' removed.")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to remove network '{name}': {e}")
+            return False
+
+    def remove_all_networks(self) -> int:
+        """Remove ALL networks from the simulation setup.
+
+        CANoe requires at least one bus, so this will leave one bus
+        remaining.  Returns the number of networks actually removed.
+        """
+        count = 0
+        names = []
+        for bus in self.simulation_setup.buses.item():
+            names.append(bus.name)
+        # Skip the last one — CANoe requires at least one bus
+        for name in names[:-1]:
+            if self.remove_netWork(name):
+                count += 1
+        logger.info(f"Removed {count} network(s).")
+        return count
 
     def get_mode(self) -> int:
         logger.info(f"CANoe Configuration mode = ({self.mode} - {'Offline mode' if self.mode == 1 else 'Online mode'})")
