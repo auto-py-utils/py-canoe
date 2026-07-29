@@ -1,4 +1,4 @@
-# [py-canoe](https://github.com/chaitu-ycr/py-canoe)
+# [py-canoe](https://github.com/auto-py-utils/py-canoe)
 
 ## 关于本包
 
@@ -8,11 +8,11 @@ Python 🐍 封装库，通过 COM 接口访问 Vector CANoe 🛶 工具
 
 ## 🔗 实用链接
 
-- [文档](https://chaitu-ycr.github.io/py-canoe/)
+- [文档](https://auto-py-utils.github.io/py-canoe/)
 - [PyPI 包](https://pypi.org/project/py-canoe/)
-- [GitHub 发布页](https://github.com/chaitu-ycr/py-canoe/releases)
-- [提交问题 / 请求功能](https://github.com/chaitu-ycr/py-canoe/issues/new/choose)
-- [Fork 仓库](https://github.com/chaitu-ycr/py-canoe/fork) 并创建 Pull Request 来贡献本项目，或在 LinkedIn 上发送你的 GitHub 用户名，我会将你添加为协作者。
+- [GitHub 发布页](https://github.com/auto-py-utils/py-canoe/releases)
+- [提交问题 / 请求功能](https://github.com/auto-py-utils/py-canoe/issues/new/choose)
+- [Fork 仓库](https://github.com/auto-py-utils/py-canoe/fork) 并创建 Pull Request 来贡献本项目，或在 LinkedIn 上发送你的 GitHub 用户名，我会将你添加为协作者。
 - [Vector CANoe 文档](https://help.vector.com/CANoeDEFamily/index.html)
 
 ## 前提条件

@@ -1,4 +1,4 @@
-# [py-canoe](https://github.com/chaitu-ycr/py-canoe)
+# [py-canoe](https://github.com/auto-py-utils/py-canoe)
 
 ## about package
 
@@ -8,12 +8,12 @@ Python 🐍 Package for accessing Vector CANoe 🛶 Tool via COM Interface
 
 ## 🔗 useful links
 
-- EN [documentation](https://chaitu-ycr.github.io/py-canoe/)
-- 🇨🇳 [中文文档 / Chinese Documentation](https://github.com/chaitu-ycr/py-canoe/blob/main/README_CN.md)
+- EN [documentation](https://auto-py-utils.github.io/py-canoe/)
+- 🇨🇳 [中文文档 / Chinese Documentation](https://github.com/auto-py-utils/py-canoe/blob/main/README_CN.md)
 - [pypi package](https://pypi.org/project/py-canoe/)
-- [github releases](https://github.com/chaitu-ycr/py-canoe/releases)
-- [create issue/request feature **here**](https://github.com/chaitu-ycr/py-canoe/issues/new/choose)
-- [fork repo](https://github.com/chaitu-ycr/py-canoe/fork) and create pull request to contribute back to this project. or message me your GitHub username in LinkedIn to add you as collaborator.
+- [github releases](https://github.com/auto-py-utils/py-canoe/releases)
+- [create issue/request feature **here**](https://github.com/auto-py-utils/py-canoe/issues/new/choose)
+- [fork repo](https://github.com/auto-py-utils/py-canoe/fork) and create pull request to contribute back to this project. or message me your GitHub username in LinkedIn to add you as collaborator.
 - [vector canoe documentation](https://help.vector.com/CANoeDEFamily/index.html)
 
 ## prerequisites
