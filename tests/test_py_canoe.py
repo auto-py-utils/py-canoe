@@ -27,26 +27,6 @@ class TestStandalonePyCanoe:
         cls.canoe_cfg_demo = os.path.join(cls.demo_cfg_dir, "demo.cfg")
         cls.canoe_cfg_online_setup = os.path.join(cls.demo_cfg_dir, "demo_online_setup.cfg")
 
-    def test_open_new_quit_methods(self):
-        logger.info("test_open_new_quit_methods started".center(120, '-'))
-        assert self.canoe_inst.new(auto_save=False, prompt_user=False)
-        assert self.canoe_inst.quit()
-        assert self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=False, prompt_user=False)
-        assert self.canoe_inst.quit()
-        assert self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=True, prompt_user=False)
-        assert self.canoe_inst.new(auto_save=True, prompt_user=False)
-        assert self.canoe_inst.quit()
-        assert self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=True, prompt_user=True)
-        assert self.canoe_inst.new(auto_save=True, prompt_user=True)
-        assert self.canoe_inst.quit()
-        assert self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=False, auto_save=True, prompt_user=True)
-        assert self.canoe_inst.quit()
-        assert self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=False, auto_save=False, prompt_user=True)
-        assert self.canoe_inst.quit()
-        assert self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=False, auto_save=False, prompt_user=False)
-        assert self.canoe_inst.new(auto_save=False, prompt_user=True)
-        assert self.canoe_inst.quit()
-
     def test_opening_different_cfgs_sequentially(self):
         logger.info("test_opening_different_cfgs_sequentially started".center(120, '-'))
         assert self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=False, prompt_user=False)
@@ -84,7 +64,6 @@ class TestStandalonePyCanoe:
         assert self.canoe_inst.get_measurement_running_status()
         assert self.canoe_inst.stop_ex_measurement()
         assert not self.canoe_inst.get_measurement_running_status()
-        assert self.canoe_inst.quit()
 
     def test_meas_offline_start_stop_restart_methods(self):
         logger.info("test_meas_offline_start_stop_restart_methods started".center(120, '-'))

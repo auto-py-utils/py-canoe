@@ -379,9 +379,10 @@ canoe_inst.execute_test_module('demo_test_node_002')
 # 获取结果：报告地址 + 所有测试用例判定
 result = canoe_inst.get_test_module_result('demo_test_node_002')
 print(f"判定结果: {result['verdict_name']}")
+print(f"通过率: {result['pass_rate']:.1f}% ({result['passed']}/{result['total']})")
 print(f"测试报告: {result['report']['generated_full_name']}")
-for name, tc in result['test_cases'].items():
-    print(f"  {name}: {tc.verdict_name} (已启用={tc.enabled})")
+for tc in result['test_cases']:
+    print(f"  {tc['name']}: {tc['verdict_name']} (已启用={tc['enabled']})")
 
 canoe_inst.stop_measurement()
 ```
@@ -518,12 +519,14 @@ from py_canoe.helpers.bus_type import BusType
 canoe_inst = CANoe()
 canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
 
-# 添加 CAN 网络
-canoe_inst.add_netWork('NewCAN', BusType.CAN)
+# 添加 CAN 网络（可指定软件通道号）
+canoe_inst.add_netWork('NewCAN', BusType.CAN, sw_channel=2)
 # 添加 LIN 网络
 canoe_inst.add_netWork('NewLIN', BusType.LIN)
 # 获取网络对象
-bus = canoe_inst.get_networks('CAN1')
+bus = canoe_inst.get_network('CAN1')
+# 按名称删除网络（最后一个网络无法删除）
+canoe_inst.remove_netWork('NewCAN')
 ```
 
 ### 获取/设置通道使用情况
@@ -539,6 +542,35 @@ canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
 usage = canoe_inst.get_channelUsage(BusType.CAN)
 # 设置 CAN 通道数量
 canoe_inst.set_channelUsage(BusType.CAN, 3)
+```
+
+### 查询和设置硬件通道映射
+
+```python
+from py_canoe import CANoe, BusType
+
+# 查询可用的 CAN 硬件通道（打开 CANoe 之前）
+can_channels = CANoe().get_hardware_channels(BusType.CAN)
+for ch in can_channels:
+    print(ch.label)  # "Ch00 idx=0 [VN1630 CAN/Piggy]"
+
+    # 将 CANoe 应用通道 0 映射到此物理通道
+    ch.apply_to("CANoe", 0, BusType.CAN)
+
+# 打开 CANoe 并添加网络（同时指定硬件通道）
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
+
+# 一站式：添加网络 + 软件通道 + 硬件通道
+canoe_inst.add_netWork_with_hardware(
+    'MyCAN2', BusType.CAN, sw_channel=1, hw_channel=can_channels[0])
+
+# 查询当前映射
+hw = canoe_inst.get_hardware_config(0, BusType.CAN)
+print(hw.label if hw else "未配置硬件通道")
+
+# 清空所有 CANoe 硬件通道映射
+canoe_inst.clear_hardware_channels()
 ```
 
 **参数说明：**

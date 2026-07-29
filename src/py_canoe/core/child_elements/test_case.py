@@ -10,6 +10,8 @@ class TestCase:
     use TestModule.get_all_test_cases() to get the latest state from CANoe.
     """
 
+    __test__ = False
+
     VALUE_TABLE_VERDICT = {
         0: "NotAvailable",
         1: "Passed",

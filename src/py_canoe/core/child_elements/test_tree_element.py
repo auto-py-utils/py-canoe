@@ -4,6 +4,9 @@ import win32com.client
 
 class TestTreeElementType(Enum):
     """Enum representing the types of test tree element."""
+
+    __test__ = False
+
     TEST_TYPE_RESERVED = 0
     TEST_CONFIGURATION = 1
     TEST_UNIT = 2

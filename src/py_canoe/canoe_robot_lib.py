@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 # THIS FILE IS AUTO-GENERATED - DO NOT EDIT MANUALLY
-# Generated: 2026-07-28T02:39:18.428877+00:00
-# py-canoe package version: 26.3.4
+# Generated: 2026-07-29T16:37:37.385816+00:00
+# py-canoe package version: 26.3.6
 # To update this file, run the generator: python -m py_canoe.helpers.gen_canoe_robot_lib
 # ---------------------------------------------------------------------------
 
@@ -15,6 +15,7 @@ from py_canoe.core.bus import Bus
 from py_canoe.core.capl import CompileResult
 from py_canoe.core.child_elements.test_environment import TestEnvironment
 from py_canoe.helpers.bus_type import BusType
+from py_canoe.helpers.vxlapi import ChannelInfo, HwType, VxlDriver, XlBusType
 
 from py_canoe.canoe import CANoe
 
@@ -548,16 +549,17 @@ class CanoeRobotLib:
 
     def canoe_get_test_module_result(self, test_module_name: str, report_timeout: float=30.0) -> dict:
         """
-        Get test module execution result including report path and test case verdicts.
+        Get test module execution result including report path, test case
+        verdicts, and aggregated statistics.
         
         Should be called after execute_test_module() to retrieve the results.
         
         Note: This method does NOT depend on the module's started state. It reads
         the verdict and report information directly from the test module object,
         and waits (up to ``report_timeout`` seconds) for the report-generated
-        event if it has not fired yet. The returned ``test_cases`` are live
-        ``TestCase`` objects, so accessing their attributes (e.g. ``verdict``,
-        ``enabled``) reads the latest values from CANoe.
+        event if it has not fired yet. All returned data are plain Python objects
+        (snapshots), not live COM objects, so they remain valid after the CANoe
+        session ends.
         
         Args:
             test_module_name (str): test module name.
@@ -566,22 +568,31 @@ class CanoeRobotLib:
         
         Returns:
             dict: A dictionary with keys:
+                - "test_module" (str): name of the test module
                 - "verdict" (int): overall test module verdict (0-5)
                 - "verdict_name" (str): human-readable verdict name
                 - "report" (dict): report information with keys:
                     - "success" (bool): whether report generation succeeded
                     - "source_full_name" (str): XML report path
                     - "generated_full_name" (str): HTML report path
-                - "test_cases" (dict[str, TestCase]): mapping of test case names
-                  to live TestCase objects (use .name/.enabled/.verdict/.title)
+                - "test_cases" (list[dict]): list of test case snapshots, each
+                  with keys: name, title, enabled, verdict, verdict_name
+                - "total" (int): total number of test cases
+                - "passed" (int): number of passed test cases
+                - "failed" (int): number of failed test cases
+                - "other" (int): number of test cases with other verdicts
+                - "pass_rate" (float): pass rate as a percentage (0.0-100.0)
         
         Example:
             >>> canoe.execute_test_module("MyModule")
             >>> result = canoe.get_test_module_result("MyModule")
+            >>> print(f"Module: {result['test_module']}")
             >>> print(f"Verdict: {result['verdict_name']}")
+            >>> print(f"Pass rate: {result['pass_rate']:.1f}%")
+            >>> print(f"Passed: {result['passed']}/{result['total']}")
             >>> print(f"Report: {result['report']['generated_full_name']}")
-            >>> for name, tc in result['test_cases'].items():
-            ...     print(f"  {name}: {tc.verdict_name}")
+            >>> for tc in result['test_cases']:
+            ...     print(f"  {tc['name']}: {tc['verdict_name']}")
         """
         return self._source.get_test_module_result(test_module_name, report_timeout)
 
@@ -661,15 +672,73 @@ class CanoeRobotLib:
         """
         return self._source.add_testEnvironments(name)
 
-    def canoe_add_netWork(self, network_name: str, network_type: BusType=BusType.CAN) -> Bus:
+    def canoe_add_netWork(self, network_name: str, network_type: BusType=BusType.CAN, sw_channel: int=1) -> Bus:
         """
-        adds a new network to the configuration.
+        Adds a new network to the configuration.
         
         Args:
-            network_name (str): name of the new network.
-            network_type (BusType): type of the new network (BusType.CAN for CAN, BusType.LIN for LIN, BusType.MOST for MOST, BusType.FlexRay for FlexRay, BusType.J1708 for J1708, BusType.Ethernet for Ethernet, BusType.WLAN for WLAN). Defaults to BusType.CAN.
+            network_name: Name of the new network.
+            network_type: Bus type. Defaults to BusType.CAN.
+            sw_channel: Software channel index (1-based) to assign.
+                Defaults to 1.
+        
+        Returns:
+            The newly added :class:`Bus` object.
         """
-        return self._source.add_netWork(network_name, network_type)
+        return self._source.add_netWork(network_name, network_type, sw_channel)
+
+    def canoe_add_netWork_with_hardware(self, network_name: str, network_type: BusType=BusType.CAN, sw_channel: int=1, hw_channel: ChannelInfo | None=None) -> Bus:
+        """
+        Add a network and optionally assign a physical hardware channel.
+        
+        This combines :meth:`add_netWork` + :meth:`set_hardware_channel`.
+        
+        Args:
+            network_name: Network name.
+            network_type: Bus type.
+            sw_channel: Software channel index (1-based).
+            hw_channel: Physical hardware channel from
+                :meth:`get_hardware_channels`.  Pass *None* to skip
+                hardware assignment.
+        
+        Returns:
+            The newly added :class:`Bus` object.
+        """
+        return self._source.add_netWork_with_hardware(network_name, network_type, sw_channel, hw_channel)
+
+    def canoe_remove_netWork(self, name: str) -> bool:
+        """
+        Remove a network by name.
+        
+        Note: CANoe requires at least one network.  The last remaining
+        network cannot be removed.
+        
+        Args:
+            name: Network name to remove.
+        
+        Returns:
+            True if the network was found and removed.
+        """
+        return self._source.remove_netWork(name)
+
+    def canoe_remove_all_networks(self) -> int:
+        """
+        Remove ALL networks from the simulation setup.
+        
+        Note: CANoe requires at least one network, so the last remaining
+        network is kept.  Returns the number of networks actually removed.
+        """
+        return self._source.remove_all_networks()
+
+    def canoe_get_network(self, network_name: str=None) -> Bus:
+        """
+        Return a specific network by name, or *None* if not found.
+        
+        Args:
+            network_name: name of the network to retrieve.  If None,
+                returns the first network found.
+        """
+        return self._source.get_network(network_name)
 
     def canoe_get_channelUsage(self, channel_type: BusType=BusType.CAN) -> list[dict]:
         """
@@ -690,14 +759,40 @@ class CanoeRobotLib:
         """
         return self._source.set_channelUsage(channel_type, channel_count)
 
-    def canoe_get_networks(self, network_name: str=None) -> Bus:
+    def canoe_get_hardware_channels(self, bus_type: BusType=BusType.CAN) -> list[ChannelInfo]:
         """
-        returns all available networks or a specific network by name.
+        Return available hardware channels for *bus_type*.
         
         Args:
-            network_name (str): name of the network to retrieve. If None, returns all networks. Defaults to None.
+            bus_type: CANoe bus type (BusType.CAN, BusType.LIN, etc.).
+        
+        Returns:
+            List of :class:`ChannelInfo` objects from the XL Driver.
         """
-        return self._source.get_networks(network_name)
+        return self._source.get_hardware_channels(bus_type)
+
+    def canoe_set_hardware_channel(self, app_channel: int, channel: ChannelInfo, bus_type: BusType=BusType.CAN) -> None:
+        """
+        Map CANoe logical *app_channel* (0, 1, ...) to a physical hardware
+        *channel* returned by :meth:`get_hardware_channels`.
+        
+        Example::
+        
+            chs = app.get_hardware_channels(BusType.CAN)
+            app.set_hardware_channel(0, chs[0], BusType.CAN)
+        """
+        return self._source.set_hardware_channel(app_channel, channel, bus_type)
+
+    def canoe_clear_hardware_channels(self) -> None:
+        """Remove all hardware channel mappings for CANoe."""
+        return self._source.clear_hardware_channels()
+
+    def canoe_get_hardware_config(self, app_channel: int, bus_type: BusType=BusType.CAN) -> ChannelInfo | None:
+        """
+        Return the hardware channel mapped to CANoe logical *app_channel*,
+        or *None* if not configured.
+        """
+        return self._source.get_hardware_config(app_channel, bus_type)
 
     def canoe_get_logging_blocks(self) -> list['Logging']:
         """Return all available logging blocks."""
