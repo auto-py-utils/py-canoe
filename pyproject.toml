@@ -27,14 +27,9 @@ gen-canoe-robot-lib = "py_canoe.helpers.gen_canoe_robot_lib:main"
 [project.optional-dependencies]
 robot = ["robotframework"]
 database = ["canmatrix[arxml,ldf,xls,xlsx,yaml]", "lxml>=6.1.1"]
-restapi = ["fastapi[standard]"]
-plot = ["plotly",]
-report = ["plotly",]
 all = [
     "robotframework",
-    "fastapi[standard]",
     "canmatrix[arxml,ldf,xls,xlsx,yaml]",
-    "plotly",
     "lxml>=6.1.1",
 ]
 
