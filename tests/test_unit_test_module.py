@@ -790,10 +790,16 @@ class TestGetTestModuleResult:
              patch("win32com.client.CastTo", side_effect=_cast_to_side_effect):
             result = cfg.get_test_module_result("TestMod1")
 
+        assert "test_module" in result
         assert "verdict" in result
         assert "verdict_name" in result
         assert "report" in result
         assert "test_cases" in result
+        assert "total" in result
+        assert "passed" in result
+        assert "failed" in result
+        assert "other" in result
+        assert "pass_rate" in result
 
     def test_result_verdict(self):
         cfg, tm = self._make_cfg_for_result([], verdict=2)
@@ -832,14 +838,80 @@ class TestGetTestModuleResult:
              patch("win32com.client.CastTo", side_effect=_cast_to_side_effect):
             result = cfg.get_test_module_result("TestMod1")
 
-        assert "TC_001" in result["test_cases"]
-        tc = result["test_cases"]["TC_001"]
-        # test_cases holds live TestCase objects (not dicts).
-        assert tc.name == "TC_001"
-        assert tc.enabled is True
-        assert tc.verdict == 1
-        assert tc.verdict_name == "Passed"
-        assert tc.title == "Test 1"
+        # test_cases is now a list of snapshot dicts
+        assert len(result["test_cases"]) == 1
+        tc = result["test_cases"][0]
+        assert tc["name"] == "TC_001"
+        assert tc["enabled"] is True
+        assert tc["verdict"] == 1
+        assert tc["verdict_name"] == "Passed"
+        assert tc["title"] == "Test 1"
+
+    def test_result_test_cases_are_snapshots(self):
+        """Returned test_cases must be plain dicts (not live COM objects)."""
+        cfg, tm = self._make_cfg_for_result([
+            {"name": "TC_001", "enabled": True, "verdict": 1, "title": "Test 1"},
+        ])
+
+        with patch("py_canoe.core.configuration.Configuration._find_test_module", return_value=tm), \
+             patch("win32com.client.Dispatch", side_effect=lambda x: x), \
+             patch("win32com.client.CastTo", side_effect=_cast_to_side_effect):
+            result = cfg.get_test_module_result("TestMod1")
+
+        assert isinstance(result["test_cases"], list)
+        for tc in result["test_cases"]:
+            assert isinstance(tc, dict), "test_cases should contain plain dicts, not live objects"
+
+    def test_result_statistics(self):
+        """Verify aggregated statistics are correct."""
+        cfg, tm = self._make_cfg_for_result([
+            {"name": "TC_001", "enabled": True, "verdict": 1, "title": "P"},
+            {"name": "TC_002", "enabled": True, "verdict": 2, "title": "F"},
+            {"name": "TC_003", "enabled": True, "verdict": 1, "title": "P2"},
+            {"name": "TC_004", "enabled": False, "verdict": 0, "title": "NA"},
+        ])
+
+        with patch("py_canoe.core.configuration.Configuration._find_test_module", return_value=tm), \
+             patch("win32com.client.Dispatch", side_effect=lambda x: x), \
+             patch("win32com.client.CastTo", side_effect=_cast_to_side_effect):
+            result = cfg.get_test_module_result("TestMod1")
+
+        assert result["test_module"] == "TestMod1"
+        assert result["total"] == 4
+        assert result["passed"] == 2
+        assert result["failed"] == 1
+        assert result["other"] == 1
+        assert result["pass_rate"] == 50.0
+
+    def test_result_statistics_all_passed(self):
+        cfg, tm = self._make_cfg_for_result([
+            {"name": "TC_001", "enabled": True, "verdict": 1, "title": "P"},
+            {"name": "TC_002", "enabled": True, "verdict": 1, "title": "P2"},
+        ])
+
+        with patch("py_canoe.core.configuration.Configuration._find_test_module", return_value=tm), \
+             patch("win32com.client.Dispatch", side_effect=lambda x: x), \
+             patch("win32com.client.CastTo", side_effect=_cast_to_side_effect):
+            result = cfg.get_test_module_result("TestMod1")
+
+        assert result["total"] == 2
+        assert result["passed"] == 2
+        assert result["failed"] == 0
+        assert result["pass_rate"] == 100.0
+
+    def test_result_statistics_empty(self):
+        cfg, tm = self._make_cfg_for_result([])
+
+        with patch("py_canoe.core.configuration.Configuration._find_test_module", return_value=tm), \
+             patch("win32com.client.Dispatch", side_effect=lambda x: x), \
+             patch("win32com.client.CastTo", side_effect=_cast_to_side_effect):
+            result = cfg.get_test_module_result("TestMod1")
+
+        assert result["total"] == 0
+        assert result["passed"] == 0
+        assert result["failed"] == 0
+        assert result["other"] == 0
+        assert result["pass_rate"] == 0.0
 
     def test_result_not_found_returns_empty(self):
         cfg = Configuration.__new__(Configuration)

@@ -1,4 +1,6 @@
 from typing import TYPE_CHECKING
+
+from py_canoe.core.child_elements.channel_mapping_sets import ChannelMappingSet, ChannelMappingSets
 if TYPE_CHECKING:
     from py_canoe.core.configuration import Configuration
 
@@ -25,14 +27,46 @@ class MeasurementSetup:
 
     @property
     def bus_statistics(self):
+        """Returns the BusStatistics object."""
         return self.com_object.BusStatistics
 
     @property
+    def early_filtering(self):
+        """Returns the EarlyFiltering object."""
+        return self.com_object.EarlyFiltering
+
+    @property
+    def ethernet_statistics_sys_var_as_struct(self) -> bool:
+        """Gets or sets whether Ethernet bus statistics system variables are
+        grouped into a struct per channel and port.
+        """
+        return self.com_object.EthernetStatisticsSysVarAsStruct
+
+    @ethernet_statistics_sys_var_as_struct.setter
+    def ethernet_statistics_sys_var_as_struct(self, value: bool):
+        self.com_object.EthernetStatisticsSysVarAsStruct = value
+
+    @property
+    def extended_ethernet_logging(self) -> bool:
+        """Gets or sets the extended Ethernet logging parameter.
+        Enables storage of subchannels and ports for network based mode.
+        """
+        return self.com_object.ExtendedEthernetLogging
+
+    @extended_ethernet_logging.setter
+    def extended_ethernet_logging(self, value: bool):
+        self.com_object.ExtendedEthernetLogging = value
+
+    @property
     def logging_collection(self):
+        """Returns the LoggingCollection object."""
         return LoggingCollection(self.com_object.LoggingCollection)
 
     @property
     def offline_source_root(self):
+        """Returns the root group of the offline sources.
+        MeasurementSetup must be an offline Measurement Setup.
+        """
         return self.com_object.OfflineSourceRoot
 
     @property
@@ -45,14 +79,17 @@ class MeasurementSetup:
 
     @property
     def source(self):
+        """Returns the data source of the offline Measurement Setup."""
         return self.com_object.Source
 
     @property
     def video_windows(self):
+        """Returns the VideoWindows object."""
         return self.com_object.VideoWindows
 
     @property
     def view_synchronization(self):
+        """Returns the ViewSynchronization object."""
         return self.com_object.ViewSynchronization
 
     @property
@@ -62,6 +99,154 @@ class MeasurementSetup:
     @working_mode.setter
     def working_mode(self, mode: int):
         self.com_object.WorkingMode = mode
+
+
+    def activate_end_block(self, name: str, activate: bool) -> None:
+        """Activates or deactivates an end block with the given name.
+
+        If multiple end blocks have the given name, all are activated/deactivated.
+
+        Args:
+            name: The name of the end block.
+            activate: True to activate, False to deactivate.
+        """
+        try:
+            self.com_object.ActivateEndBlock(name, activate)
+            logger.info(f'End block "{name}" {"activated" if activate else "deactivated"}.')
+        except Exception as e:
+            logger.error(f'Error activating end block "{name}": {e}')
+            raise
+
+    def create_mapping_set(self, mapping_set_name: str) -> 'ChannelMappingSet':
+        """Creates a new channel mapping set.
+
+        MeasurementSetup must be an offline Measurement Setup.
+
+        Args:
+            mapping_set_name: The name of the new channel mapping set.
+
+        Returns:
+            ChannelMappingSet: The newly created channel mapping set.
+        """
+        try:
+            return ChannelMappingSet(self.com_object.CreateMappingSet(mapping_set_name))
+        except Exception as e:
+            logger.error(f'Error creating mapping set "{mapping_set_name}": {e}')
+            raise
+
+    def export_mapping_sets(self, file_name: str) -> None:
+        """Exports all channel mapping sets to a CHMAP file.
+
+        MeasurementSetup must be an offline Measurement Setup.
+
+        Args:
+            file_name: Full path of the CHMAP file.
+        """
+        try:
+            self.com_object.ExportMappingSets(file_name)
+            logger.info(f'Mapping sets exported to "{file_name}".')
+        except Exception as e:
+            logger.error(f'Error exporting mapping sets: {e}')
+            raise
+
+    def get_all_mapping_sets(self) -> 'ChannelMappingSets':
+        """Returns a collection of all channel mapping sets.
+
+        MeasurementSetup must be an offline Measurement Setup.
+
+        Returns:
+            ChannelMappingSets: Collection of all mapping sets.
+        """
+        try:
+            return ChannelMappingSets(self.com_object.GetAllMappingSets())
+        except Exception as e:
+            logger.warning(f'Unable to get mapping sets (offline setup only): {e}')
+            return ChannelMappingSets(None)
+
+    def get_mapping_set_by_id(self, mapping_set_id: str) -> 'ChannelMappingSet':
+        """Returns the channel mapping set with the given ID.
+
+        MeasurementSetup must be an offline Measurement Setup.
+
+        Args:
+            mapping_set_id: The unique ID of the channel mapping set.
+
+        Returns:
+            ChannelMappingSet: The matching channel mapping set.
+        """
+        try:
+            return ChannelMappingSet(self.com_object.GetMappingSetById(mapping_set_id))
+        except Exception as e:
+            logger.error(f'Error getting mapping set by id "{mapping_set_id}": {e}')
+            raise
+
+    def get_mapping_set_by_name(self, mapping_set_name: str) -> 'ChannelMappingSet':
+        """Returns the channel mapping set with the given name.
+
+        If several channel mapping sets with this name exist, the first found
+        set is returned. MeasurementSetup must be an offline Measurement Setup.
+
+        Args:
+            mapping_set_name: The name of the channel mapping set.
+
+        Returns:
+            ChannelMappingSet: The matching channel mapping set.
+        """
+        try:
+            return ChannelMappingSet(self.com_object.GetMappingSetByName(mapping_set_name))
+        except Exception as e:
+            logger.error(f'Error getting mapping set by name "{mapping_set_name}": {e}')
+            raise
+
+    def import_mapping_sets(self, file_name: str, overwrite_existing: bool = False) -> 'ChannelMappingSets':
+        """Imports channel mapping sets from a CHMAP file.
+
+        MeasurementSetup must be an offline Measurement Setup.
+
+        Args:
+            file_name: Full path of the CHMAP file.
+            overwrite_existing: If True, existing mapping sets with the same ID
+                will be overwritten; if False, they are preserved.
+
+        Returns:
+            ChannelMappingSets: The imported mapping sets.
+        """
+        try:
+            return ChannelMappingSets(self.com_object.ImportMappingSets(file_name, overwrite_existing))
+        except Exception as e:
+            logger.error(f'Error importing mapping sets from "{file_name}": {e}')
+            raise
+
+    def import_measurement_setup(self, cfg_path: str) -> None:
+        """Imports the measurement setup from a configuration file.
+
+        CAPL files and logging file paths are automatically adapted to the
+        current configuration.
+
+        Args:
+            cfg_path: The path of the configuration file to import from.
+        """
+        try:
+            self.com_object.ImportMeasurementSetup(cfg_path)
+            logger.info(f'Measurement setup imported from "{cfg_path}".')
+        except Exception as e:
+            logger.error(f'Error importing measurement setup from "{cfg_path}": {e}')
+            raise
+
+    def remove_mapping_set(self, mapping_set: 'ChannelMappingSet') -> None:
+        """Removes a channel mapping set.
+
+        MeasurementSetup must be an offline Measurement Setup.
+
+        Args:
+            mapping_set: The ChannelMappingSet object to remove.
+        """
+        try:
+            self.com_object.RemoveMappingSet(mapping_set.com_object if hasattr(mapping_set, 'com_object') else mapping_set)
+            logger.info(f'Mapping set removed.')
+        except Exception as e:
+            logger.error(f'Error removing mapping set: {e}')
+            raise
 
 
 class LoggingCollection:

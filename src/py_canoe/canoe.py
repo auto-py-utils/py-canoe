@@ -15,10 +15,10 @@ if TYPE_CHECKING:
 from py_canoe.core.application import Application
 from py_canoe.core.bus import Bus
 from py_canoe.core.capl import CompileResult
-from py_canoe.core.child_elements.channel import Channel
 from py_canoe.core.child_elements.test_environment import TestEnvironment
 from py_canoe.helpers.bus_type import BusType
 from py_canoe.helpers.common import logger, update_logger_file_path
+from py_canoe.helpers.vxlapi import ChannelInfo, HwType, VxlDriver, XlBusType
 
 
 class CANoe:
@@ -625,16 +625,17 @@ class CANoe:
         return self.application.configuration.execute_test_module(test_module_name, enable_test_cases, disable_test_cases, match_by=match_by)
 
     def get_test_module_result(self, test_module_name: str, report_timeout: float = 30.0) -> dict:
-        """Get test module execution result including report path and test case verdicts.
+        """Get test module execution result including report path, test case
+        verdicts, and aggregated statistics.
 
         Should be called after execute_test_module() to retrieve the results.
 
         Note: This method does NOT depend on the module's started state. It reads
         the verdict and report information directly from the test module object,
         and waits (up to ``report_timeout`` seconds) for the report-generated
-        event if it has not fired yet. The returned ``test_cases`` are live
-        ``TestCase`` objects, so accessing their attributes (e.g. ``verdict``,
-        ``enabled``) reads the latest values from CANoe.
+        event if it has not fired yet. All returned data are plain Python objects
+        (snapshots), not live COM objects, so they remain valid after the CANoe
+        session ends.
 
         Args:
             test_module_name (str): test module name.
@@ -643,22 +644,31 @@ class CANoe:
 
         Returns:
             dict: A dictionary with keys:
+                - "test_module" (str): name of the test module
                 - "verdict" (int): overall test module verdict (0-5)
                 - "verdict_name" (str): human-readable verdict name
                 - "report" (dict): report information with keys:
                     - "success" (bool): whether report generation succeeded
                     - "source_full_name" (str): XML report path
                     - "generated_full_name" (str): HTML report path
-                - "test_cases" (dict[str, TestCase]): mapping of test case names
-                  to live TestCase objects (use .name/.enabled/.verdict/.title)
+                - "test_cases" (list[dict]): list of test case snapshots, each
+                  with keys: name, title, enabled, verdict, verdict_name
+                - "total" (int): total number of test cases
+                - "passed" (int): number of passed test cases
+                - "failed" (int): number of failed test cases
+                - "other" (int): number of test cases with other verdicts
+                - "pass_rate" (float): pass rate as a percentage (0.0-100.0)
 
         Example:
             >>> canoe.execute_test_module("MyModule")
             >>> result = canoe.get_test_module_result("MyModule")
+            >>> print(f"Module: {result['test_module']}")
             >>> print(f"Verdict: {result['verdict_name']}")
+            >>> print(f"Pass rate: {result['pass_rate']:.1f}%")
+            >>> print(f"Passed: {result['passed']}/{result['total']}")
             >>> print(f"Report: {result['report']['generated_full_name']}")
-            >>> for name, tc in result['test_cases'].items():
-            ...     print(f"  {name}: {tc.verdict_name}")
+            >>> for tc in result['test_cases']:
+            ...     print(f"  {tc['name']}: {tc['verdict_name']}")
         """
         return self.application.configuration.get_test_module_result(test_module_name, report_timeout=report_timeout)
 
@@ -734,14 +744,79 @@ class CANoe:
         """
         return self.application.configuration.add_testEnvironments(name)
     
-    def add_netWork(self, network_name: str, network_type: BusType = BusType.CAN) -> Bus:
-        """adds a new network to the configuration.
-        
+    def add_netWork(self, network_name: str, network_type: BusType = BusType.CAN,
+                    sw_channel: int = 1) -> Bus:
+        """Adds a new network to the configuration.
+
         Args:
-            network_name (str): name of the new network.
-            network_type (BusType): type of the new network (BusType.CAN for CAN, BusType.LIN for LIN, BusType.MOST for MOST, BusType.FlexRay for FlexRay, BusType.J1708 for J1708, BusType.Ethernet for Ethernet, BusType.WLAN for WLAN). Defaults to BusType.CAN.
+            network_name: Name of the new network.
+            network_type: Bus type. Defaults to BusType.CAN.
+            sw_channel: Software channel index (1-based) to assign.
+                Defaults to 1.
+
+        Returns:
+            The newly added :class:`Bus` object.
         """
-        return self.application.configuration.add_netWork(network_name, network_type)
+        return self.application.configuration.add_netWork(network_name, network_type, sw_channel)
+
+    def add_netWork_with_hardware(self, network_name: str,
+                                   network_type: BusType = BusType.CAN,
+                                   sw_channel: int = 1,
+                                   hw_channel: ChannelInfo | None = None) -> Bus:
+        """Add a network and optionally assign a physical hardware channel.
+
+        This combines :meth:`add_netWork` + :meth:`set_hardware_channel`.
+
+        Args:
+            network_name: Network name.
+            network_type: Bus type.
+            sw_channel: Software channel index (1-based).
+            hw_channel: Physical hardware channel from
+                :meth:`get_hardware_channels`.  Pass *None* to skip
+                hardware assignment.
+
+        Returns:
+            The newly added :class:`Bus` object.
+        """
+        bus = self.add_netWork(network_name, network_type, sw_channel)
+        if hw_channel is not None:
+            # app-channel is 0-based; sw_channel is 1-based
+            self.set_hardware_channel(sw_channel - 1, hw_channel, network_type)
+        return bus
+
+    def remove_netWork(self, name: str) -> bool:
+        """Remove a network by name.
+
+        Note: CANoe requires at least one network.  The last remaining
+        network cannot be removed.
+
+        Args:
+            name: Network name to remove.
+
+        Returns:
+            True if the network was found and removed.
+        """
+        return self.application.configuration.remove_netWork(name)
+
+    def remove_all_networks(self) -> int:
+        """Remove ALL networks from the simulation setup.
+
+        Note: CANoe requires at least one network, so the last remaining
+        network is kept.  Returns the number of networks actually removed.
+        """
+        return self.application.configuration.remove_all_networks()
+
+    def get_network(self,network_name: str = None) -> Bus:
+        """Return a specific network by name, or *None* if not found.
+
+        Args:
+            network_name: name of the network to retrieve.  If None,
+                returns the first network found.
+        """
+        for bus in self.application.configuration.simulation_setup.buses.item():
+            if bus.name == network_name:
+                return bus
+        return None
     
     def get_channelUsage(self, channel_type:BusType = BusType.CAN) -> list[dict]:
         """returns all available channels of a specific type.
@@ -761,17 +836,57 @@ class CANoe:
         self.application.configuration.general_setup.set_channels_count(channel_type.value, channel_count)
 
         return self.get_channelUsage(channel_type) == channel_count
-    
-    def get_networks(self,network_name: str = None) -> Bus:
-        """returns all available networks or a specific network by name.
+
+    # -- hardware channel mapping (XL Driver) --------------------------------
+
+    _BUS_MAP = {BusType.CAN: XlBusType.CAN, BusType.LIN: XlBusType.LIN,
+                 BusType.FlexRay: XlBusType.FLEXRAY, BusType.Ethernet: XlBusType.ETHERNET}
+
+    @staticmethod
+    def _to_xl_bus(bus_type: BusType) -> XlBusType:
+        if bus_type not in CANoe._BUS_MAP:
+            raise ValueError(f"Unsupported BusType for hardware mapping: {bus_type}")
+        return CANoe._BUS_MAP[bus_type]
+
+    def get_hardware_channels(self, bus_type: BusType = BusType.CAN) -> list[ChannelInfo]:
+        """Return available hardware channels for *bus_type*.
 
         Args:
-            network_name (str): name of the network to retrieve. If None, returns all networks. Defaults to None.
+            bus_type: CANoe bus type (BusType.CAN, BusType.LIN, etc.).
+
+        Returns:
+            List of :class:`ChannelInfo` objects from the XL Driver.
         """
-        for bus in self.application.configuration.simulation_setup.buses.item():
-            if bus.name == network_name:
-                return bus
-        return None
+        with VxlDriver() as drv:
+            return drv.get_channels(self._to_xl_bus(bus_type))
+
+    def set_hardware_channel(self, app_channel: int, channel: ChannelInfo,
+                             bus_type: BusType = BusType.CAN) -> None:
+        """Map CANoe logical *app_channel* (0, 1, ...) to a physical hardware
+        *channel* returned by :meth:`get_hardware_channels`.
+
+        Example::
+
+            chs = app.get_hardware_channels(BusType.CAN)
+            app.set_hardware_channel(0, chs[0], BusType.CAN)
+        """
+        with VxlDriver() as drv:
+            drv.set_appl_config("CANoe", app_channel, channel, bus=self._to_xl_bus(bus_type))
+
+    def clear_hardware_channels(self) -> None:
+        """Remove all hardware channel mappings for CANoe."""
+        with VxlDriver() as drv:
+            drv.unset_all_appl_config("CANoe")
+
+    def get_hardware_config(self, app_channel: int,
+                            bus_type: BusType = BusType.CAN) -> ChannelInfo | None:
+        """Return the hardware channel mapped to CANoe logical *app_channel*,
+        or *None* if not configured."""
+        with VxlDriver() as drv:
+            return drv.get_appl_config("CANoe", app_channel, self._to_xl_bus(bus_type))
+
+    # -----------------------------------------------------------------------
+
 
     def get_logging_blocks(self) -> list['Logging']:
         """Return all available logging blocks."""
