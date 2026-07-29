@@ -8,6 +8,9 @@ TEST_MODULE_START_EVENT_TIMEOUT = 5  # seconds
 
 class TestModuleEvents:
     """test module events object."""
+
+    __test__ = False
+
     def __init__(self):
         self.TM_STARTED = False
         self.TM_PAUSED = False
@@ -47,6 +50,8 @@ class TestModuleEvents:
 
 class TestModule:
     """The TestModule object represents a test module in CANoe's test setup."""
+
+    __test__ = False
 
     def __init__(self, com_object):
         self.com_object = win32com.client.Dispatch(com_object)
@@ -217,7 +222,7 @@ class TestModule:
     # --- Test Case Methods ---
 
     @property
-    def Sequence(self):
+    def sequence(self):
         """Returns the Sequence object of the test module.
 
         The Sequence contains test cases and test groups as a tree structure.
@@ -270,7 +275,7 @@ class TestModule:
         """
         test_cases = {}
         try:
-            self._collect_test_cases(self.Sequence, test_cases)
+            self._collect_test_cases(self.sequence, test_cases)
         except Exception as e:
             logger.error(f'Error fetching test cases for test module ({self.name}): {e}')
         return test_cases
