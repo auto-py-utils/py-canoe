@@ -69,6 +69,10 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration.comment">comment</a>
     </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration.add_database">add_database</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration.add_netWork">add_netWork</a>
+    </li>
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration.fetch_test_modules">fetch_test_modules</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration.fetch_test_units">fetch_test_units</a>
@@ -76,6 +80,10 @@
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration.get_compilation_result">get_compilation_result</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration.get_test_module_result">get_test_module_result</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration.remove_all_networks">remove_all_networks</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration.remove_netWork">remove_netWork</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.configuration.Configuration.run_compilation">run_compilation</a>
     </li>
@@ -151,17 +159,17 @@
 
                   <details class="quote">
                     <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">50</span>
 <span class="normal">51</span>
 <span class="normal">52</span>
 <span class="normal">53</span>
 <span class="normal">54</span>
 <span class="normal">55</span>
-<span class="normal">56</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">:</span> <span class="s1">&#39;Application&#39;</span><span class="p">):</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">:</span> <span class="s1">&#39;Application&#39;</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">app</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">bus_types</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">bus_types</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">com_object</span> <span class="o">=</span> <span class="n">win32com</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">Dispatch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">com_object</span><span class="o">.</span><span class="n">Configuration</span><span class="p">)</span>
@@ -235,6 +243,326 @@
 <div class="doc doc-object doc-function">
 
 
+<h2 id="src.py_canoe.core.configuration.Configuration.add_database" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">add_database</span><span class="p">(</span><span class="n">database_file</span><span class="p">,</span> <span class="n">network</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Add a database file to the specified channel/network</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>database_file</code></b>
+                  (<code><span title="str">str</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Path to the database file</p>
+              </div>
+            </li>
+            <li>
+              <b><code>network</code></b>
+                  (<code><span title="str">str</span> | <span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Network name or channel number</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>bool</code></b>(                  <code><span title="bool">bool</span></code>
+)              –
+              <div class="doc-md-description">
+                <p>True for success, False for failure</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">928</span>
+<span class="normal">929</span>
+<span class="normal">930</span>
+<span class="normal">931</span>
+<span class="normal">932</span>
+<span class="normal">933</span>
+<span class="normal">934</span>
+<span class="normal">935</span>
+<span class="normal">936</span>
+<span class="normal">937</span>
+<span class="normal">938</span>
+<span class="normal">939</span>
+<span class="normal">940</span>
+<span class="normal">941</span>
+<span class="normal">942</span>
+<span class="normal">943</span>
+<span class="normal">944</span>
+<span class="normal">945</span>
+<span class="normal">946</span>
+<span class="normal">947</span>
+<span class="normal">948</span>
+<span class="normal">949</span>
+<span class="normal">950</span>
+<span class="normal">951</span>
+<span class="normal">952</span>
+<span class="normal">953</span>
+<span class="normal">954</span>
+<span class="normal">955</span>
+<span class="normal">956</span>
+<span class="normal">957</span>
+<span class="normal">958</span>
+<span class="normal">959</span>
+<span class="normal">960</span>
+<span class="normal">961</span>
+<span class="normal">962</span>
+<span class="normal">963</span>
+<span class="normal">964</span>
+<span class="normal">965</span>
+<span class="normal">966</span>
+<span class="normal">967</span>
+<span class="normal">968</span>
+<span class="normal">969</span>
+<span class="normal">970</span>
+<span class="normal">971</span>
+<span class="normal">972</span>
+<span class="normal">973</span>
+<span class="normal">974</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">network</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add a database file to the specified channel/network</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        database_file (str): Path to the database file</span>
+<span class="sd">        network (str | int): Network name or channel number</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True for success, False for failure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">measurement</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Cannot add database while measurement is running. Please stop the measurement first.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Determine whether it is a network name or a channel number</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="c1"># Get the channel number based on the network name</span>
+                <span class="k">for</span> <span class="n">bus</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation_setup</span><span class="o">.</span><span class="n">buses</span><span class="o">.</span><span class="n">item</span><span class="p">():</span>
+                    <span class="n">bus</span><span class="p">:</span> <span class="n">Bus</span>
+                    <span class="k">if</span> <span class="n">bus</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">network</span><span class="p">:</span>
+                        <span class="n">bus</span><span class="o">.</span><span class="n">databases</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">database_file</span><span class="p">)</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Database &quot;</span><span class="si">{</span><span class="n">database_file</span><span class="si">}</span><span class="s1">&quot; added successfully to network &quot;</span><span class="si">{</span><span class="n">network</span><span class="si">}</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="kc">True</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Network &quot;</span><span class="si">{</span><span class="n">network</span><span class="si">}</span><span class="s1">&quot; not found. Cannot add database.&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">bus</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation_setup</span><span class="o">.</span><span class="n">buses</span><span class="o">.</span><span class="n">item</span><span class="p">():</span>
+                    <span class="n">bus</span><span class="p">:</span> <span class="n">Bus</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Checking bus: </span><span class="si">{</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, channels: </span><span class="si">{</span><span class="p">[</span><span class="n">channel</span><span class="o">.</span><span class="n">number</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">channel</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">bus</span><span class="o">.</span><span class="n">channels</span><span class="o">.</span><span class="n">item</span><span class="p">()]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">bus</span><span class="o">.</span><span class="n">channels</span><span class="o">.</span><span class="n">item</span><span class="p">():</span>
+                        <span class="n">channel</span><span class="p">:</span> <span class="n">Channel</span>
+                        <span class="k">if</span> <span class="n">channel</span><span class="o">.</span><span class="n">number</span> <span class="o">==</span> <span class="n">network</span><span class="p">:</span>
+                            <span class="n">bus</span><span class="o">.</span><span class="n">databases</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">database_file</span><span class="p">)</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Database &quot;</span><span class="si">{</span><span class="n">database_file</span><span class="si">}</span><span class="s1">&quot; added successfully to channel </span><span class="si">{</span><span class="n">channel</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s1">, bus.name: </span><span class="si">{</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+                            <span class="k">return</span> <span class="kc">True</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Channel </span><span class="si">{</span><span class="n">network</span><span class="si">}</span><span class="s1"> not found. Cannot add database.&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid network type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">network</span><span class="p">)</span><span class="si">}</span><span class="s1">. Must be str (network name) or int (channel number).&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+        <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error adding database &#39;</span><span class="si">{</span><span class="n">database_file</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="src.py_canoe.core.configuration.Configuration.add_netWork" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">add_netWork</span><span class="p">(</span><span class="n">network_name</span><span class="p">,</span> <span class="n">network_type</span><span class="o">=</span><span class="n">BusType</span><span class="o">.</span><span class="n">CAN</span><span class="p">,</span> <span class="n">sw_channel</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Adds a new network to the configuration.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>network_name</code></b>
+                  (<code><span title="str">str</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Name of the new network.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>network_type</code></b>
+                  (<code><span title="py_canoe.helpers.bus_type.BusType">BusType</span></code>, default:
+                      <code><span title="py_canoe.helpers.bus_type.BusType.CAN">CAN</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Bus type.  Defaults to <code>BusType.CAN</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>sw_channel</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>1</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Software channel index (1-based) to assign.
+Defaults to 1.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="py_canoe.core.bus.Bus">Bus</span></code>
+              –
+              <div class="doc-md-description">
+                <p>The newly added :class:<code>Bus</code>, or <em>None</em> if a network with</p>
+              </div>
+            </li>
+            <li>
+                  <code><span title="py_canoe.core.bus.Bus">Bus</span></code>
+              –
+              <div class="doc-md-description">
+                <p>the same name already exists.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1009</span>
+<span class="normal">1010</span>
+<span class="normal">1011</span>
+<span class="normal">1012</span>
+<span class="normal">1013</span>
+<span class="normal">1014</span>
+<span class="normal">1015</span>
+<span class="normal">1016</span>
+<span class="normal">1017</span>
+<span class="normal">1018</span>
+<span class="normal">1019</span>
+<span class="normal">1020</span>
+<span class="normal">1021</span>
+<span class="normal">1022</span>
+<span class="normal">1023</span>
+<span class="normal">1024</span>
+<span class="normal">1025</span>
+<span class="normal">1026</span>
+<span class="normal">1027</span>
+<span class="normal">1028</span>
+<span class="normal">1029</span>
+<span class="normal">1030</span>
+<span class="normal">1031</span>
+<span class="normal">1032</span>
+<span class="normal">1033</span>
+<span class="normal">1034</span>
+<span class="normal">1035</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_netWork</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">network_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">network_type</span><span class="p">:</span> <span class="n">BusType</span> <span class="o">=</span> <span class="n">BusType</span><span class="o">.</span><span class="n">CAN</span><span class="p">,</span>
+                <span class="n">sw_channel</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bus</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Adds a new network to the configuration.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        network_name: Name of the new network.</span>
+<span class="sd">        network_type: Bus type.  Defaults to ``BusType.CAN``.</span>
+<span class="sd">        sw_channel: Software channel index (1-based) to assign.</span>
+<span class="sd">            Defaults to 1.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The newly added :class:`Bus`, or *None* if a network with</span>
+<span class="sd">        the same name already exists.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">bus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation_setup</span><span class="o">.</span><span class="n">buses</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network_name</span><span class="p">,</span> <span class="n">network_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">bus</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Network </span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s2"> already exists.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="c1"># Assign the software channel if it differs from the default (CAN 1)</span>
+        <span class="k">if</span> <span class="n">sw_channel</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">bus</span><span class="o">.</span><span class="n">channels</span><span class="o">.</span><span class="n">count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">bus</span><span class="o">.</span><span class="n">channels</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">bus</span><span class="o">.</span><span class="n">channels</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">sw_channel</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bus</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to add network &#39;</span><span class="si">{</span><span class="n">network_name</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h2 id="src.py_canoe.core.configuration.Configuration.fetch_test_modules" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">fetch_test_modules</span><span class="p">()</span></code>
 
@@ -248,18 +576,18 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">62</span>
 <span class="normal">63</span>
-<span class="normal">64</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">fetch_test_modules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">fetch_test_modules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all test modules from all test environments and store them in self.__test_modules.&quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">te_name</span><span class="p">,</span> <span class="n">te_inst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__test_setup_environments</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">for</span> <span class="n">tm_name</span><span class="p">,</span> <span class="n">tm_inst</span> <span class="ow">in</span> <span class="n">te_inst</span><span class="o">.</span><span class="n">get_all_test_modules</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="c1"># A TestSetupItem object that either can be a TSTestModule object or a TestSetupFolder object.</span>
-            <span class="c1"># TestSetupFolder有items，包含TestSetupItems</span>
+            <span class="c1"># A TestSetupFolder has items that contain nested TestSetupItems.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__test_modules</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">tm_name</span><span class="p">,</span> <span class="s1">&#39;object&#39;</span><span class="p">:</span> <span class="n">tm_inst</span><span class="p">,</span> <span class="s1">&#39;environment&#39;</span><span class="p">:</span> <span class="n">te_name</span><span class="p">})</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -283,13 +611,13 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">66</span>
-<span class="normal">67</span>
-<span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">70</span>
 <span class="normal">71</span>
-<span class="normal">72</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">fetch_test_units</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">fetch_test_units</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all test units from all test configurations and store them in self.__test_units.&quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">tc_name</span><span class="p">,</span> <span class="n">tc_inst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__test_configurations</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">for</span> <span class="n">tu_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">tc_inst</span><span class="o">.</span><span class="n">test_units</span><span class="o">.</span><span class="n">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
@@ -360,11 +688,7 @@ if result["success"]:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">188</span>
 <span class="normal">189</span>
 <span class="normal">190</span>
 <span class="normal">191</span>
@@ -383,7 +707,11 @@ if result["success"]:
 <span class="normal">204</span>
 <span class="normal">205</span>
 <span class="normal">206</span>
-<span class="normal">207</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_compilation_result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]:</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_compilation_result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get CAPL compilation result with error details.</span>
 
 <span class="sd">    Compiles all CAPL code in the current configuration and returns</span>
@@ -424,14 +752,15 @@ if result["success"]:
 
     <div class="doc doc-contents ">
 
-        <p>Get test module execution result including report path and test case verdicts.</p>
+        <p>Get test module execution result including report path, test case
+verdicts, and aggregated statistics.</p>
 <p>Should be called after execute_test_module() to retrieve the results.</p>
 <p>Note: This method does NOT depend on the module's started state. It reads
 the verdict and report information directly from the test module object,
 and waits (up to <code>report_timeout</code> seconds) for the report-generated
-event if it has not fired yet. The returned <code>test_cases</code> are live
-<code>TestCase</code> objects, so accessing their attributes (e.g. <code>verdict</code>,
-<code>enabled</code>) reads the latest values from CANoe.</p>
+event if it has not fired yet. All returned data are plain Python objects
+(snapshots), not live COM objects, so they remain valid after the CANoe
+session ends.</p>
 
 
 <table class="field-list">
@@ -483,15 +812,27 @@ report-generated event before giving up. Defaults to 30.0.</p>
 <b><code>dict</code></b>(                  <code><span title="dict">dict</span></code>
 )              –
               <div class="doc-md-description">
-                <p>A dictionary with keys:
-- "verdict" (int): overall test module verdict (0-5)
-- "verdict_name" (str): human-readable verdict name
-- "report" (dict): report information with keys:
-    - "success" (bool): whether report generation succeeded
-    - "source_full_name" (str): XML report path
-    - "generated_full_name" (str): HTML report path
-- "test_cases" (dict[str, TestCase]): mapping of test case names
-  to live TestCase objects (use .name/.enabled/.verdict/.title)</p>
+                <p>A dictionary with keys:</p>
+<ul>
+<li>"test_module" (str): name of the test module</li>
+<li>"verdict" (int): overall test module verdict (0-5)</li>
+<li>"verdict_name" (str): human-readable verdict name</li>
+<li>"report" (dict): report information with keys:<ul>
+<li>"success" (bool): whether report generation succeeded</li>
+<li>"source_full_name" (str): XML report path</li>
+<li>"generated_full_name" (str): HTML report path</li>
+</ul>
+</li>
+<li>"test_cases" (list[dict]): list of test case snapshots, each
+  with keys: name, title, enabled, verdict, verdict_name</li>
+<li>"total" (int): total number of test cases</li>
+<li>"passed" (int): number of passed test cases</li>
+<li>"failed" (int): number of failed test cases</li>
+<li>"other" (int): number of test cases with other verdicts
+  (NotAvailable, None, Inconclusive, ErrorInTestSystem)</li>
+<li>"pass_rate" (float): pass rate as a percentage (0.0-100.0),
+  0.0 when there are no test cases</li>
+</ul>
               </div>
             </li>
         </ul>
@@ -500,26 +841,27 @@ report-generated event before giving up. Defaults to 30.0.</p>
   </tbody>
 </table>
 
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>result = cfg.get_test_module_result("MyModule")
+print(f"Module: {result['test_module']}")
+print(f"Verdict: {result['verdict_name']}")
+print(f"Pass rate: {result['pass_rate']:.1f}%")
+print(f"Passed: {result['passed']}/{result['total']}")
+print(f"Report: {result['report']['generated_full_name']}")
+for tc in result['test_cases']:
+...     print(f"  {tc['name']}: {tc['verdict_name']}")</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">740</span>
-<span class="normal">741</span>
-<span class="normal">742</span>
-<span class="normal">743</span>
-<span class="normal">744</span>
-<span class="normal">745</span>
-<span class="normal">746</span>
-<span class="normal">747</span>
-<span class="normal">748</span>
-<span class="normal">749</span>
-<span class="normal">750</span>
-<span class="normal">751</span>
-<span class="normal">752</span>
-<span class="normal">753</span>
-<span class="normal">754</span>
-<span class="normal">755</span>
-<span class="normal">756</span>
-<span class="normal">757</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">757</span>
 <span class="normal">758</span>
 <span class="normal">759</span>
 <span class="normal">760</span>
@@ -573,17 +915,71 @@ report-generated event before giving up. Defaults to 30.0.</p>
 <span class="normal">808</span>
 <span class="normal">809</span>
 <span class="normal">810</span>
-<span class="normal">811</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_test_module_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">report_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get test module execution result including report path and test case verdicts.</span>
+<span class="normal">811</span>
+<span class="normal">812</span>
+<span class="normal">813</span>
+<span class="normal">814</span>
+<span class="normal">815</span>
+<span class="normal">816</span>
+<span class="normal">817</span>
+<span class="normal">818</span>
+<span class="normal">819</span>
+<span class="normal">820</span>
+<span class="normal">821</span>
+<span class="normal">822</span>
+<span class="normal">823</span>
+<span class="normal">824</span>
+<span class="normal">825</span>
+<span class="normal">826</span>
+<span class="normal">827</span>
+<span class="normal">828</span>
+<span class="normal">829</span>
+<span class="normal">830</span>
+<span class="normal">831</span>
+<span class="normal">832</span>
+<span class="normal">833</span>
+<span class="normal">834</span>
+<span class="normal">835</span>
+<span class="normal">836</span>
+<span class="normal">837</span>
+<span class="normal">838</span>
+<span class="normal">839</span>
+<span class="normal">840</span>
+<span class="normal">841</span>
+<span class="normal">842</span>
+<span class="normal">843</span>
+<span class="normal">844</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span>
+<span class="normal">853</span>
+<span class="normal">854</span>
+<span class="normal">855</span>
+<span class="normal">856</span>
+<span class="normal">857</span>
+<span class="normal">858</span>
+<span class="normal">859</span>
+<span class="normal">860</span>
+<span class="normal">861</span>
+<span class="normal">862</span>
+<span class="normal">863</span>
+<span class="normal">864</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_test_module_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">report_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get test module execution result including report path, test case</span>
+<span class="sd">    verdicts, and aggregated statistics.</span>
 
 <span class="sd">    Should be called after execute_test_module() to retrieve the results.</span>
 
 <span class="sd">    Note: This method does NOT depend on the module&#39;s started state. It reads</span>
 <span class="sd">    the verdict and report information directly from the test module object,</span>
 <span class="sd">    and waits (up to ``report_timeout`` seconds) for the report-generated</span>
-<span class="sd">    event if it has not fired yet. The returned ``test_cases`` are live</span>
-<span class="sd">    ``TestCase`` objects, so accessing their attributes (e.g. ``verdict``,</span>
-<span class="sd">    ``enabled``) reads the latest values from CANoe.</span>
+<span class="sd">    event if it has not fired yet. All returned data are plain Python objects</span>
+<span class="sd">    (snapshots), not live COM objects, so they remain valid after the CANoe</span>
+<span class="sd">    session ends.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        test_module_name (str): name of the test module.</span>
@@ -592,14 +988,33 @@ report-generated event before giving up. Defaults to 30.0.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        dict: A dictionary with keys:</span>
+
+<span class="sd">            - &quot;test_module&quot; (str): name of the test module</span>
 <span class="sd">            - &quot;verdict&quot; (int): overall test module verdict (0-5)</span>
 <span class="sd">            - &quot;verdict_name&quot; (str): human-readable verdict name</span>
 <span class="sd">            - &quot;report&quot; (dict): report information with keys:</span>
 <span class="sd">                - &quot;success&quot; (bool): whether report generation succeeded</span>
 <span class="sd">                - &quot;source_full_name&quot; (str): XML report path</span>
 <span class="sd">                - &quot;generated_full_name&quot; (str): HTML report path</span>
-<span class="sd">            - &quot;test_cases&quot; (dict[str, TestCase]): mapping of test case names</span>
-<span class="sd">              to live TestCase objects (use .name/.enabled/.verdict/.title)</span>
+<span class="sd">            - &quot;test_cases&quot; (list[dict]): list of test case snapshots, each</span>
+<span class="sd">              with keys: name, title, enabled, verdict, verdict_name</span>
+<span class="sd">            - &quot;total&quot; (int): total number of test cases</span>
+<span class="sd">            - &quot;passed&quot; (int): number of passed test cases</span>
+<span class="sd">            - &quot;failed&quot; (int): number of failed test cases</span>
+<span class="sd">            - &quot;other&quot; (int): number of test cases with other verdicts</span>
+<span class="sd">              (NotAvailable, None, Inconclusive, ErrorInTestSystem)</span>
+<span class="sd">            - &quot;pass_rate&quot; (float): pass rate as a percentage (0.0-100.0),</span>
+<span class="sd">              0.0 when there are no test cases</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; result = cfg.get_test_module_result(&quot;MyModule&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;Module: {result[&#39;test_module&#39;]}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;Verdict: {result[&#39;verdict_name&#39;]}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;Pass rate: {result[&#39;pass_rate&#39;]:.1f}%&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;Passed: {result[&#39;passed&#39;]}/{result[&#39;total&#39;]}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;Report: {result[&#39;report&#39;][&#39;generated_full_name&#39;]}&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; for tc in result[&#39;test_cases&#39;]:</span>
+<span class="sd">        ...     print(f&quot;  {tc[&#39;name&#39;]}: {tc[&#39;verdict_name&#39;]}&quot;)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">tm_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_test_module</span><span class="p">(</span><span class="n">test_module_name</span><span class="p">)</span>
@@ -633,18 +1048,189 @@ report-generated event before giving up. Defaults to 30.0.</p>
             <span class="s2">&quot;generated_full_name&quot;</span><span class="p">:</span> <span class="n">report_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;generated_full_name&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
         <span class="p">}</span>
 
-        <span class="n">test_cases</span> <span class="o">=</span> <span class="n">tm_obj</span><span class="o">.</span><span class="n">get_all_test_cases</span><span class="p">()</span>
+        <span class="c1"># Convert live COM objects to plain dicts so the data survives</span>
+        <span class="c1"># after the CANoe session ends and COM objects become invalid.</span>
+        <span class="n">raw_cases</span> <span class="o">=</span> <span class="n">tm_obj</span><span class="o">.</span><span class="n">get_all_test_cases</span><span class="p">()</span>
+        <span class="n">test_cases</span> <span class="o">=</span> <span class="p">[</span><span class="n">tc</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">tc</span> <span class="ow">in</span> <span class="n">raw_cases</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+
+        <span class="c1"># Aggregate statistics</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_cases</span><span class="p">)</span>
+        <span class="n">passed</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">tc</span> <span class="ow">in</span> <span class="n">test_cases</span> <span class="k">if</span> <span class="n">tc</span><span class="p">[</span><span class="s2">&quot;verdict&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">failed</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">tc</span> <span class="ow">in</span> <span class="n">test_cases</span> <span class="k">if</span> <span class="n">tc</span><span class="p">[</span><span class="s2">&quot;verdict&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="n">total</span> <span class="o">-</span> <span class="n">passed</span> <span class="o">-</span> <span class="n">failed</span>
+        <span class="n">pass_rate</span> <span class="o">=</span> <span class="p">(</span><span class="n">passed</span> <span class="o">/</span> <span class="n">total</span> <span class="o">*</span> <span class="mf">100.0</span><span class="p">)</span> <span class="k">if</span> <span class="n">total</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span>
 
         <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;test_module&quot;</span><span class="p">:</span> <span class="n">test_module_name</span><span class="p">,</span>
             <span class="s2">&quot;verdict&quot;</span><span class="p">:</span> <span class="n">verdict</span><span class="p">,</span>
             <span class="s2">&quot;verdict_name&quot;</span><span class="p">:</span> <span class="n">verdict_name</span><span class="p">,</span>
             <span class="s2">&quot;report&quot;</span><span class="p">:</span> <span class="n">report</span><span class="p">,</span>
-            <span class="s2">&quot;test_cases&quot;</span><span class="p">:</span> <span class="n">test_cases</span>
+            <span class="s2">&quot;test_cases&quot;</span><span class="p">:</span> <span class="n">test_cases</span><span class="p">,</span>
+            <span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="n">total</span><span class="p">,</span>
+            <span class="s2">&quot;passed&quot;</span><span class="p">:</span> <span class="n">passed</span><span class="p">,</span>
+            <span class="s2">&quot;failed&quot;</span><span class="p">:</span> <span class="n">failed</span><span class="p">,</span>
+            <span class="s2">&quot;other&quot;</span><span class="p">:</span> <span class="n">other</span><span class="p">,</span>
+            <span class="s2">&quot;pass_rate&quot;</span><span class="p">:</span> <span class="n">pass_rate</span><span class="p">,</span>
         <span class="p">}</span>
 
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;failed to get test module result for &quot;</span><span class="si">{</span><span class="n">test_module_name</span><span class="si">}</span><span class="s1">&quot;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">{}</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="src.py_canoe.core.configuration.Configuration.remove_all_networks" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">remove_all_networks</span><span class="p">()</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Remove ALL networks from the simulation setup.</p>
+<p>CANoe requires at least one bus, so this will leave one bus
+remaining.  Returns the number of networks actually removed.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1054</span>
+<span class="normal">1055</span>
+<span class="normal">1056</span>
+<span class="normal">1057</span>
+<span class="normal">1058</span>
+<span class="normal">1059</span>
+<span class="normal">1060</span>
+<span class="normal">1061</span>
+<span class="normal">1062</span>
+<span class="normal">1063</span>
+<span class="normal">1064</span>
+<span class="normal">1065</span>
+<span class="normal">1066</span>
+<span class="normal">1067</span>
+<span class="normal">1068</span>
+<span class="normal">1069</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_all_networks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove ALL networks from the simulation setup.</span>
+
+<span class="sd">    CANoe requires at least one bus, so this will leave one bus</span>
+<span class="sd">    remaining.  Returns the number of networks actually removed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">bus</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation_setup</span><span class="o">.</span><span class="n">buses</span><span class="o">.</span><span class="n">item</span><span class="p">():</span>
+        <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="c1"># Skip the last one — CANoe requires at least one bus</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_netWork</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Removed </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> network(s).&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">count</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="src.py_canoe.core.configuration.Configuration.remove_netWork" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">remove_netWork</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Remove a network by name.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>name</code></b>
+                  (<code><span title="str">str</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Network name to remove.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="bool">bool</span></code>
+              –
+              <div class="doc-md-description">
+                <p>True if found and removed.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1037</span>
+<span class="normal">1038</span>
+<span class="normal">1039</span>
+<span class="normal">1040</span>
+<span class="normal">1041</span>
+<span class="normal">1042</span>
+<span class="normal">1043</span>
+<span class="normal">1044</span>
+<span class="normal">1045</span>
+<span class="normal">1046</span>
+<span class="normal">1047</span>
+<span class="normal">1048</span>
+<span class="normal">1049</span>
+<span class="normal">1050</span>
+<span class="normal">1051</span>
+<span class="normal">1052</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_netWork</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove a network by name.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name: Network name to remove.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        True if found and removed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulation_setup</span><span class="o">.</span><span class="n">buses</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Network &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; removed.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to remove network &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -704,11 +1290,7 @@ Use get_compilation_result() if you need error details.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">213</span>
 <span class="normal">214</span>
 <span class="normal">215</span>
 <span class="normal">216</span>
@@ -722,7 +1304,11 @@ Use get_compilation_result() if you need error details.</p>
 <span class="normal">224</span>
 <span class="normal">225</span>
 <span class="normal">226</span>
-<span class="normal">227</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_compilation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_compilation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run CAPL compilation and return success status.</span>
 
 <span class="sd">    Compiles all CAPL code in the current configuration.</span>
