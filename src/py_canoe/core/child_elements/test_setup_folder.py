@@ -8,7 +8,9 @@ class TestSetupFolder(TestSetupItem):
     Inherits from TestSetupItem.
 
     .. deprecated::
-        This object is deprecated. Use TestSetupFolders and TestModules instead.
+        This COM object is deprecated. Use TestSetupFolders (returning
+        TestSetupFolderExt) and TestModules instead. Only those objects
+        provide access to all existing properties and methods.
 
     Properties:
         enabled: Activates/deactivates the folder. Default is False.
@@ -48,8 +50,13 @@ class TestSetupFolder(TestSetupItem):
 
     @property
     def report(self) -> TestReport:
-        """Returns a TestReport object for this folder."""
-        return TestReport(self.com_object.Report)
+        """Returns a TestReport object for this folder.
+
+        The wrapper (and its COM event sink) is cached after first access.
+        """
+        if getattr(self, "_report", None) is None:
+            self._report = TestReport(self.com_object.Report)
+        return self._report
 
     def execute_all(self) -> None:
         """Consecutively executes all test modules in the directory.

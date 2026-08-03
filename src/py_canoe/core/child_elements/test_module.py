@@ -233,8 +233,13 @@ class TestModule(TestSetupItem):
 
     @property
     def report(self) -> TestReport:
-        """Returns a TestReport object of the test module."""
-        return TestReport(self.com_object.Report)
+        """Returns a TestReport object of the test module.
+
+        The wrapper (and its COM event sink) is cached after first access.
+        """
+        if getattr(self, "_report", None) is None:
+            self._report = TestReport(self.com_object.Report)
+        return self._report
 
     @property
     def sequence_ex(self):

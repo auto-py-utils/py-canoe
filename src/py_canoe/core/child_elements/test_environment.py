@@ -2,7 +2,7 @@ import win32com.client
 
 from py_canoe.core.child_elements.test_module import TestModule
 from py_canoe.core.child_elements.test_modules import TestModules
-from py_canoe.core.child_elements.test_setup_folder import TestSetupFolder
+from py_canoe.core.child_elements.test_setup_folder_ext import TestSetupFolderExt
 from py_canoe.core.child_elements.test_setup_folders import TestSetupFolders
 from py_canoe.core.child_elements.test_setup_items import TestSetupItems
 from py_canoe.core.child_elements.test_report import TestReport
@@ -81,8 +81,13 @@ class TestEnvironment:
 
     @property
     def report(self) -> TestReport:
-        """Returns a TestReport object for this test environment."""
-        return TestReport(self.com_object.Report)
+        """Returns a TestReport object for this test environment.
+
+        The wrapper (and its COM event sink) is cached after first access.
+        """
+        if getattr(self, "_report", None) is None:
+            self._report = TestReport(self.com_object.Report)
+        return self._report
 
     @property
     def test_modules(self) -> TestModules:
@@ -97,7 +102,7 @@ class TestEnvironment:
         """
         self.com_object.ExecuteAll()
 
-    def save(self, name: str = None, prompt_user: bool = True) -> None:
+    def save(self, name: str = None, prompt_user: bool = False) -> None:
         """Saves the test environment.
 
         Args:
@@ -105,14 +110,14 @@ class TestEnvironment:
                   If no path is specified, the test environment is saved under its current name.
                   If it is not saved yet, the user will be prompted for a name.
             prompt_user: Indicates whether the user should intervene in error situations.
-                         Default is True.
+                         Default is False.
         """
         if name is None:
             self.com_object.Save()
         else:
             self.com_object.Save(name, prompt_user)
 
-    def save_as(self, name: str, major: int, minor: int, prompt_user: bool = True) -> None:
+    def save_as(self, name: str, major: int, minor: int, prompt_user: bool = False) -> None:
         """Saves the test environment in older formats.
 
         Args:
@@ -121,7 +126,7 @@ class TestEnvironment:
             minor: Suffix of the version number (e.g. 1 for version 5.1).
                    Use 0, 0 to save in the current application version format.
             prompt_user: Indicates whether the user should intervene in error situations.
-                         Default is True.
+                         Default is False.
         """
         self.com_object.SaveAs(name, major, minor, prompt_user)
 
@@ -134,7 +139,9 @@ class TestEnvironment:
         self.com_object.StopSequence()
 
     def get_all_test_modules(self) -> dict:
-        """Recursively fetches all test modules from all folders and items in this test environment.
+        """Recursively fetches all test modules from this test environment.
+
+        Includes modules directly in the environment and inside all folders.
 
         Returns:
             A dict mapping test module names to TestModule objects.
@@ -152,7 +159,7 @@ class TestEnvironment:
 
         return all_test_modules
 
-    def __fetch_test_modules_from_folder(self, folder) -> dict:
+    def __fetch_test_modules_from_folder(self, folder: 'TestSetupFolderExt') -> dict:
         """Recursively fetches test modules from a TestSetupFolderExt object."""
         all_test_modules = {}
 
@@ -170,6 +177,9 @@ class TestEnvironment:
     def add_test_module(self, full_name: str, name: str = None) -> TestModule:
         """Adds a test module to the test environment.
 
+        Uses the recommended TestModules COM object (preferred over the
+        deprecated TestSetupItems object).
+
         The path can be absolute or relative to the current CANoe configuration.
 
         Args:
@@ -185,15 +195,21 @@ class TestEnvironment:
         Raises:
             FileNotFoundError: If the given path does not exist.
         """
-        return self.items.add_test_module(full_name, name)
+        module = self.test_modules.add(full_name)
+        if name is not None:
+            module.name = name
+        return module
 
-    def add_folder(self, name: str) -> TestSetupFolder:
+    def add_folder(self, name: str) -> 'TestSetupFolderExt':
         """Adds a folder to the test environment.
+
+        Uses the recommended TestSetupFolders COM object (preferred over the
+        deprecated TestSetupItems object).
 
         Args:
             name: The name of the new folder.
 
         Returns:
-            The newly created TestSetupFolder object.
+            The newly created TestSetupFolderExt object.
         """
-        return self.items.add_folder(name)
+        return self.folders.add(name)

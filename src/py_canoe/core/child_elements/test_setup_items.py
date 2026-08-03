@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import os
 
-import win32com.client
-
 from py_canoe.core.child_elements.test_module import TestModule
 from py_canoe.core.child_elements.test_setup_item import TestSetupItem
 from py_canoe.core.child_elements.test_setup_folder import TestSetupFolder
@@ -55,7 +53,7 @@ class TestSetupItems:
             # TestSetupFolder has a Folders collection
             com_obj.Folders
             return TestSetupFolder(com_obj)
-        except Exception:
+        except AttributeError:
             return TestModule(com_obj)
 
     def add_folder(self, name: str) -> TestSetupFolder:
