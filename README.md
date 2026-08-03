@@ -337,6 +337,45 @@ canoe_inst.execute_test_module('demo_test_node_002')
 canoe_inst.stop_measurement()
 ```
 
+### create test environment and add test modules / folders
+
+`add_testEnvironments` creates (or loads from a file) a test environment and returns a `TestEnvironment` object that supports adding test modules and folders directly, without fetching the `items` collection first.
+
+```python
+from py_canoe import CANoe
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_test_setup.cfg')
+
+# Create a new test environment (by name)
+test_env = canoe_inst.add_testEnvironments('NewTestEnv')
+
+# Load an existing test environment from a file (by path)
+# test_env = canoe_inst.add_testEnvironments(r'path\to\test_environment.stenv')
+
+# Add a test module: pass the file path of a CAPL program (.can)
+# or an XML test description (.tse/.stse/.vxt)
+test_module = test_env.add_test_module(r'path\to\TestCapl.can')
+
+# Optional `name` argument: rename immediately after adding
+test_module = test_env.add_test_module(r'path\to\TestCapl.can', name='My Test Module')
+print(test_module.name)  # My Test Module
+
+# Add a folder
+test_folder = test_env.add_folder('TestFolder')
+
+# Rename after adding (the COM Name property is writable in practice)
+test_module.name = 'Renamed Module'
+test_folder.name = 'Renamed Folder'
+
+# Recursively fetch all test modules in the environment (including those in folders)
+all_modules = test_env.get_all_test_modules()
+
+# Access report settings
+report = test_env.report
+print(report.last_written_full_name)  # path of the last generated test report
+```
+
 ### execute test module with selective test case enable/disable
 
 The `execute_test_module` method supports selectively enabling or disabling test cases before execution using wildcard or regex patterns.
