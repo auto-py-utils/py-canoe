@@ -63,7 +63,7 @@ class Configuration:
         """Get all test modules from all test environments and store them in self.__test_modules."""
         for te_name, te_inst in self.__test_setup_environments.items():
             for tm_name, tm_inst in te_inst.get_all_test_modules().items():
-                # A TestSetupItem object that either can be a TSTestModule object or a TestSetupFolder object.
+                # A TestSetupItem object that either can be a TestModule object or a TestSetupFolder object.
                 # A TestSetupFolder has items that contain nested TestSetupItems.
                 self.__test_modules.append({'name': tm_name, 'object': tm_inst, 'environment': te_name})
 

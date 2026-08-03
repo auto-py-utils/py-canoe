@@ -336,6 +336,44 @@ canoe_inst.execute_test_module('demo_test_node_002')
 canoe_inst.stop_measurement()
 ```
 
+### 创建测试环境并添加测试模块 / 文件夹
+
+`add_testEnvironments` 用于创建（或从文件加载）测试环境，返回的 `TestEnvironment` 对象支持直接添加测试模块和文件夹，无需先获取 `items` 集合。
+
+```python
+from py_canoe import CANoe
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_test_setup.cfg')
+
+# 创建新的测试环境（名称）
+test_env = canoe_inst.add_testEnvironments('NewTestEnv')
+
+# 从文件加载已有测试环境（路径）
+# test_env = canoe_inst.add_testEnvironments(r'path\to\test_environment.stenv')
+
+# 添加测试模块：必须传 CAPL 程序 (.can) 或 XML 测试描述 (.tse/.stse/.vxt) 的文件路径
+test_module = test_env.add_test_module(r'path\to\TestCapl.can')
+
+# 可选参数 name：添加后立即重命名为自定义名称
+test_module = test_env.add_test_module(r'path\to\TestCapl.can', name='我的测试模块')
+print(test_module.name)  # 我的测试模块
+
+# 添加文件夹
+test_folder = test_env.add_folder('TestFolder')
+
+# 添加后重命名（COM 接口实测支持写入 Name）
+test_module.name = '重命名后的模块'
+test_folder.name = '重命名后的文件夹'
+
+# 递归获取测试环境中所有测试模块（含文件夹中的）
+all_modules = test_env.get_all_test_modules()
+
+# 访问报告设置
+report = test_env.report
+print(report.last_written_full_name)  # 最后一次生成的测试报告路径
+```
+
 ### 执行测试模块时选择性启用/禁用测试用例
 
 `execute_test_module` 方法支持在执行前通过通配符或正则表达式模式选择性地启用或禁用测试用例。

@@ -1,6 +1,8 @@
 import win32com.client
 
 from py_canoe.core.child_elements.test_case import TestCase
+from py_canoe.core.child_elements.test_report import TestReport
+from py_canoe.core.child_elements.test_setup_item import TestSetupItem
 from py_canoe.helpers.common import logger, wait, DoEventsUntil
 
 TEST_MODULE_START_EVENT_TIMEOUT = 5  # seconds
@@ -48,12 +50,16 @@ class TestModuleEvents:
         self.TC_FAIL = True
 
 
-class TestModule:
-    """The TestModule object represents a test module in CANoe's test setup."""
+class TestModule(TestSetupItem):
+    """The TestModule object represents a test module in CANoe's test setup.
+
+    Inherits from TestSetupItem.
+    """
 
     __test__ = False
 
     def __init__(self, com_object):
+        super().__init__(com_object)
         self.com_object = win32com.client.Dispatch(com_object)
         self.test_module_events: TestModuleEvents = win32com.client.WithEvents(self.com_object, TestModuleEvents)
         self.VALUE_TABLE_VERDICT = {
@@ -69,10 +75,20 @@ class TestModule:
             1: "EndTestCaseOnFail",
             2: "EndTestModuleOnFail"
         }
-
-    @property
-    def name(self) -> str:
-        return self.com_object.Name
+        self.VALUE_TABLE_DEBUG_MODE = {
+            0: "NoDebugPause",
+            1: "DebugPauseAfterFailedTestCaseOrPattern",
+            2: "DebugPauseAfterEachTestCaseOrPattern"
+        }
+        self.VALUE_TABLE_EXECUTION_MODE = {
+            0: "DefinedNumberOfRepeats",
+            1: "RepeatForDefinedTime",
+            2: "RepeatForever"
+        }
+        self.VALUE_TABLE_PAUSING_MODE = {
+            0: "PauseAfterTestCaseOnly",
+            1: "PauseAfterTestCaseAndTestPattern"
+        }
 
     @property
     def full_name(self) -> str:
@@ -158,6 +174,101 @@ class TestModule:
     def verdict_impact(self, value: int):
         self.com_object.VerdictImpact = value
 
+    # --- Additional COM properties ---
+
+    @property
+    def debug_mode(self) -> int:
+        """Sets/returns the debug pause setting."""
+        return self.com_object.DebugMode
+
+    @debug_mode.setter
+    def debug_mode(self, value: int) -> None:
+        self.com_object.DebugMode = value
+
+    @property
+    def enabled(self) -> bool:
+        """Activates/deactivates the test module."""
+        return self.com_object.Enabled
+
+    @enabled.setter
+    def enabled(self, value: bool) -> None:
+        self.com_object.Enabled = value
+
+    @property
+    def execute_repeatedly(self) -> bool:
+        """Sets/returns whether the test module should be executed repeatedly."""
+        return self.com_object.ExecuteRepeatedly
+
+    @execute_repeatedly.setter
+    def execute_repeatedly(self, value: bool) -> None:
+        self.com_object.ExecuteRepeatedly = value
+
+    @property
+    def execution_mode(self) -> int:
+        """Sets/returns how the test module is executed."""
+        return self.com_object.ExecutionMode
+
+    @execution_mode.setter
+    def execution_mode(self, value: int) -> None:
+        self.com_object.ExecutionMode = value
+
+    @property
+    def libraries(self):
+        """Returns the TestLibraries object of the test module."""
+        return self.com_object.Libraries
+
+    @property
+    def modules(self):
+        """Returns the Modules object of the test module."""
+        return self.com_object.Modules
+
+    @property
+    def pausing_mode(self) -> int:
+        """Sets/returns whether pausing occurs after test cases or test patterns."""
+        return self.com_object.PausingMode
+
+    @pausing_mode.setter
+    def pausing_mode(self, value: int) -> None:
+        self.com_object.PausingMode = value
+
+    @property
+    def report(self) -> TestReport:
+        """Returns a TestReport object of the test module.
+
+        The wrapper (and its COM event sink) is cached after first access.
+        """
+        if getattr(self, "_report", None) is None:
+            self._report = TestReport(self.com_object.Report)
+        return self._report
+
+    @property
+    def sequence_ex(self):
+        """Returns the TestSequenceEx object of the test module."""
+        return self.com_object.SequenceEx
+
+    @property
+    def specification_style_sheet(self) -> str:
+        """Sets/returns the XSLT stylesheet for converting the XML test description."""
+        return self.com_object.SpecificationStyleSheet
+
+    @specification_style_sheet.setter
+    def specification_style_sheet(self, value: str) -> None:
+        self.com_object.SpecificationStyleSheet = value
+
+    @property
+    def tcp_ip_stack_setting(self):
+        """Returns the TcpIpStackSetting object of the test module."""
+        return self.com_object.TcpIpStackSetting
+
+    @property
+    def test_variant(self) -> str:
+        """Returns/activates the current test variant (XML test modules only)."""
+        return self.com_object.TestVariant
+
+    @test_variant.setter
+    def test_variant(self, value: str) -> None:
+        self.com_object.TestVariant = value
+
     def _init_tm_event_variables(self):
         self.test_module_events.TM_STARTED = False
         self.test_module_events.TM_PAUSED = False
@@ -167,51 +278,128 @@ class TestModule:
         self.test_module_events.TEST_REPORT_INFORMATION = dict()
         self.test_module_events.TC_FAIL = False
 
-    def start(self):
+    def start(self) -> bool:
+        """Starts the test module and waits for the OnStart event.
+
+        Returns:
+            bool: True if the test module started successfully, False otherwise.
+        """
         self._init_tm_event_variables()
         self.com_object.Start()
         status = DoEventsUntil(lambda: self.test_module_events.TM_STARTED, TEST_MODULE_START_EVENT_TIMEOUT, "Test Module Start")
         if status:
             logger.info(f'started executing test module ({self.name})...')
+        else:
+            logger.warning(f'Test Module ({self.name}) did not start within {TEST_MODULE_START_EVENT_TIMEOUT}s.')
+        return status
 
-    def wait_for_completion(self) -> bool:
-        return_value = False
-        if self.test_module_events.TM_STARTED:
-            logger.info(f'waiting for test module ({self.name}) to complete...')
+    def wait_for_completion(self, timeout: int = None) -> bool:
+        """Waits for the test module to complete execution.
+
+        Args:
+            timeout: Maximum time in seconds to wait. If None, waits indefinitely.
+
+        Returns:
+            bool: True if the test module completed, False if it was not started
+                  or timed out.
+        """
+        if not self.test_module_events.TM_STARTED:
+            logger.warning(f'Test Module ({self.name}) is not started. Start the Test Module first.')
+            return False
+
+        logger.info(f'waiting for test module ({self.name}) to complete...')
+        if timeout is None:
             while not self.test_module_events.TM_STOPPED:
                 wait(0.01)
-            logger.info(f'test module ({self.name}) execution completed with stop reason {self.test_module_events.VALUE_TABLE_STOP_REASON[self.test_module_events.TM_STOP_REASON]}')
-            return_value = True
         else:
-            logger.warning(f'Test Module ({self.name}) is not started. Start the Test Module first.')
-        return return_value
+            completed = DoEventsUntil(
+                lambda: self.test_module_events.TM_STOPPED,
+                timeout,
+                f"Test Module ({self.name}) Completion"
+            )
+            if not completed:
+                logger.warning(f'Test Module ({self.name}) did not complete within {timeout}s.')
+                return False
 
-    def pause(self) -> bool:
-        if self.test_module_events.TM_STARTED:
-            self.com_object.Pause()
-            logger.info(f'pausing test module ({self.name}). please wait...')
+        logger.info(
+            f'test module ({self.name}) execution completed with stop reason '
+            f'{self.test_module_events.VALUE_TABLE_STOP_REASON[self.test_module_events.TM_STOP_REASON]}'
+        )
+        return True
+
+    def pause(self, timeout: int = None) -> bool:
+        """Pauses the test module and waits for the OnPause event.
+
+        Args:
+            timeout: Maximum time in seconds to wait. If None, waits indefinitely.
+
+        Returns:
+            bool: True if the test module paused, False if it was not started or timed out.
+        """
+        if not self.test_module_events.TM_STARTED:
+            logger.warning(f'Test Module ({self.name}) is not started. Start the Test Module first.')
+            return False
+
+        self.com_object.Pause()
+        logger.info(f'pausing test module ({self.name}). please wait...')
+        if timeout is None:
             while not self.test_module_events.TM_PAUSED:
                 wait(0.01)
-            logger.info(f'paused test module ({self.name}).')
+        else:
+            paused = DoEventsUntil(
+                lambda: self.test_module_events.TM_PAUSED,
+                timeout,
+                f"Test Module ({self.name}) Pause"
+            )
+            if not paused:
+                logger.warning(f'Test Module ({self.name}) did not pause within {timeout}s.')
+                return False
+        logger.info(f'paused test module ({self.name}).')
+        return True
+
+    def resume(self) -> bool:
+        """Resumes the test module execution from the point at which it was paused.
+
+        Returns:
+            bool: True if the test module was started and resume was issued, False otherwise.
+        """
+        if self.test_module_events.TM_STARTED:
+            self.com_object.Resume()
+            logger.info(f'resumed test module ({self.name}).')
             return True
         else:
             logger.warning(f'Test Module ({self.name}) is not started. Start the Test Module first.')
             return False
 
-    def resume(self) -> None:
-        self.com_object.Resume()
+    def stop(self, timeout: int = None) -> bool:
+        """Stops the test module and waits for the OnStop event.
 
-    def stop(self) -> bool:
-        if self.test_module_events.TM_STARTED:
-            self.com_object.Stop()
-            logger.info(f'stopping test module ({self.name}). please wait...')
+        Args:
+            timeout: Maximum time in seconds to wait. If None, waits indefinitely.
+
+        Returns:
+            bool: True if the test module stopped, False if it was not started or timed out.
+        """
+        if not self.test_module_events.TM_STARTED:
+            logger.warning(f'Test Module ({self.name}) is not started. Start the Test Module first.')
+            return False
+
+        self.com_object.Stop()
+        logger.info(f'stopping test module ({self.name}). please wait...')
+        if timeout is None:
             while not self.test_module_events.TM_STOPPED:
                 wait(0.01)
-            logger.info(f'stopped test module ({self.name}).')
-            return True
         else:
-            logger.warning(f'Test Module ({self.name}) is not started. Start the Test Module first.')
-            return False
+            stopped = DoEventsUntil(
+                lambda: self.test_module_events.TM_STOPPED,
+                timeout,
+                f"Test Module ({self.name}) Stop"
+            )
+            if not stopped:
+                logger.warning(f'Test Module ({self.name}) did not stop within {timeout}s.')
+                return False
+        logger.info(f'stopped test module ({self.name}).')
+        return True
 
     def reload(self) -> None:
         self.com_object.Reload()
