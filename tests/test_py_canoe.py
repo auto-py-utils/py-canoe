@@ -342,7 +342,7 @@ class TestStandalonePyCanoe:
 
     def test_profile_signal_performance(self):
         logger.info("test_profile_signal_performance started".center(120, '-'))
-        self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=False, prompt_user=False)
+        self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev)
         assert self.canoe_inst.start_measurement()
         wait(1)
         prof = self.canoe_inst.profile_signal_value(
