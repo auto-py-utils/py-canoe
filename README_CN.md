@@ -374,6 +374,45 @@ report = test_env.report
 print(report.last_written_full_name)  # 最后一次生成的测试报告路径
 ```
 
+### 管理测试模块的库和模块（DLL）
+
+`TestModule` 提供两个集合来管理其依赖：
+
+- **`modules`** — `Modules` 对象：可添加节点层模块（DLL）、程序集（DLL）、.NET 源文件（CS）、CAPL 源文件（CAN）
+- **`libraries`** — `TestLibraries` 对象：XML 或 .NET 测试模块中使用的测试用例文件
+
+```python
+from py_canoe import CANoe
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_test_setup.cfg')
+
+test_env = canoe_inst.add_testEnvironments('NewTestEnv')
+test_module = test_env.add_test_module(r'path\to\TestCapl.can')
+
+# --- Modules（添加 DLL / CS / CAN 文件）---
+test_module.modules.add(r'path\to\node_layer.dll')   # 节点层模块（DLL）
+test_module.modules.add(r'path\to\assembly.dll')     # 程序集（DLL，.NET 测试节点）
+test_module.modules.add(r'path\to\source.cs')        # .NET 源文件
+test_module.modules.add(r'path\to\source.can')       # CAPL 源文件
+
+print(test_module.modules.count)   # 模块数量
+first_module = test_module.modules.item(1)
+print(first_module.name, first_module.full_name)
+
+# 按索引 / 文件名 / 完整路径移除模块
+test_module.modules.remove(1)
+
+# --- TestLibraries（XML / .NET 测试模块的测试用例文件）---
+test_module.libraries.add(r'path\to\test_cases.tsf')
+
+print(test_module.libraries.count)  # 测试用例文件数量
+lib = test_module.libraries.item(1)
+print(lib.name, lib.full_name)
+
+test_module.libraries.remove(1)
+```
+
 ### 执行测试模块时选择性启用/禁用测试用例
 
 `execute_test_module` 方法支持在执行前通过通配符或正则表达式模式选择性地启用或禁用测试用例。

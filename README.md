@@ -376,6 +376,45 @@ report = test_env.report
 print(report.last_written_full_name)  # path of the last generated test report
 ```
 
+### manage test libraries and modules (DLL) of a test module
+
+A `TestModule` provides two collections to manage its dependencies:
+
+- **`modules`** — the `Modules` object: add node layer modules (DLL), assemblies (DLL), .NET source files (CS) or CAPL source files (CAN)
+- **`libraries`** — the `TestLibraries` object: test case files used in XML or .NET test modules
+
+```python
+from py_canoe import CANoe
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_test_setup.cfg')
+
+test_env = canoe_inst.add_testEnvironments('NewTestEnv')
+test_module = test_env.add_test_module(r'path\to\TestCapl.can')
+
+# --- Modules (add DLL / CS / CAN files) ---
+test_module.modules.add(r'path\to\node_layer.dll')   # node layer module (DLL)
+test_module.modules.add(r'path\to\assembly.dll')     # assembly (DLL, .NET test nodes)
+test_module.modules.add(r'path\to\source.cs')        # .NET source file
+test_module.modules.add(r'path\to\source.can')       # CAPL source file
+
+print(test_module.modules.count)   # number of modules
+first_module = test_module.modules.item(1)
+print(first_module.name, first_module.full_name)
+
+# remove a module by index / filename / full path
+test_module.modules.remove(1)
+
+# --- TestLibraries (test case files for XML / .NET test modules) ---
+test_module.libraries.add(r'path\to\test_cases.tsf')
+
+print(test_module.libraries.count)  # number of test case files
+lib = test_module.libraries.item(1)
+print(lib.name, lib.full_name)
+
+test_module.libraries.remove(1)
+```
+
 ### execute test module with selective test case enable/disable
 
 The `execute_test_module` method supports selectively enabling or disabling test cases before execution using wildcard or regex patterns.
