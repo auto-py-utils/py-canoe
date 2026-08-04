@@ -1175,12 +1175,12 @@ class CANoe:
             sys_var_name (str): The name of the system variable.
             return_symbolic_name (bool): Whether to return the symbolic name.
             return_timestamp (bool): Whether to return the timestamp in timezone utc along with the signal value. Defaults to False.
-            enable_events (bool): Whether to enable COM events on the Variable object. Defaults to True.
+            enable_events (bool): This argument is deprecated and will be removed in a future version.
 
         Returns:
             Union[int, float, str, None, tuple]: The value of the system variable or None if not found. If return_timestamp is True, returns a tuple of (value, timestamp).
         """
-        variable_value = self.application.system.get_variable_value(sys_var_name, return_symbolic_name, enable_events)
+        variable_value = self.application.system.get_variable_value(sys_var_name, return_symbolic_name)
         if return_timestamp:
             return variable_value, datetime.now(timezone.utc).timestamp()
         return variable_value
@@ -1193,20 +1193,21 @@ class CANoe:
         """Returns all variables in the specified namespace."""
         return self.application.system.get_all_variables_in_namespace(namespace_name)
 
-    def set_system_variable_value(self, sys_var_name: str, value: Union[int, float, str]) -> bool:
+    def set_system_variable_value(self, sys_var_name: str, value: Union[int, float, str], enable_events: bool = True) -> bool:
         """
         Sets the value of a system variable.
 
         Args:
             sys_var_name (str): The name of the system variable.
             value (Union[int, float, str]): The value to set.
+            enable_events (bool): Whether to enable COM events on the Variable object. Defaults to True. When False the write is not confirmed by an update event.
 
         Returns:
             bool: True if the operation was successful, False otherwise.
         """
-        return self.application.system.set_variable_value(sys_var_name, value)
+        return self.application.system.set_variable_value(sys_var_name, value, enable_events=enable_events)
 
-    def set_system_variable_array_values(self, sys_var_name: str, value: tuple, index: int = 0) -> bool:
+    def set_system_variable_array_values(self, sys_var_name: str, value: tuple, index: int = 0, enable_events: bool = True) -> bool:
         """
         Sets the values of a system variable array.
 
@@ -1214,11 +1215,12 @@ class CANoe:
             sys_var_name (str): The name of the system variable.
             value (tuple): The values to set.
             index (int): The index to set the values at.
+            enable_events (bool): Whether to enable COM events on the Variable object. Defaults to True. When False the write is not confirmed by an update event.
 
         Returns:
             bool: True if the operation was successful, False otherwise.
         """
-        return self.application.system.set_variable_array_values(sys_var_name, value, index)
+        return self.application.system.set_variable_array_values(sys_var_name, value, index, enable_events=enable_events)
 
     def ui_activate_desktop(self, name: str) -> bool:
         """
