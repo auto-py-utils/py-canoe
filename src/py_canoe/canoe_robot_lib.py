@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 # THIS FILE IS AUTO-GENERATED - DO NOT EDIT MANUALLY
-# Generated: 2026-08-04T10:13:57.666632+00:00
-# py-canoe package version: 26.3.7
+# Generated: 2026-08-04T15:55:56.035148+00:00
+# py-canoe package version: 26.3.8
 # To update this file, run the generator: python -m py_canoe.helpers.gen_canoe_robot_lib
 # ---------------------------------------------------------------------------
 
