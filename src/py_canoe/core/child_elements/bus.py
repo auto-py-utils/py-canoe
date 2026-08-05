@@ -41,7 +41,7 @@ class Bus:
 
         Args:
             com_object: The COM Bus object (e.g. obtained from
-                        ``app.com_object.Bus(type)`` or ``buses.Item(i)``).
+                        ``app.com_object.GetBus(<bus-name>)`` or ``buses.Item(i)``).
         """
         self.com_object = com_object
         self.VALUE_TABLE_SIGNAL_IS_ONLINE = {

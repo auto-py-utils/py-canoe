@@ -189,9 +189,7 @@ class CANoe:
                         logger.info(f"        {key}: {value}")
             return databases_info
         except Exception as e:
-            import traceback
-            traceback.print_exc()
-            logger.error(f"Error retrieving {bus} bus databases information: {e}")
+            logger.exception(f"Error retrieving {bus} bus databases information: {e}")
             return {}
 
     def get_bus_nodes_info(self, bus: BusType = BusType.CAN, log_info: bool = False) -> dict:

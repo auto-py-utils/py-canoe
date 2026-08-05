@@ -1,5 +1,3 @@
-import os
-
 import win32com.client
 
 from py_canoe.helpers.common import logger

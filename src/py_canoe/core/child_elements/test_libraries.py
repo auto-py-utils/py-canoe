@@ -15,7 +15,7 @@ class TestLibraries:
         add: Adds a test case file to a test module.
         remove: Removes a test case file from a test module.
         item: Returns a TestLibrary object from the collection.
-        fetch_all_libraries: Returns all TestLibrary objects as a list.
+        fetch_all: Returns all TestLibrary objects as a list.
     """
 
     __test__ = False
@@ -81,7 +81,7 @@ class TestLibraries:
         self.com_object.Remove(index)
         logger.info(f'TestLibraries: removed test case file at index/name "{index}".')
 
-    def fetch_all_libraries(self) -> list:
+    def fetch_all(self) -> list:
         """Fetches all TestLibrary objects from the collection.
 
         Returns:
