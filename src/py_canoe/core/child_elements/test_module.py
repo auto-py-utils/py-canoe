@@ -1,6 +1,8 @@
 import win32com.client
 
+from py_canoe.core.child_elements.modules import Modules
 from py_canoe.core.child_elements.test_case import TestCase
+from py_canoe.core.child_elements.test_libraries import TestLibraries
 from py_canoe.core.child_elements.test_report import TestReport
 from py_canoe.core.child_elements.test_setup_item import TestSetupItem
 from py_canoe.helpers.common import logger, wait, DoEventsUntil
@@ -213,14 +215,21 @@ class TestModule(TestSetupItem):
         self.com_object.ExecutionMode = value
 
     @property
-    def libraries(self):
-        """Returns the TestLibraries object of the test module."""
-        return self.com_object.Libraries
+    def libraries(self) -> TestLibraries:
+        """Returns the TestLibraries object of the test module.
+
+        Represents the test case files used in XML or .NET test modules.
+        """
+        return TestLibraries(self.com_object.Libraries)
 
     @property
-    def modules(self):
-        """Returns the Modules object of the test module."""
-        return self.com_object.Modules
+    def modules(self) -> Modules:
+        """Returns the Modules object of the test module.
+
+        Use ``add()`` to add node layer modules (DLL), assemblies (DLL),
+        .NET source files (CS) or CAPL source files (CAN) to the test module.
+        """
+        return Modules(self.com_object.Modules)
 
     @property
     def pausing_mode(self) -> int:

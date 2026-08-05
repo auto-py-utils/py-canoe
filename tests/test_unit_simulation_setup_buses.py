@@ -46,9 +46,9 @@ def _make_sim_buses(bus_specs):
     return sim_buses
 
 
-def _make_bus_obj(bus_specs):
-    """Returns a Bus-like object whose app.configuration.simulation_setup.buses uses bus_specs."""
-    from py_canoe.core.bus import Bus
+def _make_canoe_with_sim_buses(bus_specs):
+    """Returns a CANoe-like object whose application.configuration.simulation_setup.buses uses bus_specs."""
+    from py_canoe.canoe import CANoe
 
     sim_buses = _make_sim_buses(bus_specs)
 
@@ -58,9 +58,9 @@ def _make_bus_obj(bus_specs):
     app = MagicMock()
     app.configuration.simulation_setup = sim_setup
 
-    bus_obj = Bus.__new__(Bus)
-    bus_obj.app = app
-    return bus_obj
+    canoe = CANoe.__new__(CANoe)
+    canoe.application = app
+    return canoe
 
 
 class TestSimulationSetupClasses:
@@ -174,8 +174,8 @@ class TestGetSimulationBusNames:
             {"name": "CAN", "dbs": []},
             {"name": "LIN", "dbs": []},
         ]
-        bus_obj = _make_bus_obj(bus_specs)
-        result = bus_obj.get_simulation_bus_names()
+        canoe = _make_canoe_with_sim_buses(bus_specs)
+        result = canoe.get_simulation_bus_names()
         assert result == ["CAN", "LIN"]
 
     def test_includes_buses_with_empty_name(self):
@@ -184,12 +184,12 @@ class TestGetSimulationBusNames:
             {"name": "", "dbs": []},
             {"name": "ETH", "dbs": []},
         ]
-        bus_obj = _make_bus_obj(bus_specs)
-        result = bus_obj.get_simulation_bus_names()
+        canoe = _make_canoe_with_sim_buses(bus_specs)
+        result = canoe.get_simulation_bus_names()
         assert result == ["CAN", "", "ETH"]
 
     def test_skips_buses_with_none_name(self):
-        from py_canoe.core.bus import Bus
+        from py_canoe.canoe import CANoe
 
         buses_com = MagicMock()
         buses_com.Count = 2
@@ -210,25 +210,25 @@ class TestGetSimulationBusNames:
         app = MagicMock()
         app.configuration.simulation_setup = sim_setup
 
-        bus_obj = Bus.__new__(Bus)
-        bus_obj.app = app
-        result = bus_obj.get_simulation_bus_names()
+        canoe = CANoe.__new__(CANoe)
+        canoe.application = app
+        result = canoe.get_simulation_bus_names()
         assert result == ["CAN"]
 
     def test_returns_empty_list_when_no_buses(self):
-        bus_obj = _make_bus_obj([])
-        result = bus_obj.get_simulation_bus_names()
+        canoe = _make_canoe_with_sim_buses([])
+        result = canoe.get_simulation_bus_names()
         assert result == []
 
     def test_raises_on_exception(self):
-        from py_canoe.core.bus import Bus
+        from py_canoe.canoe import CANoe
 
         app = MagicMock()
         type(app.configuration.simulation_setup).buses = PropertyMock(side_effect=Exception("COM error"))
-        bus_obj = Bus.__new__(Bus)
-        bus_obj.app = app
+        canoe = CANoe.__new__(CANoe)
+        canoe.application = app
         with pytest.raises(ConfigurationNotLoadedError):
-            bus_obj.get_simulation_bus_names()
+            canoe.get_simulation_bus_names()
 
 
 class TestGetSimulationDatabasePaths:
@@ -242,8 +242,8 @@ class TestGetSimulationDatabasePaths:
                 {"full_name": "C:/dbs/lin.ldf", "name": "lin"},
             ]},
         ]
-        bus_obj = _make_bus_obj(bus_specs)
-        result = bus_obj.get_simulation_database_paths()
+        canoe = _make_canoe_with_sim_buses(bus_specs)
+        result = canoe.get_simulation_database_paths()
         assert "C:/dbs/can.dbc" in result
         assert "C:/dbs/other.dbc" in result
         assert "C:/dbs/lin.ldf" in result
@@ -256,12 +256,12 @@ class TestGetSimulationDatabasePaths:
                 {"full_name": "", "name": "empty"},
             ]},
         ]
-        bus_obj = _make_bus_obj(bus_specs)
-        result = bus_obj.get_simulation_database_paths()
+        canoe = _make_canoe_with_sim_buses(bus_specs)
+        result = canoe.get_simulation_database_paths()
         assert result == ["C:/dbs/can.dbc", ""]
 
     def test_skips_none_full_name(self):
-        from py_canoe.core.bus import Bus
+        from py_canoe.canoe import CANoe
 
         buses_com = MagicMock()
         buses_com.Count = 1
@@ -292,9 +292,9 @@ class TestGetSimulationDatabasePaths:
         app = MagicMock()
         app.configuration.simulation_setup = sim_setup
 
-        bus_obj = Bus.__new__(Bus)
-        bus_obj.app = app
-        result = bus_obj.get_simulation_database_paths()
+        canoe = CANoe.__new__(CANoe)
+        canoe.application = app
+        result = canoe.get_simulation_database_paths()
         assert result == ["C:/dbs/can.dbc"]
 
     def test_returns_empty_list_when_no_databases(self):
@@ -302,16 +302,16 @@ class TestGetSimulationDatabasePaths:
             {"name": "CAN", "dbs": []},
             {"name": "LIN", "dbs": []},
         ]
-        bus_obj = _make_bus_obj(bus_specs)
-        result = bus_obj.get_simulation_database_paths()
+        canoe = _make_canoe_with_sim_buses(bus_specs)
+        result = canoe.get_simulation_database_paths()
         assert result == []
 
     def test_raises_on_exception(self):
-        from py_canoe.core.bus import Bus
+        from py_canoe.canoe import CANoe
 
         app = MagicMock()
         type(app.configuration.simulation_setup).buses = PropertyMock(side_effect=Exception("COM error"))
-        bus_obj = Bus.__new__(Bus)
-        bus_obj.app = app
+        canoe = CANoe.__new__(CANoe)
+        canoe.application = app
         with pytest.raises(ConfigurationNotLoadedError):
-            bus_obj.get_simulation_database_paths()
+            canoe.get_simulation_database_paths()

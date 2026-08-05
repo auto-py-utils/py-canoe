@@ -9,13 +9,13 @@ class Channels:
     def count(self) -> int:
         return self.com_object.Count
 
-    def item(self, index: int | None = None) -> 'Channel' | list['Channel']:
+    def item(self, index: int | None = None) -> Channel | list[Channel]:
         if index is None:
             return [Channel(self.com_object.Item(i)) for i in range(1, self.count + 1)]
         else:
             return Channel(self.com_object.Item(index))
 
-    def add(self, type: int, number: int) -> 'Channel':
+    def add(self, type: int, number: int) -> Channel:
         return Channel(self.com_object.Add(type, number))
 
     def remove(self, index: int):

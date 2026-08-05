@@ -1,4 +1,5 @@
 from py_canoe.canoe import CANoe as CANoe
+from py_canoe.helpers.bus_type import BusType as BusType
 from py_canoe.helpers.common import wait as wait
 from py_canoe.helpers.exceptions import PyCanoeError as PyCanoeError
 from py_canoe.helpers.exceptions import ConfigurationNotLoadedError as ConfigurationNotLoadedError

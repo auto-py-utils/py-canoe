@@ -160,18 +160,18 @@ canoe_inst.stop_measurement()
 ### get/set bus signal value, check signal state and get signal full name
 
 ```python
-from py_canoe import CANoe, wait
+from py_canoe import CANoe, BusType, wait
 
 canoe_inst = CANoe()
 canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
 
 canoe_inst.start_measurement()
-sig_full_name = canoe_inst.get_signal_full_name(bus='CAN', channel=1, message='LightState', signal='FlashLight')
-sig_value = canoe_inst.get_signal_value(bus='CAN', channel=1, message='LightState', signal='FlashLight', raw_value=False)
-canoe_inst.set_signal_value(bus='CAN', channel=1, message='LightState', signal='FlashLight', value=1, raw_value=False)
-sig_online_state = canoe_inst.check_signal_online(bus='CAN', channel=1, message='LightState', signal='FlashLight')
-sig_state = canoe_inst.check_signal_state(bus='CAN', channel=1, message='LightState', signal='FlashLight')
-sig_val = canoe_inst.get_signal_value(bus='CAN', channel=1, message='LightState', signal='FlashLight', raw_value=True)
+sig_full_name = canoe_inst.get_signal_full_name(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight')
+sig_value = canoe_inst.get_signal_value(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight', raw_value=False)
+canoe_inst.set_signal_value(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight', value=1, raw_value=False)
+sig_online_state = canoe_inst.check_signal_online(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight')
+sig_state = canoe_inst.check_signal_state(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight')
+sig_val = canoe_inst.get_signal_value(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight', raw_value=True)
 canoe_inst.stop_measurement()
 ```
 
@@ -376,6 +376,45 @@ report = test_env.report
 print(report.last_written_full_name)  # path of the last generated test report
 ```
 
+### manage test libraries and modules (DLL) of a test module
+
+A `TestModule` provides two collections to manage its dependencies:
+
+- **`modules`** — the `Modules` object: add node layer modules (DLL), assemblies (DLL), .NET source files (CS) or CAPL source files (CAN)
+- **`libraries`** — the `TestLibraries` object: test case files used in XML or .NET test modules
+
+```python
+from py_canoe import CANoe
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_test_setup.cfg')
+
+test_env = canoe_inst.add_testEnvironments('NewTestEnv')
+test_module = test_env.add_test_module(r'path\to\TestCapl.can')
+
+# --- Modules (add DLL / CS / CAN files) ---
+test_module.modules.add(r'path\to\node_layer.dll')   # node layer module (DLL)
+test_module.modules.add(r'path\to\assembly.dll')     # assembly (DLL, .NET test nodes)
+test_module.modules.add(r'path\to\source.cs')        # .NET source file
+test_module.modules.add(r'path\to\source.can')       # CAPL source file
+
+print(test_module.modules.count)   # number of modules
+first_module = test_module.modules.item(1)
+print(first_module.name, first_module.full_name)
+
+# remove a module by index / filename / full path
+test_module.modules.remove(1)
+
+# --- TestLibraries (test case files for XML / .NET test modules) ---
+test_module.libraries.add(r'path\to\test_cases.tsf')
+
+print(test_module.libraries.count)  # number of test case files
+lib = test_module.libraries.item(1)
+print(lib.name, lib.full_name)
+
+test_module.libraries.remove(1)
+```
+
 ### execute test module with selective test case enable/disable
 
 The `execute_test_module` method supports selectively enabling or disabling test cases before execution using wildcard or regex patterns.
@@ -529,8 +568,8 @@ from py_canoe import CANoe, wait
 canoe_inst = CANoe()
 canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
 
-bus_names = canoe_inst.application.bus.get_simulation_bus_names()
-db_paths = canoe_inst.application.bus.get_simulation_database_paths()
+bus_names = canoe_inst.get_simulation_bus_names()
+db_paths = canoe_inst.get_simulation_database_paths()
 ```
 
 ### start/stop online logging block

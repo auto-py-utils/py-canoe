@@ -5,16 +5,19 @@ import win32com.client
 from win32com.client import gencache
 import pythoncom
 
-from py_canoe.core.bus import Bus
+from py_canoe.core.child_elements.bus import Bus
 from py_canoe.core.capl import Capl
 from py_canoe.core.configuration import Configuration
 from py_canoe.core.environment import Environment
 from py_canoe.core.measurement import Measurement
 from py_canoe.core.message_filter import COMRetryMessageFilter
 from py_canoe.core.networks import Networks
+from py_canoe.core.performance import Performance
+from py_canoe.core.simulation import Simulation
 from py_canoe.core.system import System
 from py_canoe.core.ui import Ui
 from py_canoe.core.version import Version
+from py_canoe.helpers.bus_type import BusType
 from py_canoe.helpers.common import DoEventsUntil, logger
 
 
@@ -40,23 +43,27 @@ class Application:
     def __init__(self, enable_events: bool = True) -> None:
         self.CANOE_APP_NAME = "CANoe.Application"
         self._enable_events = enable_events
-        self.bus_types = {'CAN': 1, 'J1939': 2, 'FLEXRAY': 3, 'TTP': 4, 'LIN': 5, 'MOST': 6, 'ETH': 7, 'Kline': 14}
         self.com_object: Any = None
         self.application_events: Union[ApplicationEvents, Any] = None
-        self.bus: Union[Bus, Any] = None
-        self.capl: Union[Capl, Any] = None
-        self.configuration: Union[Configuration, Any] = None
-        self.environment: Union[Environment, Any] = None
-        self.measurement: Union[Measurement, Any] = None
-        self.system: Union[System, Any] = None
-        self.ui: Union[Ui, Any] = None
-        self.version: Union[Version, Any] = None
         self.capl_function_objects = object()
         self.user_capl_functions = tuple()
         # Register IMessageFilter to suppress "Server Busy" dialogs and auto-retry
         # rejected COM calls. The filter stays active for the Application's lifetime.
         self._message_filter = COMRetryMessageFilter()
         self._message_filter.register()
+        # Lazy wrapper caches: only the wrappers that hold mutable state fetched
+        # from CANoe are cached as singletons:
+        #   - Measurement registers a COM event sink (WithEvents) that must stay
+        #     alive and unique for the Application's lifetime.
+        #   - Configuration and Networks cache data fetched when a configuration
+        #     is loaded (test environments/modules, diagnostic devices) that is
+        #     consumed by later calls; they are re-created on each configuration
+        #     load (see _setup_post_configuration_loading).
+        # All other wrappers are stateless facades over read-only COM properties
+        # and are created on demand.
+        self._configuration: Union[Configuration, None] = None
+        self._networks: Union[Networks, None] = None
+        self._measurement: Union[Measurement, None] = None
 
     @property
     def full_name(self) -> str:
@@ -83,15 +90,108 @@ class Application:
         """Set the visibility of the CANoe application window."""
         self.com_object.Visible = visible
 
-    def _common_between_pre_and_post_cfg_open(self) -> None:
-        self.bus = Bus(self)
-        self.capl = Capl(self)
-        self.configuration = Configuration(self)
-        self.environment = Environment(self)
-        self.networks = Networks(self)
-        self.system = System(self)
-        self.ui = Ui(self)
-        self.version = Version(self)
+    @property
+    def channel_mapping_name(self) -> str:
+        """Sets or returns the application name used to map application channels to
+        real existing Vector network interface channels."""
+        return self.com_object.ChannelMappingName
+
+    @channel_mapping_name.setter
+    def channel_mapping_name(self, name: str) -> None:
+        self.com_object.ChannelMappingName = name
+
+    def bus(self, bus_type: BusType = BusType.CAN) -> Bus:
+        """Returns a Bus object for the given bus type.
+
+        This mirrors the COM Application.Bus([type]) property. The Bus wrapper is
+        stateless (it only wraps the COM Bus object), so a fresh wrapper is
+        created on each call.
+
+        Args:
+            bus_type: The bus type as a BusType enum member. Defaults to BusType.CAN.
+        """
+        return Bus(self.com_object.GetBus(bus_type.name))
+
+    @property
+    def capl(self) -> Capl:
+        """Returns the CAPL object (read-only, mirrors COM Application.CAPL)."""
+        return Capl(self)
+
+    @property
+    def configuration(self) -> Configuration:
+        """Returns the Configuration object (read-only, mirrors COM Application.Configuration).
+
+        The wrapper is cached because it holds test environment/module data that
+        is fetched when a configuration is loaded and consumed by later calls.
+        """
+        if self._configuration is None:
+            self._configuration = Configuration(self)
+        return self._configuration
+
+    @property
+    def environment(self) -> Environment:
+        """Returns the Environment object (read-only, mirrors COM Application.Environment)."""
+        return Environment(self)
+
+    @property
+    def measurement(self) -> Measurement:
+        """Returns the Measurement object (read-only, mirrors COM Application.Measurement).
+
+        The wrapper is cached because it registers a COM event sink that must
+        stay alive and unique for the Application's lifetime.
+        """
+        if self._measurement is None:
+            self._measurement = Measurement(self, enable_events=self._enable_events)
+            self._measurement.measurement_events.CAPL_FUNCTION_NAMES = self.user_capl_functions
+            self.capl_function_objects = lambda: self._measurement.measurement_events.CAPL_FUNCTION_OBJECTS
+        return self._measurement
+
+    @property
+    def networks(self) -> Networks:
+        """Returns the Networks object (read-only, mirrors COM Application.Networks).
+
+        The wrapper is cached because it holds diagnostic devices data that is
+        fetched when a configuration is loaded and consumed by later calls.
+        """
+        if self._networks is None:
+            self._networks = Networks(self)
+        return self._networks
+
+    @property
+    def performance(self) -> Performance:
+        """Returns the Performance object (read-only, mirrors COM Application.Performance)."""
+        return Performance(self)
+
+    @property
+    def simulation(self) -> Simulation:
+        """Returns the Simulation object (read-only, mirrors COM Application.Simulation)."""
+        return Simulation(self)
+
+    @property
+    def system(self) -> System:
+        """Returns the System object (read-only, mirrors COM Application.System)."""
+        return System(self)
+
+    @property
+    def ui(self) -> Ui:
+        """Returns the UI object (read-only, mirrors COM Application.UI)."""
+        return Ui(self)
+
+    @property
+    def version(self) -> Version:
+        """Returns the Version object (read-only, mirrors COM Application.Version)."""
+        return Version(self)
+
+    def new_configuration_from_yaml(self, configuration_path: str, path_to_yaml_folder: str, scenario_name: str = "") -> None:
+        """Creates a new configuration from an existing venvironment.yaml or venvironment-basic.yaml.
+
+        Args:
+            configuration_path: The path where the new configuration should be
+                located including the configuration name.
+            path_to_yaml_folder: The path to the directory which contains the YAML file.
+            scenario_name: The scenario for which a configuration should be created.
+        """
+        self.com_object.NewConfigurationFromYaml(configuration_path, path_to_yaml_folder, scenario_name)
 
     def _launch_application(self) -> None:
         try:
@@ -101,9 +201,6 @@ class Application:
                 self.application_events = win32com.client.WithEvents(self.com_object, ApplicationEvents)
             else:
                 self.application_events = ApplicationEvents()
-            self.measurement = Measurement(self, enable_events=self._enable_events)
-            self.capl_function_objects = lambda: self.measurement.measurement_events.CAPL_FUNCTION_OBJECTS
-            self.measurement.measurement_events.CAPL_FUNCTION_NAMES = self.user_capl_functions
             if self.com_object.Configuration.FullName:
                 self._setup_post_configuration_loading()
         except Exception as e:
@@ -112,7 +209,12 @@ class Application:
 
     def _setup_post_configuration_loading(self) -> None:
         try:
-            self._common_between_pre_and_post_cfg_open()
+            # Configuration and Networks cache state fetched from the loaded
+            # configuration (test environments/modules, diagnostic devices).
+            # Re-create them on every configuration load so the cached state
+            # always reflects the currently loaded configuration.
+            self._configuration = None
+            self._networks = None
             self.networks.fetch_diagnostic_devices()
             self.configuration.fetch_test_modules()
             self.configuration.fetch_test_units()
@@ -229,7 +331,7 @@ class Application:
         """Quit the CANoe application gracefully."""
         status = False
         try:
-            if self.configuration is not None and self.configuration.modified:
+            if self._configuration is not None and self.configuration.modified:
                 self.configuration.modified = False
             # Do NOT release event sinks before Quit(). CANoe fires OnExit (and
             # potentially OnStop) as part of its internal shutdown sequence after
