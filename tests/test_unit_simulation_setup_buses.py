@@ -7,6 +7,7 @@ from py_canoe.core.child_elements.buses import Buses
 from py_canoe.core.child_elements.bus import Bus
 from py_canoe.core.child_elements.databases import Databases
 from py_canoe.core.child_elements.database import Database
+from py_canoe.core.configuration import Configuration
 
 
 @pytest.fixture(autouse=True)
@@ -64,6 +65,15 @@ def _make_canoe_with_sim_buses(bus_specs):
 
 
 class TestSimulationSetupClasses:
+    def test_canoe_normalizes_legacy_bus_type_inputs(self):
+        from py_canoe.canoe import CANoe
+        from py_canoe.helpers.bus_type import BusType
+
+        assert CANoe._normalize_bus_type(BusType.CAN) is BusType.CAN
+        assert CANoe._normalize_bus_type("CAN") is BusType.CAN
+        assert CANoe._normalize_bus_type("can") is BusType.CAN
+        assert CANoe._normalize_bus_type(1) is BusType.CAN
+
     def test_simulation_setup_buses_property(self):
         com = MagicMock()
         buses_com = MagicMock()
@@ -167,8 +177,101 @@ class TestSimulationSetupClasses:
         dbs.remove(1)
         com.Remove.assert_called_once_with(1)
 
+    def test_add_database_handles_bus_without_name_attribute(self):
+        class _BusComWithoutName:
+            def __init__(self):
+                self._channels = MagicMock()
+                self._channels.Count = 1
+                self._channels.Item.return_value = MagicMock(Number=1)
+                self.Channels = self._channels
+
+        cfg = Configuration.__new__(Configuration)
+        cfg.app = MagicMock()
+        cfg.app.measurement.running = False
+
+        bus_com = _BusComWithoutName()
+        buses_com = MagicMock()
+        buses_com.Count = 1
+        buses_com.Item.return_value = bus_com
+
+        dbs_com = MagicMock()
+        db_com = MagicMock()
+        db_com.Channel = 0
+        dbs_com.Add.return_value = db_com
+
+        sim_setup_com = MagicMock()
+        sim_setup_com.Buses = buses_com
+
+        cfg.com_object = MagicMock()
+        cfg.com_object.SimulationSetup = sim_setup_com
+        cfg.com_object.GeneralSetup.DatabaseSetup.Databases = dbs_com
+
+        result = cfg.add_database("C:/path/to/db.dbc", 1)
+
+        assert result is True
+        dbs_com.Add.assert_called_once_with("C:/path/to/db.dbc")
+        assert db_com.Channel == 1
+
+    def test_add_database_falls_back_to_configuration_database_collection(self):
+        class _BusComWithoutChannelsAndDatabases:
+            pass
+
+        cfg = Configuration.__new__(Configuration)
+        cfg.app = MagicMock()
+        cfg.app.measurement.running = False
+
+        bus_com = _BusComWithoutChannelsAndDatabases()
+        buses_com = MagicMock()
+        buses_com.Count = 1
+        buses_com.Item.return_value = bus_com
+
+        dbs_com = MagicMock()
+        db_com = MagicMock()
+        db_com.Channel = 0
+        dbs_com.Add.return_value = db_com
+
+        sim_setup_com = MagicMock()
+        sim_setup_com.Buses = buses_com
+
+        cfg.com_object = MagicMock()
+        cfg.com_object.SimulationSetup = sim_setup_com
+        cfg.com_object.GeneralSetup.DatabaseSetup.Databases = dbs_com
+
+        result = cfg.add_database("C:/path/to/db.dbc", 1)
+
+        assert result is True
+        dbs_com.Add.assert_called_once_with("C:/path/to/db.dbc")
+        assert db_com.Channel == 1
+
 
 class TestGetSimulationBusNames:
+    def test_bus_name_falls_back_to_network_names_when_com_member_is_missing(self):
+        from py_canoe.canoe import CANoe
+
+        class _BusComWithoutName:
+            def __init__(self):
+                self.Count = 0
+
+        buses_com = MagicMock()
+        buses_com.Count = 1
+        buses_com.Item.return_value = _BusComWithoutName()
+
+        sim_buses = Buses.__new__(Buses)
+        sim_buses.com_object = buses_com
+
+        sim_setup = MagicMock(spec=SimulationSetup)
+        type(sim_setup).buses = PropertyMock(return_value=sim_buses)
+
+        app = MagicMock()
+        app.configuration.simulation_setup = sim_setup
+        app.networks.get_all_network_names.return_value = ["CAN1", "CAN2"]
+
+        canoe = CANoe.__new__(CANoe)
+        canoe.application = app
+        result = canoe.get_simulation_bus_names()
+
+        assert result == ["CAN1", "CAN2"]
+
     def test_returns_all_names(self):
         bus_specs = [
             {"name": "CAN", "dbs": []},
@@ -232,6 +335,46 @@ class TestGetSimulationBusNames:
 
 
 class TestGetSimulationDatabasePaths:
+    def test_returns_paths_from_configuration_database_collection_when_bus_databases_are_missing(self):
+        from py_canoe.canoe import CANoe
+
+        class _BusComWithoutDatabases:
+            pass
+
+        buses_com = MagicMock()
+        buses_com.Count = 1
+        buses_com.Item.return_value = _BusComWithoutDatabases()
+
+        sim_buses = Buses.__new__(Buses)
+        sim_buses.com_object = buses_com
+
+        sim_setup = MagicMock(spec=SimulationSetup)
+        type(sim_setup).buses = PropertyMock(return_value=sim_buses)
+
+        cfg = MagicMock()
+        cfg_sim_setup = MagicMock()
+        cfg_sim_setup.Buses = buses_com
+        cfg.SimulationSetup = cfg_sim_setup
+
+        cfg_dbs_com = MagicMock()
+        cfg_dbs_com.Count = 1
+        cfg_db_com = MagicMock()
+        cfg_db_com.FullName = "C:/dbs/cfg.dbc"
+        cfg_dbs_com.Item.return_value = cfg_db_com
+
+        cfg.GeneralSetup.DatabaseSetup.Databases = cfg_dbs_com
+
+        app = MagicMock()
+        app.configuration.simulation_setup = sim_setup
+        app.configuration.com_object = cfg
+
+        canoe = CANoe.__new__(CANoe)
+        canoe.application = app
+
+        result = canoe.get_simulation_database_paths()
+
+        assert result == ["C:/dbs/cfg.dbc"]
+
     def test_returns_all_paths(self):
         bus_specs = [
             {"name": "CAN", "dbs": [

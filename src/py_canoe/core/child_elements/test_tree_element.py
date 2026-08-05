@@ -21,6 +21,8 @@ class TestTreeElementType(Enum):
 class TestTreeElement:
     """The TestTreeElement object represents a single element in the test tree."""
 
+    __test__ = False
+
     def __init__(self, com_object):
         self.com_object = win32com.client.Dispatch(com_object)
 

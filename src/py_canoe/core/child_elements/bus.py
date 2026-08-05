@@ -9,6 +9,15 @@ from py_canoe.core.child_elements.security_configuration import SecurityConfigur
 from py_canoe.core.child_elements.signals import Signal
 
 
+class _EmptyComCollection:
+    """Fallback collection used when a CANoe bus interface does not expose optional members."""
+
+    Count = 0
+
+    def Item(self, index: int):
+        raise IndexError(index)
+
+
 class Bus:
     """The Bus object represents a bus of your application.
 
@@ -67,12 +76,18 @@ class Bus:
     @property
     def channels(self) -> Channels:
         """Returns the Channels object associated with the bus."""
-        return Channels(self.com_object.Channels)
+        channels_com = getattr(self.com_object, 'Channels', None)
+        if channels_com is None:
+            return Channels(_EmptyComCollection())
+        return Channels(channels_com)
 
     @property
     def databases(self) -> Databases:
         """Returns the Databases object of the bus."""
-        return Databases(self.com_object.Databases)
+        databases_com = getattr(self.com_object, 'Databases', None)
+        if databases_com is None:
+            return Databases(_EmptyComCollection())
+        return Databases(databases_com)
 
     @property
     def generators(self):
@@ -87,11 +102,12 @@ class Bus:
     @property
     def name(self) -> str:
         """Sets or returns the name of the bus."""
-        return self.com_object.Name
+        return getattr(self.com_object, 'Name', None)
 
     @name.setter
     def name(self, value: str) -> None:
-        self.com_object.Name = value
+        if hasattr(self.com_object, 'Name'):
+            self.com_object.Name = value
 
     @property
     def nodes(self) -> Nodes:
