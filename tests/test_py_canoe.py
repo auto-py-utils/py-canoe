@@ -3,6 +3,7 @@ import pytest
 from win32com.universal import com_error
 
 from py_canoe import CANoe, wait
+from py_canoe.helpers.bus_type import BusType
 from py_canoe.helpers.common import logger
 from tests.conftest import skip_if_no_canoe
 
@@ -48,9 +49,9 @@ class TestStandalonePyCanoe:
         assert self.canoe_inst.start_measurement()
         assert self.canoe_inst.attach_to_active_application()
         wait(1)
-        assert self.canoe_inst.check_signal_online(bus='CAN', channel=1, message='LightState', signal='FlashLight')
-        self.canoe_inst.check_signal_state(bus='CAN', channel=1, message='LightState', signal='FlashLight')
-        self.canoe_inst.get_signal_value(bus='CAN', channel=1, message='LightState', signal='FlashLight', raw_value=True)
+        assert self.canoe_inst.check_signal_online(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight')
+        self.canoe_inst.check_signal_state(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight')
+        self.canoe_inst.get_signal_value(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight', raw_value=True)
         wait(1)
         assert self.canoe_inst.stop_measurement()
 
@@ -107,18 +108,18 @@ class TestStandalonePyCanoe:
     def test_bus_signal_methods(self):
         logger.info("test_bus_signal_methods started".center(120, '-'))
         self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=False, prompt_user=False)
-        self.canoe_inst.get_bus_databases_info('CAN', log_info=True)
-        self.canoe_inst.get_bus_nodes_info('CAN', log_info=True)
+        self.canoe_inst.get_bus_databases_info(BusType.CAN, log_info=True)
+        self.canoe_inst.get_bus_nodes_info(BusType.CAN, log_info=True)
         assert self.canoe_inst.start_measurement()
         wait(1)
-        self.canoe_inst.get_signal_full_name(bus='CAN', channel=1, message='LightState', signal='FlashLight')
-        self.canoe_inst.get_signal_value(bus='CAN', channel=1, message='LightState', signal='FlashLight', raw_value=False)
-        self.canoe_inst.set_signal_value(bus='CAN', channel=1, message='LightState', signal='FlashLight', value=1, raw_value=False)
-        self.canoe_inst.set_signal_value(bus='CAN', channel=1, message='LightState', signal='FlashLight', value=1, raw_value=True)
+        self.canoe_inst.get_signal_full_name(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight')
+        self.canoe_inst.get_signal_value(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight', raw_value=False)
+        self.canoe_inst.set_signal_value(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight', value=1, raw_value=False)
+        self.canoe_inst.set_signal_value(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight', value=1, raw_value=True)
         wait(1)
-        assert self.canoe_inst.check_signal_online(bus='CAN', channel=1, message='LightState', signal='FlashLight')
-        self.canoe_inst.check_signal_state(bus='CAN', channel=1, message='LightState', signal='FlashLight')
-        sig_val = self.canoe_inst.get_signal_value(bus='CAN', channel=1, message='LightState', signal='FlashLight', raw_value=True)
+        assert self.canoe_inst.check_signal_online(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight')
+        self.canoe_inst.check_signal_state(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight')
+        sig_val = self.canoe_inst.get_signal_value(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight', raw_value=True)
         assert self.canoe_inst.stop_measurement()
         assert sig_val == 1
 
@@ -285,7 +286,7 @@ class TestStandalonePyCanoe:
     def test_simulation_bus_names(self):
         logger.info("test_simulation_bus_names started".center(120, '-'))
         self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=False, prompt_user=False)
-        names = self.canoe_inst.application.bus.get_simulation_bus_names()
+        names = self.canoe_inst.get_simulation_bus_names()
         assert isinstance(names, list)
         assert len(names) > 0
         assert all(isinstance(n, str) for n in names)
@@ -293,7 +294,7 @@ class TestStandalonePyCanoe:
     def test_simulation_database_paths(self):
         logger.info("test_simulation_database_paths started".center(120, '-'))
         self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=False, prompt_user=False)
-        paths = self.canoe_inst.application.bus.get_simulation_database_paths()
+        paths = self.canoe_inst.get_simulation_database_paths()
         assert isinstance(paths, list)
         assert len(paths) > 0
         assert all(isinstance(p, str) for p in paths)
@@ -346,7 +347,7 @@ class TestStandalonePyCanoe:
         assert self.canoe_inst.start_measurement()
         wait(1)
         prof = self.canoe_inst.profile_signal_value(
-            bus='CAN',
+            bus=BusType.CAN,
             channel=1,
             message='EngineState',
             signal='EngineSpeed',

@@ -159,18 +159,18 @@ canoe_inst.stop_measurement()
 ### 获取/设置总线信号值、检查信号状态、获取信号全名
 
 ```python
-from py_canoe import CANoe, wait
+from py_canoe import CANoe, BusType, wait
 
 canoe_inst = CANoe()
 canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
 
 canoe_inst.start_measurement()
-sig_full_name = canoe_inst.get_signal_full_name(bus='CAN', channel=1, message='LightState', signal='FlashLight')
-sig_value = canoe_inst.get_signal_value(bus='CAN', channel=1, message='LightState', signal='FlashLight', raw_value=False)
-canoe_inst.set_signal_value(bus='CAN', channel=1, message='LightState', signal='FlashLight', value=1, raw_value=False)
-sig_online_state = canoe_inst.check_signal_online(bus='CAN', channel=1, message='LightState', signal='FlashLight')
-sig_state = canoe_inst.check_signal_state(bus='CAN', channel=1, message='LightState', signal='FlashLight')
-sig_val = canoe_inst.get_signal_value(bus='CAN', channel=1, message='LightState', signal='FlashLight', raw_value=True)
+sig_full_name = canoe_inst.get_signal_full_name(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight')
+sig_value = canoe_inst.get_signal_value(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight', raw_value=False)
+canoe_inst.set_signal_value(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight', value=1, raw_value=False)
+sig_online_state = canoe_inst.check_signal_online(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight')
+sig_state = canoe_inst.check_signal_state(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight')
+sig_val = canoe_inst.get_signal_value(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight', raw_value=True)
 canoe_inst.stop_measurement()
 ```
 
