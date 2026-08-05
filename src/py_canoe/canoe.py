@@ -1,5 +1,6 @@
 import re
 import sys
+import time
 import shutil
 import win32com
 import pythoncom
@@ -13,11 +14,13 @@ if TYPE_CHECKING:
     from py_canoe.core.child_elements.test_configurations import TestConfiguration
 
 from py_canoe.core.application import Application
-from py_canoe.core.bus import Bus
+from py_canoe.core.child_elements.bus import Bus
 from py_canoe.core.capl import CompileResult
 from py_canoe.core.child_elements.test_environment import TestEnvironment
+from py_canoe.core.database_utils.db import fetch_database_info
 from py_canoe.helpers.bus_type import BusType
-from py_canoe.helpers.common import logger, update_logger_file_path
+from py_canoe.helpers.common import logger, update_logger_file_path, wait
+from py_canoe.helpers.exceptions import ConfigurationNotLoadedError
 from py_canoe.helpers.vxlapi import ChannelInfo, HwType, VxlDriver, XlBusType
 
 
@@ -143,31 +146,87 @@ class CANoe:
         self.application.user_capl_functions = self.user_capl_functions
         return self.application.attach_to_active_application()
 
-    def get_bus_databases_info(self, bus: str = 'CAN', log_info: bool = False) -> dict:
+    def get_bus_databases_info(self, bus: BusType = BusType.CAN, log_info: bool = False) -> dict:
         """
         Gets the bus databases information.
 
         Args:
-            bus (str): The bus name. Defaults to 'CAN'.
+            bus (BusType): The bus type. Defaults to BusType.CAN.
             log_info (bool): Whether to log the databases information. Defaults to False.
 
         Returns:
             dict: The bus databases information.
         """
-        return self.application.bus.get_bus_databases_info(bus, log_info)
+        try:
+            bus_obj = self.application.bus(bus)
+            databases_info = {}
+            for db_obj in bus_obj.com_object.Databases:
+                db_file = getattr(db_obj, 'FullName', '')
+                fetched_db_info = fetch_database_info(db_file)
+                ecus = list(fetched_db_info.get('ecus', {}).keys())
+                frames = list(fetched_db_info.get('frames', {}).keys())
+                frames_signals = list(fetched_db_info.get('frames_signals', {}).keys())
+                pdus = list(fetched_db_info.get('pdus', {}).keys())
+                pdus_signals = list(fetched_db_info.get('pdus_signals', {}).keys())
+                info = {
+                    'full_name': getattr(db_obj, 'FullName', ''),
+                    'path': getattr(db_obj, 'Path', ''),
+                    'name': getattr(db_obj, 'Name', ''),
+                    'channel': getattr(db_obj, 'Channel', ''),
+                    'com_obj': db_obj,
+                    'ecus': ecus,
+                    'frames': frames,
+                    'frames_signals': frames_signals,
+                    'pdus': pdus,
+                    'pdus_signals': pdus_signals,
+                }
+                databases_info[info['name']] = info
+            if log_info:
+                logger.info(f'{bus.name} bus databases information:')
+                for db_name, db_info in databases_info.items():
+                    logger.info(f"    {db_name}:")
+                    for key, value in db_info.items():
+                        logger.info(f"        {key}: {value}")
+            return databases_info
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            logger.error(f"Error retrieving {bus} bus databases information: {e}")
+            return {}
 
-    def get_bus_nodes_info(self, bus: str = 'CAN', log_info: bool = False) -> dict:
+    def get_bus_nodes_info(self, bus: BusType = BusType.CAN, log_info: bool = False) -> dict:
         """
         Gets the bus nodes information.
 
         Args:
-            bus (str): The bus name. Defaults to 'CAN'.
+            bus (BusType): The bus type. Defaults to BusType.CAN.
             log_info (bool): Whether to log the nodes information. Defaults to False.
 
         Returns:
             dict: The bus nodes information.
         """
-        return self.application.bus.get_bus_nodes_info(bus, log_info)
+        try:
+            bus_obj = self.application.bus(bus)
+            nodes_info = {}
+            for node_obj in bus_obj.com_object.Nodes:
+                info = {
+                    'full_name': getattr(node_obj, 'FullName', ''),
+                    'path': getattr(node_obj, 'Path', ''),
+                    'name': getattr(node_obj, 'Name', ''),
+                    'active': getattr(node_obj, 'Active', ''),
+                    'com_obj': node_obj,
+                }
+                nodes_info[info['name']] = info
+            if log_info:
+                logger.info(f'{bus.name} bus nodes information:')
+                for node_name, node_info in nodes_info.items():
+                    logger.info(f"    {node_name}:")
+                    for key, value in node_info.items():
+                        logger.info(f"        {key}: {value}")
+            return nodes_info
+        except Exception as e:
+            logger.error(f"Error retrieving {bus} bus nodes information: {e}")
+            return {}
 
     def get_all_network_names(self) -> list[str]:
         """Returns all network names in the current application."""
@@ -175,18 +234,41 @@ class CANoe:
 
     def get_simulation_bus_names(self) -> list[str]:
         """Returns all simulation bus names from the current application."""
-        return self.application.bus.get_simulation_bus_names()
+        try:
+            sim_buses = self.application.configuration.simulation_setup.buses
+            bus_names: list[str] = []
+            for i in range(1, sim_buses.count + 1):
+                sim_bus = sim_buses.item(i)
+                if sim_bus.name is not None:
+                    bus_names.append(sim_bus.name)
+            logger.info(f'simulation buses: {bus_names}')
+            return bus_names
+        except Exception as e:
+            raise ConfigurationNotLoadedError(f"Cannot access simulation buses: {e}") from e
 
     def get_simulation_database_paths(self) -> list[str]:
         """Returns all simulation database paths from the current application."""
-        return self.application.bus.get_simulation_database_paths()
+        try:
+            sim_buses = self.application.configuration.simulation_setup.buses
+            paths: list[str] = []
+            for i in range(1, sim_buses.count + 1):
+                sim_bus = sim_buses.item(i)
+                dbs = sim_bus.databases
+                for j in range(1, dbs.count + 1):
+                    db = dbs.item(j)
+                    if db.full_name is not None:
+                        paths.append(db.full_name)
+            logger.info(f'simulation database paths: {paths}')
+            return paths
+        except Exception as e:
+            raise ConfigurationNotLoadedError(f"Cannot access simulation databases: {e}") from e
 
-    def get_signal_value(self, bus: str, channel: int, message: str, signal: str, raw_value: bool = False, return_timestamp: bool = False) -> Union[int, float, None, tuple]:
+    def get_signal_value(self, bus: BusType, channel: int, message: str, signal: str, raw_value: bool = False, return_timestamp: bool = False) -> Union[int, float, None, tuple]:
         """
         Gets the value of a signal.
 
         Args:
-            bus (str): The bus name.
+            bus (BusType): The bus type.
             channel (int): The channel number.
             message (str): The message name.
             signal (str): The signal name.
@@ -196,19 +278,25 @@ class CANoe:
         Returns:
             Union[int, float, None, tuple]: The signal value or None if not found. If return_timestamp is True, returns a tuple of (signal_value, timestamp).
         """
-        signal_value = self.application.bus.get_signal_value(bus, channel, message, signal, raw_value)
+        signal_value = None
+        try:
+            signal_obj = self.application.bus(bus).get_signal(channel, message, signal)
+            signal_value = signal_obj.raw_value if raw_value else signal_obj.value
+            logger.info(f"Signal({signal_obj.full_name}) value = {signal_value}")
+        except Exception as e:
+            logger.error(f"Error retrieving {bus} bus signal value: {e}")
         if return_timestamp:
             return signal_value, datetime.now(timezone.utc).timestamp()
         return signal_value
 
-    def profile_signal_value(self, bus: str, channel: int, message: str, signal: str, duration: float = 1.0, interval: float = 0.0, raw_value: bool = False, max_samples: Optional[int] = None, include_samples: bool = False, include_timestamps: bool = False,) -> dict:
+    def profile_signal_value(self, bus: BusType, channel: int, message: str, signal: str, duration: float = 1.0, interval: float = 0.0, raw_value: bool = False, max_samples: Optional[int] = None, include_samples: bool = False, include_timestamps: bool = False,) -> dict:
         """Profiles a signal by sampling it repeatedly and returning basic stats.
 
         This is useful for quickly observing signal stability, typical value range,
         and timing characteristics without storing all the samples in memory.
 
         Args:
-            bus (str): The bus name.
+            bus (BusType): The bus type.
             channel (int): The channel number.
             message (str): The message name.
             signal (str): The signal name.
@@ -230,14 +318,106 @@ class CANoe:
                 - samples (optional): list of sampled values
                 - timestamps (optional): list of timestamps in UTC seconds
         """
-        return self.application.bus.profile_signal_value(bus, channel, message, signal, duration, interval, raw_value, max_samples, include_samples, include_timestamps)
+        if duration <= 0:
+            return {
+                "count": 0,
+                "duration": 0.0,
+                "min": None,
+                "max": None,
+                "mean": None,
+                "std": None,
+                **({"samples": []} if include_samples else {}),
+                **({"timestamps": []} if include_timestamps else {}),
+            }
 
-    def set_signal_value(self, bus: str, channel: int, message: str, signal: str, value: Union[int, float], raw_value: bool = False) -> bool:
+        try:
+            signal_obj = self.application.bus(bus).get_signal(channel, message, signal)
+        except Exception as e:
+            logger.error(f"Error retrieving signal object for profiling: {e}")
+            return {}
+
+        value_getter = (lambda: signal_obj.raw_value) if raw_value else (lambda: signal_obj.value)
+
+        start = time.perf_counter()
+        end_time = start + duration
+        count = 0
+        mean = 0.0
+        m2 = 0.0
+        min_value = float("inf")
+        max_value = float("-inf")
+        samples = [] if include_samples else None
+        timestamps = [] if include_timestamps else None
+        logger.info(f"Starting signal profiling for {message}::{signal} on {bus} bus for duration {duration}s with interval {interval}s...")
+        while True:
+            now = time.perf_counter()
+            if now >= end_time:
+                break
+            if max_samples is not None and count >= max_samples:
+                break
+
+            value = value_getter()
+            # Avoid breaking on missing signals; just skip them
+            if value is None:
+                if interval > 0:
+                    wait(interval)
+                continue
+
+            try:
+                numeric = float(value)
+            except Exception:
+                # If value is not numeric, keep the raw value
+                numeric = value
+
+            if include_samples:
+                samples.append(numeric)
+            if include_timestamps:
+                timestamps.append(time.time())
+
+            if isinstance(numeric, (int, float)) and not isinstance(numeric, bool):
+                count += 1
+                if numeric < min_value:
+                    min_value = numeric
+                if numeric > max_value:
+                    max_value = numeric
+
+                # Welford's online algorithm for mean and variance
+                delta = numeric - mean
+                mean += delta / count
+                delta2 = numeric - mean
+                m2 += delta * delta2
+            else:
+                # For non-numeric samples we still count them, but cannot compute stats
+                count += 1
+
+            if interval > 0:
+                wait(interval)
+
+        duration_actual = time.perf_counter() - start
+        variance = m2 / (count - 1) if count > 1 else None
+        std = variance**0.5 if variance is not None else None
+
+        profiled_signal = {
+            "count": count,
+            "duration": duration_actual,
+            "min": None if count == 0 else (None if min_value == float("inf") else min_value),
+            "max": None if count == 0 else (None if max_value == float("-inf") else max_value),
+            "mean": None if count == 0 else mean,
+            "std": std,
+            **({"samples": samples} if include_samples else {}),
+            **({"timestamps": timestamps} if include_timestamps else {}),
+        }
+        logger.info(
+            f"Completed signal profiling for {message}::{signal} on {bus} bus: count={count}, duration={duration_actual:.2f}s, "
+            f"min={profiled_signal['min']}, max={profiled_signal['max']}, mean={profiled_signal['mean']}, std={profiled_signal['std']}"
+        )
+        return profiled_signal
+
+    def set_signal_value(self, bus: BusType, channel: int, message: str, signal: str, value: Union[int, float], raw_value: bool = False) -> bool:
         """
         Sets the value of a signal.
 
         Args:
-            bus (str): The bus name.
+            bus (BusType): The bus type.
             channel (int): The channel number.
             message (str): The message name.
             signal (str): The signal name.
@@ -247,14 +427,24 @@ class CANoe:
         Returns:
             bool: True if the operation was successful, False otherwise.
         """
-        return self.application.bus.set_signal_value(bus, channel, message, signal, value, raw_value)
+        try:
+            signal_obj = self.application.bus(bus).get_signal(channel, message, signal)
+            if raw_value:
+                signal_obj.raw_value = int(value)
+            else:
+                signal_obj.value = value
+            logger.info(f"Signal({signal_obj.full_name}) value set to {value}")
+            return True
+        except Exception as e:
+            logger.error(f"Error setting {bus} bus signal value: {e}")
+            return False
 
-    def get_signal_full_name(self, bus: str, channel: int, message: str, signal: str) -> Union[str, None]:
+    def get_signal_full_name(self, bus: BusType, channel: int, message: str, signal: str) -> Union[str, None]:
         """
         Gets the full name of a signal.
 
         Args:
-            bus (str): The bus name.
+            bus (BusType): The bus type.
             channel (int): The channel number.
             message (str): The message name.
             signal (str): The signal name.
@@ -262,14 +452,21 @@ class CANoe:
         Returns:
             Union[str, None]: The full name of the signal or None if not found.
         """
-        return self.application.bus.get_signal_full_name(bus, channel, message, signal)
+        try:
+            signal_obj = self.application.bus(bus).get_signal(channel, message, signal)
+            full_name = signal_obj.full_name
+            logger.info(f'Signal full name = {full_name}')
+            return full_name
+        except Exception as e:
+            logger.error(f"Error retrieving {bus} bus signal full name: {e}")
+            return None
 
-    def check_signal_online(self, bus: str, channel: int, message: str, signal: str) -> bool:
+    def check_signal_online(self, bus: BusType, channel: int, message: str, signal: str) -> bool:
         """
         Checks if a signal is online.
 
         Args:
-            bus (str): The bus name.
+            bus (BusType): The bus type.
             channel (int): The channel number.
             message (str): The message name.
             signal (str): The signal name.
@@ -277,14 +474,22 @@ class CANoe:
         Returns:
             bool: True if the signal is online, False otherwise.
         """
-        return self.application.bus.check_signal_online(bus, channel, message, signal)
+        try:
+            bus_obj = self.application.bus(bus)
+            signal_obj = bus_obj.get_signal(channel, message, signal)
+            is_online = signal_obj.is_online
+            logger.info(f'Signal({signal_obj.full_name}) is online ?: {is_online} ({bus_obj.VALUE_TABLE_SIGNAL_IS_ONLINE[is_online]})')
+            return is_online
+        except Exception as e:
+            logger.error(f"Error checking {bus} bus signal online status: {e}")
+            return False
 
-    def check_signal_state(self, bus: str, channel: int, message: str, signal: str) -> int:
+    def check_signal_state(self, bus: BusType, channel: int, message: str, signal: str) -> int:
         """
         Checks the state of a signal.
 
         Args:
-            bus (str): The bus name.
+            bus (BusType): The bus type.
             channel (int): The channel number.
             message (str): The message name.
             signal (str): The signal name.
@@ -292,14 +497,22 @@ class CANoe:
         Returns:
             int: The state of the signal.
         """
-        return self.application.bus.check_signal_state(bus, channel, message, signal)
+        try:
+            bus_obj = self.application.bus(bus)
+            signal_obj = bus_obj.get_signal(channel, message, signal)
+            state = signal_obj.state
+            logger.info(f'Signal({signal_obj.full_name}) state: {state} ({bus_obj.VALUE_TABLE_SIGNAL_STATE[state]})')
+            return state
+        except Exception as e:
+            logger.error(f"Error checking {bus} bus signal state: {e}")
+            return -1
 
-    def get_j1939_signal_value(self, bus: str, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, raw_value=False, return_timestamp=False) -> Union[float, int, None, tuple]:
+    def get_j1939_signal_value(self, bus: BusType, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, raw_value=False, return_timestamp=False) -> Union[float, int, None, tuple]:
         """
         Gets the value of a J1939 signal.
 
         Args:
-            bus (str): The bus name.
+            bus (BusType): The bus type.
             channel (int): The channel number.
             message (str): The message name.
             signal (str): The signal name.
@@ -311,17 +524,23 @@ class CANoe:
         Returns:
             Union[float, int, None, tuple]: The signal value or None if not found. If return_timestamp is True, returns a tuple of (signal_value, timestamp).
         """
-        signal_value = self.application.bus.get_j1939_signal_value(bus, channel, message, signal, source_addr, dest_addr, raw_value)
+        signal_value = None
+        try:
+            signal_obj = self.application.bus(bus).get_j1939_signal(channel, message, signal, source_addr, dest_addr)
+            signal_value = signal_obj.raw_value if raw_value else signal_obj.value
+            logger.info(f'J1939 Signal({signal_obj.full_name}) value = {signal_value}')
+        except Exception as e:
+            logger.error(f"Error retrieving J1939 bus signal value: {e}")
         if return_timestamp:
             return signal_value, datetime.now(timezone.utc).timestamp()
         return signal_value
 
-    def set_j1939_signal_value(self, bus: str, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, value: Union[float, int], raw_value: bool = False) -> bool:
+    def set_j1939_signal_value(self, bus: BusType, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, value: Union[float, int], raw_value: bool = False) -> bool:
         """
         Sets the value of a J1939 signal.
 
         Args:
-            bus (str): The bus name.
+            bus (BusType): The bus type.
             channel (int): The channel number.
             message (str): The message name.
             signal (str): The signal name.
@@ -333,14 +552,24 @@ class CANoe:
         Returns:
             bool: True if the operation was successful, False otherwise.
         """
-        return self.application.bus.set_j1939_signal_value(bus, channel, message, signal, source_addr, dest_addr, value, raw_value)
+        try:
+            signal_obj = self.application.bus(bus).get_j1939_signal(channel, message, signal, source_addr, dest_addr)
+            if raw_value:
+                signal_obj.raw_value = int(value)
+            else:
+                signal_obj.value = value
+            logger.info(f'J1939 Signal({signal_obj.full_name}) value set to {value}')
+            return True
+        except Exception as e:
+            logger.error(f"Error setting J1939 bus signal value: {e}")
+            return False
 
-    def get_j1939_signal_full_name(self, bus: str, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> Union[str, None]:
+    def get_j1939_signal_full_name(self, bus: BusType, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> Union[str, None]:
         """
         Gets the full name of a J1939 signal.
 
         Args:
-            bus (str): The bus name.
+            bus (BusType): The bus type.
             channel (int): The channel number.
             message (str): The message name.
             signal (str): The signal name.
@@ -350,14 +579,21 @@ class CANoe:
         Returns:
             Union[str, None]: The full name of the signal or None if not found.
         """
-        return self.application.bus.get_j1939_signal_full_name(bus, channel, message, signal, source_addr, dest_addr)
+        try:
+            signal_obj = self.application.bus(bus).get_j1939_signal(channel, message, signal, source_addr, dest_addr)
+            full_name = signal_obj.full_name
+            logger.info(f'J1939 Signal full name = {full_name}')
+            return full_name
+        except Exception as e:
+            logger.error(f"Error retrieving J1939 bus signal full name: {e}")
+            return None
 
-    def check_j1939_signal_online(self, bus: str, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> bool:
+    def check_j1939_signal_online(self, bus: BusType, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> bool:
         """
         Checks if a J1939 signal is online.
 
         Args:
-            bus (str): The bus name.
+            bus (BusType): The bus type.
             channel (int): The channel number.
             message (str): The message name.
             signal (str): The signal name.
@@ -367,14 +603,22 @@ class CANoe:
         Returns:
             bool: True if the signal is online, False otherwise.
         """
-        return self.application.bus.check_j1939_signal_online(bus, channel, message, signal, source_addr, dest_addr)
+        try:
+            bus_obj = self.application.bus(bus)
+            signal_obj = bus_obj.get_j1939_signal(channel, message, signal, source_addr, dest_addr)
+            is_online = signal_obj.is_online
+            logger.info(f'J1939 Signal({signal_obj.full_name}) is online ?: {is_online} ({bus_obj.VALUE_TABLE_SIGNAL_IS_ONLINE[is_online]})')
+            return is_online
+        except Exception as e:
+            logger.error(f"Error checking J1939 bus signal online status: {e}")
+            return False
 
-    def check_j1939_signal_state(self, bus: str, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> int:
+    def check_j1939_signal_state(self, bus: BusType, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> int:
         """
         Checks the state of a J1939 signal.
 
         Args:
-            bus (str): The bus name.
+            bus (BusType): The bus type.
             channel (int): The channel number.
             message (str): The message name.
             signal (str): The signal name.
@@ -384,7 +628,15 @@ class CANoe:
         Returns:
             int: The state of the signal.
         """
-        return self.application.bus.check_j1939_signal_state(bus, channel, message, signal, source_addr, dest_addr)
+        try:
+            bus_obj = self.application.bus(bus)
+            signal_obj = bus_obj.get_j1939_signal(channel, message, signal, source_addr, dest_addr)
+            state = signal_obj.state
+            logger.info(f'J1939 Signal({signal_obj.full_name}) state: {state} ({bus_obj.VALUE_TABLE_SIGNAL_STATE[state]})')
+            return state
+        except Exception as e:
+            logger.error(f"Error checking J1939 bus signal state: {e}")
+            return -1
 
     def compile_all_capl_nodes(self, wait_time: Union[int, float] = 5) -> Union[CompileResult, None]:
         """
@@ -824,7 +1076,7 @@ class CANoe:
         Args:
             channel_type (BusType): type of the channel (BusType.CAN for CAN, BusType.LIN for LIN, BusType.MOST for MOST, BusType.FlexRay for FlexRay, BusType.J1708 for J1708, BusType.Ethernet for Ethernet, BusType.WLAN for WLAN). Defaults to BusType.CAN.
         """
-        return self.application.configuration.general_setup.get_channels_count(channel_type.value)
+        return self.application.configuration.general_setup.get_channels_count(channel_type)
     
     def set_channelUsage(self, channel_type:BusType, channel_count:int) -> bool:
         """sets the number of channels of a specific type.
@@ -833,7 +1085,7 @@ class CANoe:
             channel_type (BusType): type of the channel (BusType.CAN for CAN, BusType.LIN for LIN, BusType.MOST for MOST, BusType.FlexRay for FlexRay, BusType.J1708 for J1708, BusType.Ethernet for Ethernet, BusType.WLAN for WLAN).
             channel_count (int): number of channels to set.
         """
-        self.application.configuration.general_setup.set_channels_count(channel_type.value, channel_count)
+        self.application.configuration.general_setup.set_channels_count(channel_type, channel_count)
 
         return self.get_channelUsage(channel_type) == channel_count
 

@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from py_canoe.core.child_elements.measurement_setup import Logging, ExporterSymbol, Message
     from py_canoe.core.child_elements.test_configurations import TestConfiguration
 
-from py_canoe.core.bus import Bus
+from py_canoe.core.child_elements.bus import Bus
 from py_canoe.core.child_elements.channel import Channel
 from py_canoe.core.child_elements.test_environment import TestEnvironment
 from py_canoe.core.child_elements.test_module import TestModule
@@ -49,7 +49,6 @@ class Configuration:
     """
     def __init__(self, app: 'Application'):
         self.app = app
-        self.bus_types = self.app.bus_types
         self.com_object = win32com.client.Dispatch(self.app.com_object.Configuration)
         # self.configuration_events: ConfigurationEvents = win32com.client.WithEvents(self.com_object, ConfigurationEvents)
         self.configuration_test_configurations = lambda: self.test_configurations
@@ -267,7 +266,7 @@ class Configuration:
 
     def get_can_bus_statistics(self, channel: int) -> dict:
         try:
-            can_stat_obj = self.online_setup.bus_statistics.BusStatistic(self.bus_types['CAN'], channel)
+            can_stat_obj = self.online_setup.bus_statistics.BusStatistic(BusType.CAN.value, channel)
             keys = [
                 'BusLoad', 'ChipState', 'Error', 'ErrorTotal', 'Extended', 'ExtendedTotal',
                 'ExtendedRemote', 'ExtendedRemoteTotal', 'Overload', 'OverloadTotal', 'PeakLoad',
