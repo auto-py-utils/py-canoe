@@ -83,6 +83,7 @@ class System:
 
     def get_variable_value(self, sys_var_name: str, return_symbolic_name=False, enable_events: bool = True) -> Union[int, float, str, None]:
         """Get the value of a system variable. If the variable does not exist, it will log an error message and return None."""
+        # enable_events is deprecated and ignored: reading a variable never registers a COM event sink
         try:
             parts = sys_var_name.split('::')
             if len(parts) < 2:
@@ -91,7 +92,7 @@ class System:
             namespace = '::'.join(parts[:-1])
             variable_name = parts[-1]
             namespace_obj = self.com_object.Namespaces(namespace)
-            variable_obj = Variable(namespace_obj.Variables(variable_name), enable_events)
+            variable_obj = Variable(namespace_obj.Variables(variable_name))
             value = variable_obj.get_value()
             if return_symbolic_name:
                 symbolic_value = variable_obj.get_symbolic_value_name(value)
@@ -103,7 +104,7 @@ class System:
             logger.error(f"Error retrieving System Variable '{sys_var_name}': {e}")
             return None
 
-    def set_variable_value(self, sys_var_name: str, value: Union[int, float, str], timeout: Union[int, float] = 1) -> bool:
+    def set_variable_value(self, sys_var_name: str, value: Union[int, float, str], timeout: Union[int, float] = 1, enable_events: bool = True) -> bool:
         """Set the value of a system variable. If the variable does not exist, it will log an error message and return False."""
         try:
             parts = sys_var_name.split('::')
@@ -113,7 +114,7 @@ class System:
             namespace = '::'.join(parts[:-1])
             variable_name = parts[-1]
             namespace_obj = self.com_object.Namespaces(namespace)
-            variable_obj = Variable(namespace_obj.Variables(variable_name))
+            variable_obj = Variable(namespace_obj.Variables(variable_name), enable_events)
             var_type = type(variable_obj.get_value())
             try:
                 converted_value = var_type(value)
@@ -126,7 +127,7 @@ class System:
             logger.error(f"Error setting System Variable '{sys_var_name}': {e}")
             return False
 
-    def set_variable_array_values(self, sys_var_name: str, value: tuple, index: int = 0, timeout: Union[int, float] = 1) -> bool:
+    def set_variable_array_values(self, sys_var_name: str, value: tuple, index: int = 0, timeout: Union[int, float] = 1, enable_events: bool = True) -> bool:
         """Set the values of a system variable array starting from a specific index. If the variable does not exist or if there is not enough space in the array, it will log an error message and return False."""
         try:
             parts = sys_var_name.split('::')
@@ -136,7 +137,7 @@ class System:
             namespace = '::'.join(parts[:-1])
             variable_name = parts[-1]
             namespace_obj = self.com_object.Namespaces(namespace)
-            variable_obj = Variable(namespace_obj.Variables(variable_name))
+            variable_obj = Variable(namespace_obj.Variables(variable_name), enable_events)
             arr = list(variable_obj.get_value())
             if index < 0 or index + len(value) > len(arr):
                 logger.error(f"Not enough space in System Variable Array '{sys_var_name}' to set values.")
