@@ -20,7 +20,7 @@ class Performance:
     @max_num_measurement_setup_threads.setter
     def max_num_measurement_setup_threads(self, num: int):
         """Set the maximum number of measurement setup threads that can be used for measurement setup."""
-        if not self.app.get_measurement_running_status():
+        if not self.app.measurement.running:
             self.com_object.MaxNumMeasurementSetupThreads = num
         else:
             logger.warning("Cannot set MaxNumMeasurementSetupThreads while measurement is running.")
