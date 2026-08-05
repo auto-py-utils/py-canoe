@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="chaitu-ycr" /><link rel="canonical" href="https://chaitu-ycr.github.io/py-canoe/src_manual/core/configuration/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="auto-py-utils" /><link rel="canonical" href="https://auto-py-utils.github.io/py-canoe/src_manual/core/configuration/" />
       <link rel="shortcut icon" href="../../../img/favicon.ico" />
     <title>configuration - py-canoe</title>
     <link rel="stylesheet" href="../../../css/theme.css" />
@@ -129,7 +129,7 @@
           <li class="breadcrumb-item">core</li>
       <li class="breadcrumb-item active">configuration</li>
     <li class="wy-breadcrumbs-aside">
-          <a href="https://github.com/chaitu-ycr/py-canoe/blob/main/docs/src_manual/core/configuration.md">Edit</a>
+          <a href="https://github.com/auto-py-utils/py-canoe/blob/main/docs/src_manual/core/configuration.md">Edit</a>
     </li>
   </ul>
   <hr/>
@@ -168,10 +168,8 @@
 <span class="normal">56</span>
 <span class="normal">57</span>
 <span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">:</span> <span class="s1">&#39;Application&#39;</span><span class="p">):</span>
+<span class="normal">59</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">:</span> <span class="s1">&#39;Application&#39;</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">app</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">bus_types</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">bus_types</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">com_object</span> <span class="o">=</span> <span class="n">win32com</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">Dispatch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">com_object</span><span class="o">.</span><span class="n">Configuration</span><span class="p">)</span>
     <span class="c1"># self.configuration_events: ConfigurationEvents = win32com.client.WithEvents(self.com_object, ConfigurationEvents)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">configuration_test_configurations</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_configurations</span>
@@ -311,23 +309,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">928</span>
-<span class="normal">929</span>
-<span class="normal">930</span>
-<span class="normal">931</span>
-<span class="normal">932</span>
-<span class="normal">933</span>
-<span class="normal">934</span>
-<span class="normal">935</span>
-<span class="normal">936</span>
-<span class="normal">937</span>
-<span class="normal">938</span>
-<span class="normal">939</span>
-<span class="normal">940</span>
-<span class="normal">941</span>
-<span class="normal">942</span>
-<span class="normal">943</span>
-<span class="normal">944</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">944</span>
 <span class="normal">945</span>
 <span class="normal">946</span>
 <span class="normal">947</span>
@@ -357,7 +339,27 @@
 <span class="normal">971</span>
 <span class="normal">972</span>
 <span class="normal">973</span>
-<span class="normal">974</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">network</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="normal">974</span>
+<span class="normal">975</span>
+<span class="normal">976</span>
+<span class="normal">977</span>
+<span class="normal">978</span>
+<span class="normal">979</span>
+<span class="normal">980</span>
+<span class="normal">981</span>
+<span class="normal">982</span>
+<span class="normal">983</span>
+<span class="normal">984</span>
+<span class="normal">985</span>
+<span class="normal">986</span>
+<span class="normal">987</span>
+<span class="normal">988</span>
+<span class="normal">989</span>
+<span class="normal">990</span>
+<span class="normal">991</span>
+<span class="normal">992</span>
+<span class="normal">993</span>
+<span class="normal">994</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">network</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Add a database file to the specified channel/network</span>
 
@@ -378,8 +380,12 @@
                 <span class="c1"># Get the channel number based on the network name</span>
                 <span class="k">for</span> <span class="n">bus</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation_setup</span><span class="o">.</span><span class="n">buses</span><span class="o">.</span><span class="n">item</span><span class="p">():</span>
                     <span class="n">bus</span><span class="p">:</span> <span class="n">Bus</span>
-                    <span class="k">if</span> <span class="n">bus</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">network</span><span class="p">:</span>
-                        <span class="n">bus</span><span class="o">.</span><span class="n">databases</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">database_file</span><span class="p">)</span>
+                    <span class="n">bus_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">bus</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">bus_name</span> <span class="o">==</span> <span class="n">network</span><span class="p">:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">bus</span><span class="o">.</span><span class="n">databases</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">database_file</span><span class="p">)</span>
+                        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_database_to_channel</span><span class="p">(</span><span class="n">database_file</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
                         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Database &quot;</span><span class="si">{</span><span class="n">database_file</span><span class="si">}</span><span class="s1">&quot; added successfully to network &quot;</span><span class="si">{</span><span class="n">network</span><span class="si">}</span><span class="s1">&quot;.&#39;</span><span class="p">)</span>
                         <span class="k">return</span> <span class="kc">True</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Network &quot;</span><span class="si">{</span><span class="n">network</span><span class="si">}</span><span class="s1">&quot; not found. Cannot add database.&#39;</span><span class="p">)</span>
@@ -387,15 +393,15 @@
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">bus</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation_setup</span><span class="o">.</span><span class="n">buses</span><span class="o">.</span><span class="n">item</span><span class="p">():</span>
                     <span class="n">bus</span><span class="p">:</span> <span class="n">Bus</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Checking bus: </span><span class="si">{</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, channels: </span><span class="si">{</span><span class="p">[</span><span class="n">channel</span><span class="o">.</span><span class="n">number</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">channel</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">bus</span><span class="o">.</span><span class="n">channels</span><span class="o">.</span><span class="n">item</span><span class="p">()]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">bus</span><span class="o">.</span><span class="n">channels</span><span class="o">.</span><span class="n">item</span><span class="p">():</span>
+                    <span class="n">channels</span> <span class="o">=</span> <span class="n">bus</span><span class="o">.</span><span class="n">channels</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Checking bus channels: </span><span class="si">{</span><span class="p">[</span><span class="n">channel</span><span class="o">.</span><span class="n">number</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">channel</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">channels</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">channels</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_database_to_channel</span><span class="p">(</span><span class="n">database_file</span><span class="p">,</span> <span class="n">network</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
                         <span class="n">channel</span><span class="p">:</span> <span class="n">Channel</span>
                         <span class="k">if</span> <span class="n">channel</span><span class="o">.</span><span class="n">number</span> <span class="o">==</span> <span class="n">network</span><span class="p">:</span>
-                            <span class="n">bus</span><span class="o">.</span><span class="n">databases</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">database_file</span><span class="p">)</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Database &quot;</span><span class="si">{</span><span class="n">database_file</span><span class="si">}</span><span class="s1">&quot; added successfully to channel </span><span class="si">{</span><span class="n">channel</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s1">, bus.name: </span><span class="si">{</span><span class="n">bus</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
-                            <span class="k">return</span> <span class="kc">True</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Channel </span><span class="si">{</span><span class="n">network</span><span class="si">}</span><span class="s1"> not found. Cannot add database.&#39;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="kc">False</span>
+                            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_database_to_channel</span><span class="p">(</span><span class="n">database_file</span><span class="p">,</span> <span class="n">network</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_database_to_channel</span><span class="p">(</span><span class="n">database_file</span><span class="p">,</span> <span class="n">network</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Invalid network type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">network</span><span class="p">)</span><span class="si">}</span><span class="s1">. Must be str (network name) or int (channel number).&#39;</span><span class="p">)</span>
                 <span class="k">return</span> <span class="kc">False</span>
@@ -480,14 +486,14 @@ Defaults to 1.</p>
       <td class="field-body">
         <ul class="first simple">
             <li>
-                  <code><span title="py_canoe.core.bus.Bus">Bus</span></code>
+                  <code><span title="py_canoe.core.child_elements.bus.Bus">Bus</span></code>
               –
               <div class="doc-md-description">
                 <p>The newly added :class:<code>Bus</code>, or <em>None</em> if a network with</p>
               </div>
             </li>
             <li>
-                  <code><span title="py_canoe.core.bus.Bus">Bus</span></code>
+                  <code><span title="py_canoe.core.child_elements.bus.Bus">Bus</span></code>
               –
               <div class="doc-md-description">
                 <p>the same name already exists.</p>
@@ -501,33 +507,33 @@ Defaults to 1.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1009</span>
-<span class="normal">1010</span>
-<span class="normal">1011</span>
-<span class="normal">1012</span>
-<span class="normal">1013</span>
-<span class="normal">1014</span>
-<span class="normal">1015</span>
-<span class="normal">1016</span>
-<span class="normal">1017</span>
-<span class="normal">1018</span>
-<span class="normal">1019</span>
-<span class="normal">1020</span>
-<span class="normal">1021</span>
-<span class="normal">1022</span>
-<span class="normal">1023</span>
-<span class="normal">1024</span>
-<span class="normal">1025</span>
-<span class="normal">1026</span>
-<span class="normal">1027</span>
-<span class="normal">1028</span>
-<span class="normal">1029</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1029</span>
 <span class="normal">1030</span>
 <span class="normal">1031</span>
 <span class="normal">1032</span>
 <span class="normal">1033</span>
 <span class="normal">1034</span>
-<span class="normal">1035</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_netWork</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">network_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">network_type</span><span class="p">:</span> <span class="n">BusType</span> <span class="o">=</span> <span class="n">BusType</span><span class="o">.</span><span class="n">CAN</span><span class="p">,</span>
+<span class="normal">1035</span>
+<span class="normal">1036</span>
+<span class="normal">1037</span>
+<span class="normal">1038</span>
+<span class="normal">1039</span>
+<span class="normal">1040</span>
+<span class="normal">1041</span>
+<span class="normal">1042</span>
+<span class="normal">1043</span>
+<span class="normal">1044</span>
+<span class="normal">1045</span>
+<span class="normal">1046</span>
+<span class="normal">1047</span>
+<span class="normal">1048</span>
+<span class="normal">1049</span>
+<span class="normal">1050</span>
+<span class="normal">1051</span>
+<span class="normal">1052</span>
+<span class="normal">1053</span>
+<span class="normal">1054</span>
+<span class="normal">1055</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_netWork</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">network_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">network_type</span><span class="p">:</span> <span class="n">BusType</span> <span class="o">=</span> <span class="n">BusType</span><span class="o">.</span><span class="n">CAN</span><span class="p">,</span>
                 <span class="n">sw_channel</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bus</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Adds a new network to the configuration.</span>
 
@@ -576,17 +582,17 @@ Defaults to 1.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">62</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">61</span>
+<span class="normal">62</span>
 <span class="normal">63</span>
 <span class="normal">64</span>
 <span class="normal">65</span>
 <span class="normal">66</span>
-<span class="normal">67</span>
-<span class="normal">68</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">fetch_test_modules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">67</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">fetch_test_modules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all test modules from all test environments and store them in self.__test_modules.&quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">te_name</span><span class="p">,</span> <span class="n">te_inst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__test_setup_environments</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">for</span> <span class="n">tm_name</span><span class="p">,</span> <span class="n">tm_inst</span> <span class="ow">in</span> <span class="n">te_inst</span><span class="o">.</span><span class="n">get_all_test_modules</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="c1"># A TestSetupItem object that either can be a TSTestModule object or a TestSetupFolder object.</span>
+            <span class="c1"># A TestSetupItem object that either can be a TestModule object or a TestSetupFolder object.</span>
             <span class="c1"># A TestSetupFolder has items that contain nested TestSetupItems.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__test_modules</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">tm_name</span><span class="p">,</span> <span class="s1">&#39;object&#39;</span><span class="p">:</span> <span class="n">tm_inst</span><span class="p">,</span> <span class="s1">&#39;environment&#39;</span><span class="p">:</span> <span class="n">te_name</span><span class="p">})</span>
 </code></pre></div></td></tr></table></div>
@@ -611,13 +617,13 @@ Defaults to 1.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">70</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">69</span>
+<span class="normal">70</span>
 <span class="normal">71</span>
 <span class="normal">72</span>
 <span class="normal">73</span>
 <span class="normal">74</span>
-<span class="normal">75</span>
-<span class="normal">76</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">fetch_test_units</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">75</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">fetch_test_units</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all test units from all test configurations and store them in self.__test_units.&quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">tc_name</span><span class="p">,</span> <span class="n">tc_inst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__test_configurations</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">for</span> <span class="n">tu_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">tc_inst</span><span class="o">.</span><span class="n">test_units</span><span class="o">.</span><span class="n">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
@@ -688,7 +694,8 @@ if result["success"]:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">188</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">187</span>
+<span class="normal">188</span>
 <span class="normal">189</span>
 <span class="normal">190</span>
 <span class="normal">191</span>
@@ -710,8 +717,7 @@ if result["success"]:
 <span class="normal">207</span>
 <span class="normal">208</span>
 <span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_compilation_result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]:</span>
+<span class="normal">210</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_compilation_result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get CAPL compilation result with error details.</span>
 
 <span class="sd">    Compiles all CAPL code in the current configuration and returns</span>
@@ -861,7 +867,8 @@ for tc in result['test_cases']:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">757</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">756</span>
+<span class="normal">757</span>
 <span class="normal">758</span>
 <span class="normal">759</span>
 <span class="normal">760</span>
@@ -967,8 +974,7 @@ for tc in result['test_cases']:
 <span class="normal">860</span>
 <span class="normal">861</span>
 <span class="normal">862</span>
-<span class="normal">863</span>
-<span class="normal">864</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_test_module_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">report_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="normal">863</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_test_module_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">report_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get test module execution result including report path, test case</span>
 <span class="sd">    verdicts, and aggregated statistics.</span>
 
@@ -1100,22 +1106,22 @@ remaining.  Returns the number of networks actually removed.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1054</span>
-<span class="normal">1055</span>
-<span class="normal">1056</span>
-<span class="normal">1057</span>
-<span class="normal">1058</span>
-<span class="normal">1059</span>
-<span class="normal">1060</span>
-<span class="normal">1061</span>
-<span class="normal">1062</span>
-<span class="normal">1063</span>
-<span class="normal">1064</span>
-<span class="normal">1065</span>
-<span class="normal">1066</span>
-<span class="normal">1067</span>
-<span class="normal">1068</span>
-<span class="normal">1069</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_all_networks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1074</span>
+<span class="normal">1075</span>
+<span class="normal">1076</span>
+<span class="normal">1077</span>
+<span class="normal">1078</span>
+<span class="normal">1079</span>
+<span class="normal">1080</span>
+<span class="normal">1081</span>
+<span class="normal">1082</span>
+<span class="normal">1083</span>
+<span class="normal">1084</span>
+<span class="normal">1085</span>
+<span class="normal">1086</span>
+<span class="normal">1087</span>
+<span class="normal">1088</span>
+<span class="normal">1089</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_all_networks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove ALL networks from the simulation setup.</span>
 
 <span class="sd">    CANoe requires at least one bus, so this will leave one bus</span>
@@ -1200,22 +1206,22 @@ remaining.  Returns the number of networks actually removed.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1037</span>
-<span class="normal">1038</span>
-<span class="normal">1039</span>
-<span class="normal">1040</span>
-<span class="normal">1041</span>
-<span class="normal">1042</span>
-<span class="normal">1043</span>
-<span class="normal">1044</span>
-<span class="normal">1045</span>
-<span class="normal">1046</span>
-<span class="normal">1047</span>
-<span class="normal">1048</span>
-<span class="normal">1049</span>
-<span class="normal">1050</span>
-<span class="normal">1051</span>
-<span class="normal">1052</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_netWork</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1057</span>
+<span class="normal">1058</span>
+<span class="normal">1059</span>
+<span class="normal">1060</span>
+<span class="normal">1061</span>
+<span class="normal">1062</span>
+<span class="normal">1063</span>
+<span class="normal">1064</span>
+<span class="normal">1065</span>
+<span class="normal">1066</span>
+<span class="normal">1067</span>
+<span class="normal">1068</span>
+<span class="normal">1069</span>
+<span class="normal">1070</span>
+<span class="normal">1071</span>
+<span class="normal">1072</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_netWork</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove a network by name.</span>
 
 <span class="sd">    Args:</span>
@@ -1290,7 +1296,8 @@ Use get_compilation_result() if you need error details.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\configuration.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">213</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">212</span>
+<span class="normal">213</span>
 <span class="normal">214</span>
 <span class="normal">215</span>
 <span class="normal">216</span>
@@ -1307,8 +1314,7 @@ Use get_compilation_result() if you need error details.</p>
 <span class="normal">227</span>
 <span class="normal">228</span>
 <span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_compilation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="normal">230</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_compilation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run CAPL compilation and return success status.</span>
 
 <span class="sd">    Compiles all CAPL code in the current configuration.</span>

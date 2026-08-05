@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="Python 🐍 Package for accessing Vector CANoe 🛶 Tool via COM Interface" /><meta name="author" content="chaitu-ycr" /><link rel="canonical" href="https://chaitu-ycr.github.io/py-canoe/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="Python 🐍 Package for accessing Vector CANoe 🛶 Tool via COM Interface" /><meta name="author" content="auto-py-utils" /><link rel="canonical" href="https://auto-py-utils.github.io/py-canoe/" />
       <link rel="shortcut icon" href="img/favicon.ico" />
     <title>py-canoe</title>
     <link rel="stylesheet" href="css/theme.css" />
@@ -96,6 +96,10 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#execute-test-setup-test-module-test-environment">execute test setup test module / test environment</a>
     </li>
+    <li class="toctree-l3"><a class="reference internal" href="#create-test-environment-and-add-test-modules-folders">create test environment and add test modules / folders</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#manage-test-libraries-and-modules-dll-of-a-test-module">manage test libraries and modules (DLL) of a test module</a>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="#execute-test-module-with-selective-test-case-enabledisable">execute test module with selective test case enable/disable</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#get-test-module-result-report-path-test-case-verdicts">get test module result (report path + test case verdicts)</a>
@@ -180,7 +184,7 @@
     <li><a href="." class="icon icon-home" aria-label="Docs"></a></li>
       <li class="breadcrumb-item active">Home</li>
     <li class="wy-breadcrumbs-aside">
-          <a href="https://github.com/chaitu-ycr/py-canoe/blob/main/docs/index.md">Edit</a>
+          <a href="https://github.com/auto-py-utils/py-canoe/blob/main/docs/index.md">Edit</a>
     </li>
   </ul>
   <hr/>
@@ -188,7 +192,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="py-canoe"><a href="https://github.com/chaitu-ycr/py-canoe">py-canoe</a></h1>
+                <h1 id="py-canoe"><a href="https://github.com/auto-py-utils/py-canoe">py-canoe</a></h1>
 <h2 id="about-package">about package</h2>
 <p>Python 🐍 Package for accessing Vector CANoe 🛶 Tool via COM Interface</p>
 <blockquote>
@@ -196,12 +200,12 @@
 </blockquote>
 <h2 id="useful-links">🔗 useful links</h2>
 <ul>
-<li>EN <a href="https://chaitu-ycr.github.io/py-canoe/">documentation</a></li>
-<li>🇨🇳 <a href="https://github.com/chaitu-ycr/py-canoe/blob/main/README_CN.md">中文文档 / Chinese Documentation</a></li>
+<li>EN <a href="https://auto-py-utils.github.io/py-canoe/">documentation</a></li>
+<li>🇨🇳 <a href="https://github.com/auto-py-utils/py-canoe/blob/main/README_CN.md">中文文档 / Chinese Documentation</a></li>
 <li><a href="https://pypi.org/project/py-canoe/">pypi package</a></li>
-<li><a href="https://github.com/chaitu-ycr/py-canoe/releases">github releases</a></li>
-<li><a href="https://github.com/chaitu-ycr/py-canoe/issues/new/choose">create issue/request feature <strong>here</strong></a></li>
-<li><a href="https://github.com/chaitu-ycr/py-canoe/fork">fork repo</a> and create pull request to contribute back to this project. or message me your GitHub username in LinkedIn to add you as collaborator.</li>
+<li><a href="https://github.com/auto-py-utils/py-canoe/releases">github releases</a></li>
+<li><a href="https://github.com/auto-py-utils/py-canoe/issues/new/choose">create issue/request feature <strong>here</strong></a></li>
+<li><a href="https://github.com/auto-py-utils/py-canoe/fork">fork repo</a> and create pull request to contribute back to this project. or message me your GitHub username in LinkedIn to add you as collaborator.</li>
 <li><a href="https://help.vector.com/CANoeDEFamily/index.html">vector canoe documentation</a></li>
 </ul>
 <h2 id="prerequisites">prerequisites</h2>
@@ -316,18 +320,18 @@ canoe_inst.get_can_bus_statistics(channel=1)
 canoe_inst.stop_measurement()
 </code></pre>
 <h3 id="getset-bus-signal-value-check-signal-state-and-get-signal-full-name">get/set bus signal value, check signal state and get signal full name</h3>
-<pre><code class="language-python">from py_canoe import CANoe, wait
+<pre><code class="language-python">from py_canoe import CANoe, BusType, wait
 
 canoe_inst = CANoe()
 canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
 
 canoe_inst.start_measurement()
-sig_full_name = canoe_inst.get_signal_full_name(bus='CAN', channel=1, message='LightState', signal='FlashLight')
-sig_value = canoe_inst.get_signal_value(bus='CAN', channel=1, message='LightState', signal='FlashLight', raw_value=False)
-canoe_inst.set_signal_value(bus='CAN', channel=1, message='LightState', signal='FlashLight', value=1, raw_value=False)
-sig_online_state = canoe_inst.check_signal_online(bus='CAN', channel=1, message='LightState', signal='FlashLight')
-sig_state = canoe_inst.check_signal_state(bus='CAN', channel=1, message='LightState', signal='FlashLight')
-sig_val = canoe_inst.get_signal_value(bus='CAN', channel=1, message='LightState', signal='FlashLight', raw_value=True)
+sig_full_name = canoe_inst.get_signal_full_name(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight')
+sig_value = canoe_inst.get_signal_value(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight', raw_value=False)
+canoe_inst.set_signal_value(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight', value=1, raw_value=False)
+sig_online_state = canoe_inst.check_signal_online(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight')
+sig_state = canoe_inst.check_signal_state(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight')
+sig_val = canoe_inst.get_signal_value(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight', raw_value=True)
 canoe_inst.stop_measurement()
 </code></pre>
 <h3 id="clear-write-window-read-text-from-write-window-control-write-window-output-file">clear write window / read text from write window / control write window output file</h3>
@@ -462,6 +466,77 @@ canoe_inst.execute_all_test_modules_in_test_env(demo_test_environment)
 canoe_inst.execute_test_module('demo_test_node_002')
 canoe_inst.stop_measurement()
 </code></pre>
+<h3 id="create-test-environment-and-add-test-modules-folders">create test environment and add test modules / folders</h3>
+<p><code>add_testEnvironments</code> creates (or loads from a file) a test environment and returns a <code>TestEnvironment</code> object that supports adding test modules and folders directly, without fetching the <code>items</code> collection first.</p>
+<pre><code class="language-python">from py_canoe import CANoe
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_test_setup.cfg')
+
+# Create a new test environment (by name)
+test_env = canoe_inst.add_testEnvironments('NewTestEnv')
+
+# Load an existing test environment from a file (by path)
+# test_env = canoe_inst.add_testEnvironments(r'path\to\test_environment.stenv')
+
+# Add a test module: pass the file path of a CAPL program (.can)
+# or an XML test description (.tse/.stse/.vxt)
+test_module = test_env.add_test_module(r'path\to\TestCapl.can')
+
+# Optional `name` argument: rename immediately after adding
+test_module = test_env.add_test_module(r'path\to\TestCapl.can', name='My Test Module')
+print(test_module.name)  # My Test Module
+
+# Add a folder
+test_folder = test_env.add_folder('TestFolder')
+
+# Rename after adding (the COM Name property is writable in practice)
+test_module.name = 'Renamed Module'
+test_folder.name = 'Renamed Folder'
+
+# Recursively fetch all test modules in the environment (including those in folders)
+all_modules = test_env.get_all_test_modules()
+
+# Access report settings
+report = test_env.report
+print(report.last_written_full_name)  # path of the last generated test report
+</code></pre>
+<h3 id="manage-test-libraries-and-modules-dll-of-a-test-module">manage test libraries and modules (DLL) of a test module</h3>
+<p>A <code>TestModule</code> provides two collections to manage its dependencies:</p>
+<ul>
+<li><strong><code>modules</code></strong> — the <code>Modules</code> object: add node layer modules (DLL), assemblies (DLL), .NET source files (CS) or CAPL source files (CAN)</li>
+<li><strong><code>libraries</code></strong> — the <code>TestLibraries</code> object: test case files used in XML or .NET test modules</li>
+</ul>
+<pre><code class="language-python">from py_canoe import CANoe
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_test_setup.cfg')
+
+test_env = canoe_inst.add_testEnvironments('NewTestEnv')
+test_module = test_env.add_test_module(r'path\to\TestCapl.can')
+
+# --- Modules (add DLL / CS / CAN files) ---
+test_module.modules.add(r'path\to\node_layer.dll')   # node layer module (DLL)
+test_module.modules.add(r'path\to\assembly.dll')     # assembly (DLL, .NET test nodes)
+test_module.modules.add(r'path\to\source.cs')        # .NET source file
+test_module.modules.add(r'path\to\source.can')       # CAPL source file
+
+print(test_module.modules.count)   # number of modules
+first_module = test_module.modules.item(1)
+print(first_module.name, first_module.full_name)
+
+# remove a module by index / filename / full path
+test_module.modules.remove(1)
+
+# --- TestLibraries (test case files for XML / .NET test modules) ---
+test_module.libraries.add(r'path\to\test_cases.tsf')
+
+print(test_module.libraries.count)  # number of test case files
+lib = test_module.libraries.item(1)
+print(lib.name, lib.full_name)
+
+test_module.libraries.remove(1)
+</code></pre>
 <h3 id="execute-test-module-with-selective-test-case-enabledisable">execute test module with selective test case enable/disable</h3>
 <p>The <code>execute_test_module</code> method supports selectively enabling or disabling test cases before execution using wildcard or regex patterns.</p>
 <p><strong>Pattern matching rules:</strong>
@@ -590,8 +665,8 @@ network_names = canoe_inst.application.networks.get_all_network_names()
 canoe_inst = CANoe()
 canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
 
-bus_names = canoe_inst.application.bus.get_simulation_bus_names()
-db_paths = canoe_inst.application.bus.get_simulation_database_paths()
+bus_names = canoe_inst.get_simulation_bus_names()
+db_paths = canoe_inst.get_simulation_database_paths()
 </code></pre>
 <h3 id="startstop-online-logging-block">start/stop online logging block</h3>
 <pre><code class="language-python">from py_canoe import CANoe, wait
@@ -727,5 +802,5 @@ manually — it is auto-generated. To regenerate it run:</p>
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2026-07-29 17:03:22.123868+00:00
+Build Date UTC : 2026-08-05 18:21:44.837816+00:00
 -->

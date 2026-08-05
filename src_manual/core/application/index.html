@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="chaitu-ycr" /><link rel="canonical" href="https://chaitu-ycr.github.io/py-canoe/src_manual/core/application/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="auto-py-utils" /><link rel="canonical" href="https://auto-py-utils.github.io/py-canoe/src_manual/core/application/" />
       <link rel="shortcut icon" href="../../../img/favicon.ico" />
     <title>application - py-canoe</title>
     <link rel="stylesheet" href="../../../css/theme.css" />
@@ -59,17 +59,43 @@
     <ul class="current">
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application">Application</a>
     </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.capl">capl</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.channel_mapping_name">channel_mapping_name</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.configuration">configuration</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.environment">environment</a>
+    </li>
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.full_name">full_name</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.measurement">measurement</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.name">name</a>
     </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.networks">networks</a>
+    </li>
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.path">path</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.performance">performance</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.simulation">simulation</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.system">system</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.ui">ui</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.version">version</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.visible">visible</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.attach_to_active_application">attach_to_active_application</a>
     </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.bus">bus</a>
+    </li>
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.new">new</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.new_configuration_from_yaml">new_configuration_from_yaml</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#src.py_canoe.core.application.Application.open">open</a>
     </li>
@@ -127,7 +153,7 @@
           <li class="breadcrumb-item">core</li>
       <li class="breadcrumb-item active">application</li>
     <li class="wy-breadcrumbs-aside">
-          <a href="https://github.com/chaitu-ycr/py-canoe/blob/main/docs/src_manual/core/application.md">Edit</a>
+          <a href="https://github.com/auto-py-utils/py-canoe/blob/main/docs/src_manual/core/application.md">Edit</a>
     </li>
   </ul>
   <hr/>
@@ -157,10 +183,7 @@
 
                   <details class="quote">
                     <summary>Source code in <code>src\py_canoe\core\application.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">43</span>
 <span class="normal">44</span>
 <span class="normal">45</span>
 <span class="normal">46</span>
@@ -176,26 +199,37 @@
 <span class="normal">56</span>
 <span class="normal">57</span>
 <span class="normal">58</span>
-<span class="normal">59</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enable_events</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enable_events</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">CANOE_APP_NAME</span> <span class="o">=</span> <span class="s2">&quot;CANoe.Application&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_enable_events</span> <span class="o">=</span> <span class="n">enable_events</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">bus_types</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;CAN&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;J1939&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;FLEXRAY&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;TTP&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;LIN&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;MOST&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s1">&#39;ETH&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s1">&#39;Kline&#39;</span><span class="p">:</span> <span class="mi">14</span><span class="p">}</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">com_object</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">application_events</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ApplicationEvents</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">bus</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Bus</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">capl</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Capl</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Configuration</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">environment</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Environment</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">measurement</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Measurement</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">System</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Ui</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Version</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">capl_function_objects</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">user_capl_functions</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">()</span>
     <span class="c1"># Register IMessageFilter to suppress &quot;Server Busy&quot; dialogs and auto-retry</span>
     <span class="c1"># rejected COM calls. The filter stays active for the Application&#39;s lifetime.</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_message_filter</span> <span class="o">=</span> <span class="n">COMRetryMessageFilter</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_message_filter</span><span class="o">.</span><span class="n">register</span><span class="p">()</span>
+    <span class="c1"># Lazy wrapper caches: only the wrappers that hold mutable state fetched</span>
+    <span class="c1"># from CANoe are cached as singletons:</span>
+    <span class="c1">#   - Measurement registers a COM event sink (WithEvents) that must stay</span>
+    <span class="c1">#     alive and unique for the Application&#39;s lifetime.</span>
+    <span class="c1">#   - Configuration and Networks cache data fetched when a configuration</span>
+    <span class="c1">#     is loaded (test environments/modules, diagnostic devices) that is</span>
+    <span class="c1">#     consumed by later calls; they are re-created on each configuration</span>
+    <span class="c1">#     load (see _setup_post_configuration_loading).</span>
+    <span class="c1"># All other wrappers are stateless facades over read-only COM properties</span>
+    <span class="c1"># and are created on demand.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_configuration</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Configuration</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_networks</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Networks</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_measurement</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Measurement</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div></td></tr></table></div>
                   </details>
 
@@ -208,6 +242,98 @@
 
 
 
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.application.Application.capl" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">capl</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the CAPL object (read-only, mirrors COM Application.CAPL).</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.application.Application.channel_mapping_name" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">channel_mapping_name</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Sets or returns the application name used to map application channels to
+real existing Vector network interface channels.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.application.Application.configuration" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">configuration</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the Configuration object (read-only, mirrors COM Application.Configuration).</p>
+<p>The wrapper is cached because it holds test environment/module data that
+is fetched when a configuration is loaded and consumed by later calls.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.application.Application.environment" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">environment</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the Environment object (read-only, mirrors COM Application.Environment).</p>
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-attribute">
 
@@ -226,6 +352,30 @@
     <div class="doc doc-contents ">
 
         <p>Returns full path of the currently loaded CANoe configuration.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.application.Application.measurement" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">measurement</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the Measurement object (read-only, mirrors COM Application.Measurement).</p>
+<p>The wrapper is cached because it registers a COM event sink that must
+stay alive and unique for the Application's lifetime.</p>
 
     </div>
 
@@ -257,6 +407,30 @@
 
 
 
+<h2 id="src.py_canoe.core.application.Application.networks" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">networks</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the Networks object (read-only, mirrors COM Application.Networks).</p>
+<p>The wrapper is cached because it holds diagnostic devices data that is
+fetched when a configuration is loaded and consumed by later calls.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
 <h2 id="src.py_canoe.core.application.Application.path" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">path</span></code>
 
@@ -270,6 +444,116 @@
     <div class="doc doc-contents ">
 
         <p>Returns the directory path of the currently loaded CANoe configuration.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.application.Application.performance" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">performance</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the Performance object (read-only, mirrors COM Application.Performance).</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.application.Application.simulation" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">simulation</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the Simulation object (read-only, mirrors COM Application.Simulation).</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.application.Application.system" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">system</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the System object (read-only, mirrors COM Application.System).</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.application.Application.ui" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">ui</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the UI object (read-only, mirrors COM Application.UI).</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="src.py_canoe.core.application.Application.version" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">version</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns the Version object (read-only, mirrors COM Application.Version).</p>
 
     </div>
 
@@ -317,20 +601,20 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\application.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">attach_to_active_application</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">attach_to_active_application</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Attach to an already running CANoe application instance.&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_launch_application</span><span class="p">()</span>
@@ -353,6 +637,78 @@
 <div class="doc doc-object doc-function">
 
 
+<h2 id="src.py_canoe.core.application.Application.bus" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">bus</span><span class="p">(</span><span class="n">bus_type</span><span class="o">=</span><span class="n">BusType</span><span class="o">.</span><span class="n">CAN</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns a Bus object for the given bus type.</p>
+<p>This mirrors the COM Application.Bus([type]) property. The Bus wrapper is
+stateless (it only wraps the COM Bus object), so a fresh wrapper is
+created on each call.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>bus_type</code></b>
+                  (<code><span title="py_canoe.helpers.bus_type.BusType">BusType</span></code>, default:
+                      <code><span title="py_canoe.helpers.bus_type.BusType.CAN">CAN</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>The bus type as a BusType enum member. Defaults to BusType.CAN.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\application.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">bus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bus_type</span><span class="p">:</span> <span class="n">BusType</span> <span class="o">=</span> <span class="n">BusType</span><span class="o">.</span><span class="n">CAN</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bus</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a Bus object for the given bus type.</span>
+
+<span class="sd">    This mirrors the COM Application.Bus([type]) property. The Bus wrapper is</span>
+<span class="sd">    stateless (it only wraps the COM Bus object), so a fresh wrapper is</span>
+<span class="sd">    created on each call.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bus_type: The bus type as a BusType enum member. Defaults to BusType.CAN.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Bus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">com_object</span><span class="o">.</span><span class="n">GetBus</span><span class="p">(</span><span class="n">bus_type</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h2 id="src.py_canoe.core.application.Application.new" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">new</span><span class="p">(</span><span class="n">auto_save</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prompt_user</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span></code>
 
@@ -366,26 +722,26 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\application.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">new</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">auto_save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">prompt_user</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">new</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">auto_save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">prompt_user</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a new empty CANoe configuration.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_launch_application</span><span class="p">()</span>
     <span class="n">status</span> <span class="o">=</span> <span class="kc">False</span>
@@ -414,6 +770,90 @@
 <div class="doc doc-object doc-function">
 
 
+<h2 id="src.py_canoe.core.application.Application.new_configuration_from_yaml" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">new_configuration_from_yaml</span><span class="p">(</span><span class="n">configuration_path</span><span class="p">,</span> <span class="n">path_to_yaml_folder</span><span class="p">,</span> <span class="n">scenario_name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Creates a new configuration from an existing venvironment.yaml or venvironment-basic.yaml.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>configuration_path</code></b>
+                  (<code><span title="str">str</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The path where the new configuration should be
+located including the configuration name.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>path_to_yaml_folder</code></b>
+                  (<code><span title="str">str</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The path to the directory which contains the YAML file.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>scenario_name</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>&#39;&#39;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>The scenario for which a configuration should be created.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src\py_canoe\core\application.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">new_configuration_from_yaml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configuration_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path_to_yaml_folder</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">scenario_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a new configuration from an existing venvironment.yaml or venvironment-basic.yaml.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        configuration_path: The path where the new configuration should be</span>
+<span class="sd">            located including the configuration name.</span>
+<span class="sd">        path_to_yaml_folder: The path to the directory which contains the YAML file.</span>
+<span class="sd">        scenario_name: The scenario for which a configuration should be created.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">com_object</span><span class="o">.</span><span class="n">NewConfigurationFromYaml</span><span class="p">(</span><span class="n">configuration_path</span><span class="p">,</span> <span class="n">path_to_yaml_folder</span><span class="p">,</span> <span class="n">scenario_name</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h2 id="src.py_canoe.core.application.Application.open" class="doc doc-heading">
             <code class="highlight language-python"><span class="nb">open</span><span class="p">(</span><span class="n">canoe_cfg</span><span class="p">,</span> <span class="n">visible</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">auto_save</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">prompt_user</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span></code>
 
@@ -427,28 +867,28 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\application.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canoe_cfg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">auto_save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">prompt_user</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canoe_cfg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">auto_save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">prompt_user</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Open a CANoe configuration file (.cfg) in a new or existing CANoe instance.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_launch_application</span><span class="p">()</span>
     <span class="n">status</span> <span class="o">=</span> <span class="kc">False</span>
@@ -572,63 +1012,63 @@ Use this when CANoe is already running and you want to load a different .cfg fil
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\application.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span>
-<span class="normal">275</span>
-<span class="normal">276</span>
-<span class="normal">277</span>
-<span class="normal">278</span>
-<span class="normal">279</span>
-<span class="normal">280</span>
-<span class="normal">281</span>
-<span class="normal">282</span>
-<span class="normal">283</span>
-<span class="normal">284</span>
-<span class="normal">285</span>
-<span class="normal">286</span>
-<span class="normal">287</span>
-<span class="normal">288</span>
-<span class="normal">289</span>
-<span class="normal">290</span>
-<span class="normal">291</span>
-<span class="normal">292</span>
-<span class="normal">293</span>
-<span class="normal">294</span>
-<span class="normal">295</span>
-<span class="normal">296</span>
-<span class="normal">297</span>
-<span class="normal">298</span>
-<span class="normal">299</span>
-<span class="normal">300</span>
-<span class="normal">301</span>
-<span class="normal">302</span>
-<span class="normal">303</span>
-<span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span>
-<span class="normal">316</span>
-<span class="normal">317</span>
-<span class="normal">318</span>
-<span class="normal">319</span>
-<span class="normal">320</span>
-<span class="normal">321</span>
-<span class="normal">322</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">open_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canoe_cfg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">auto_save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">prompt_user</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">60</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">open_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canoe_cfg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">auto_save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">prompt_user</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">60</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Switch to a different CANoe configuration without restarting CANoe.</span>
 
 <span class="sd">    This method switches configurations in an already-running CANoe instance.</span>
@@ -722,18 +1162,18 @@ Use this in custom wait loops to keep COM responsive.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\application.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pump_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pump_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Pump COM messages to prevent blocking.</span>
 
 <span class="sd">    This is a thin wrapper around pythoncom.PumpWaitingMessages().</span>
@@ -767,32 +1207,32 @@ Use this in custom wait loops to keep COM responsive.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src\py_canoe\core\application.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">quit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">quit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Quit the CANoe application gracefully.&quot;&quot;&quot;</span>
     <span class="n">status</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">modified</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_configuration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">modified</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">modified</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="c1"># Do NOT release event sinks before Quit(). CANoe fires OnExit (and</span>
         <span class="c1"># potentially OnStop) as part of its internal shutdown sequence after</span>
