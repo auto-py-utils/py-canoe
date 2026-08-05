@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 # THIS FILE IS AUTO-GENERATED - DO NOT EDIT MANUALLY
-# Generated: 2026-08-04T15:55:56.035148+00:00
-# py-canoe package version: 26.3.8
+# Generated: 2026-08-05T18:09:47.918861+00:00
+# py-canoe package version: 26.4.0
 # To update this file, run the generator: python -m py_canoe.helpers.gen_canoe_robot_lib
 # ---------------------------------------------------------------------------
 
@@ -78,12 +78,12 @@ class CanoeRobotLib:
         """
         return self._source.attach_to_active_application()
 
-    def canoe_get_bus_databases_info(self, bus: BusType=BusType.CAN, log_info: bool=False) -> dict:
+    def canoe_get_bus_databases_info(self, bus: BusType | str | int=BusType.CAN, log_info: bool=False) -> dict:
         """
         Gets the bus databases information.
         
         Args:
-            bus (BusType): The bus type. Defaults to BusType.CAN.
+            bus (BusType | str | int): The bus type. Defaults to BusType.CAN.
             log_info (bool): Whether to log the databases information. Defaults to False.
         
         Returns:
@@ -91,12 +91,12 @@ class CanoeRobotLib:
         """
         return self._source.get_bus_databases_info(bus, log_info)
 
-    def canoe_get_bus_nodes_info(self, bus: BusType=BusType.CAN, log_info: bool=False) -> dict:
+    def canoe_get_bus_nodes_info(self, bus: BusType | str | int=BusType.CAN, log_info: bool=False) -> dict:
         """
         Gets the bus nodes information.
         
         Args:
-            bus (BusType): The bus type. Defaults to BusType.CAN.
+            bus (BusType | str | int): The bus type. Defaults to BusType.CAN.
             log_info (bool): Whether to log the nodes information. Defaults to False.
         
         Returns:
@@ -116,12 +116,12 @@ class CanoeRobotLib:
         """Returns all simulation database paths from the current application."""
         return self._source.get_simulation_database_paths()
 
-    def canoe_get_signal_value(self, bus: BusType, channel: int, message: str, signal: str, raw_value: bool=False, return_timestamp: bool=False) -> Union[int, float, None, tuple]:
+    def canoe_get_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, raw_value: bool=False, return_timestamp: bool=False) -> Union[int, float, None, tuple]:
         """
         Gets the value of a signal.
         
         Args:
-            bus (BusType): The bus type.
+            bus (BusType | str | int): The bus type.
             channel (int): The channel number.
             message (str): The message name.
             signal (str): The signal name.
@@ -133,7 +133,7 @@ class CanoeRobotLib:
         """
         return self._source.get_signal_value(bus, channel, message, signal, raw_value, return_timestamp)
 
-    def canoe_profile_signal_value(self, bus: BusType, channel: int, message: str, signal: str, duration: float=1.0, interval: float=0.0, raw_value: bool=False, max_samples: Optional[int]=None, include_samples: bool=False, include_timestamps: bool=False) -> dict:
+    def canoe_profile_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, duration: float=1.0, interval: float=0.0, raw_value: bool=False, max_samples: Optional[int]=None, include_samples: bool=False, include_timestamps: bool=False) -> dict:
         """
         Profiles a signal by sampling it repeatedly and returning basic stats.
         
@@ -165,7 +165,7 @@ class CanoeRobotLib:
         """
         return self._source.profile_signal_value(bus, channel, message, signal, duration, interval, raw_value, max_samples, include_samples, include_timestamps)
 
-    def canoe_set_signal_value(self, bus: BusType, channel: int, message: str, signal: str, value: Union[int, float], raw_value: bool=False) -> bool:
+    def canoe_set_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, value: Union[int, float], raw_value: bool=False) -> bool:
         """
         Sets the value of a signal.
         
@@ -182,7 +182,7 @@ class CanoeRobotLib:
         """
         return self._source.set_signal_value(bus, channel, message, signal, value, raw_value)
 
-    def canoe_get_signal_full_name(self, bus: BusType, channel: int, message: str, signal: str) -> Union[str, None]:
+    def canoe_get_signal_full_name(self, bus: BusType | str | int, channel: int, message: str, signal: str) -> Union[str, None]:
         """
         Gets the full name of a signal.
         
@@ -197,7 +197,7 @@ class CanoeRobotLib:
         """
         return self._source.get_signal_full_name(bus, channel, message, signal)
 
-    def canoe_check_signal_online(self, bus: BusType, channel: int, message: str, signal: str) -> bool:
+    def canoe_check_signal_online(self, bus: BusType | str | int, channel: int, message: str, signal: str) -> bool:
         """
         Checks if a signal is online.
         
@@ -212,7 +212,7 @@ class CanoeRobotLib:
         """
         return self._source.check_signal_online(bus, channel, message, signal)
 
-    def canoe_check_signal_state(self, bus: BusType, channel: int, message: str, signal: str) -> int:
+    def canoe_check_signal_state(self, bus: BusType | str | int, channel: int, message: str, signal: str) -> int:
         """
         Checks the state of a signal.
         
@@ -227,7 +227,7 @@ class CanoeRobotLib:
         """
         return self._source.check_signal_state(bus, channel, message, signal)
 
-    def canoe_get_j1939_signal_value(self, bus: BusType, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, raw_value=False, return_timestamp=False) -> Union[float, int, None, tuple]:
+    def canoe_get_j1939_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, raw_value=False, return_timestamp=False) -> Union[float, int, None, tuple]:
         """
         Gets the value of a J1939 signal.
         
@@ -246,7 +246,7 @@ class CanoeRobotLib:
         """
         return self._source.get_j1939_signal_value(bus, channel, message, signal, source_addr, dest_addr, raw_value, return_timestamp)
 
-    def canoe_set_j1939_signal_value(self, bus: BusType, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, value: Union[float, int], raw_value: bool=False) -> bool:
+    def canoe_set_j1939_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, value: Union[float, int], raw_value: bool=False) -> bool:
         """
         Sets the value of a J1939 signal.
         
@@ -265,7 +265,7 @@ class CanoeRobotLib:
         """
         return self._source.set_j1939_signal_value(bus, channel, message, signal, source_addr, dest_addr, value, raw_value)
 
-    def canoe_get_j1939_signal_full_name(self, bus: BusType, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> Union[str, None]:
+    def canoe_get_j1939_signal_full_name(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> Union[str, None]:
         """
         Gets the full name of a J1939 signal.
         
@@ -282,7 +282,7 @@ class CanoeRobotLib:
         """
         return self._source.get_j1939_signal_full_name(bus, channel, message, signal, source_addr, dest_addr)
 
-    def canoe_check_j1939_signal_online(self, bus: BusType, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> bool:
+    def canoe_check_j1939_signal_online(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> bool:
         """
         Checks if a J1939 signal is online.
         
@@ -299,7 +299,7 @@ class CanoeRobotLib:
         """
         return self._source.check_j1939_signal_online(bus, channel, message, signal, source_addr, dest_addr)
 
-    def canoe_check_j1939_signal_state(self, bus: BusType, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> int:
+    def canoe_check_j1939_signal_state(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> int:
         """
         Checks the state of a J1939 signal.
         
@@ -664,7 +664,7 @@ class CanoeRobotLib:
         Add a new Test Environment to TestSetup.
         
         If you need to create a new test environment, the name field contains the name of the new test environment.
-        If you need to load an existing test environment from a file, the name field contains the file path, 
+        If you need to load an existing test environment from a file, the name field contains the file path,
         which can be an absolute path or relative to the current configuration.
         
         Args:

@@ -84,6 +84,21 @@ class CANoe:
         """
         self.application = None
 
+    @staticmethod
+    def _normalize_bus_type(bus_type: BusType | str | int) -> BusType:
+        """Normalize public bus-type inputs for backward compatibility.
+
+        Supports the canonical enum member, legacy string names such as
+        ``"CAN"``/``"can"``, and legacy integer values such as ``1``.
+        """
+        if isinstance(bus_type, BusType):
+            return bus_type
+        if isinstance(bus_type, str):
+            return BusType[bus_type.upper()]
+        if isinstance(bus_type, int):
+            return BusType(bus_type)
+        raise TypeError(f"Unsupported bus type: {bus_type!r}")
+
     def new(self, auto_save=False, prompt_user=False, timeout=5) -> bool:
         """
         Creates a new configuration.
@@ -146,18 +161,19 @@ class CANoe:
         self.application.user_capl_functions = self.user_capl_functions
         return self.application.attach_to_active_application()
 
-    def get_bus_databases_info(self, bus: BusType = BusType.CAN, log_info: bool = False) -> dict:
+    def get_bus_databases_info(self, bus: BusType | str | int = BusType.CAN, log_info: bool = False) -> dict:
         """
         Gets the bus databases information.
 
         Args:
-            bus (BusType): The bus type. Defaults to BusType.CAN.
+            bus (BusType | str | int): The bus type. Defaults to BusType.CAN.
             log_info (bool): Whether to log the databases information. Defaults to False.
 
         Returns:
             dict: The bus databases information.
         """
         try:
+            bus = self._normalize_bus_type(bus)
             bus_obj = self.application.bus(bus)
             databases_info = {}
             for db_obj in bus_obj.com_object.Databases:
@@ -192,18 +208,19 @@ class CANoe:
             logger.exception(f"Error retrieving {bus} bus databases information: {e}")
             return {}
 
-    def get_bus_nodes_info(self, bus: BusType = BusType.CAN, log_info: bool = False) -> dict:
+    def get_bus_nodes_info(self, bus: BusType | str | int = BusType.CAN, log_info: bool = False) -> dict:
         """
         Gets the bus nodes information.
 
         Args:
-            bus (BusType): The bus type. Defaults to BusType.CAN.
+            bus (BusType | str | int): The bus type. Defaults to BusType.CAN.
             log_info (bool): Whether to log the nodes information. Defaults to False.
 
         Returns:
             dict: The bus nodes information.
         """
         try:
+            bus = self._normalize_bus_type(bus)
             bus_obj = self.application.bus(bus)
             nodes_info = {}
             for node_obj in bus_obj.com_object.Nodes:
@@ -237,10 +254,21 @@ class CANoe:
             bus_names: list[str] = []
             for i in range(1, sim_buses.count + 1):
                 sim_bus = sim_buses.item(i)
-                if sim_bus.name is not None:
-                    bus_names.append(sim_bus.name)
-            logger.info(f'simulation buses: {bus_names}')
-            return bus_names
+                bus_name = getattr(sim_bus, 'name', None)
+                if bus_name is not None:
+                    bus_names.append(bus_name)
+
+            if bus_names:
+                logger.info(f'simulation buses: {bus_names}')
+                return bus_names
+
+            fallback_network_names = self.application.networks.get_all_network_names()
+            if isinstance(fallback_network_names, list):
+                logger.info(f'simulation buses: {fallback_network_names}')
+                return fallback_network_names
+
+            logger.info('simulation buses: []')
+            return []
         except Exception as e:
             raise ConfigurationNotLoadedError(f"Cannot access simulation buses: {e}") from e
 
@@ -251,22 +279,41 @@ class CANoe:
             paths: list[str] = []
             for i in range(1, sim_buses.count + 1):
                 sim_bus = sim_buses.item(i)
-                dbs = sim_bus.databases
+                dbs = getattr(sim_bus, 'databases', None)
+                if dbs is None:
+                    continue
                 for j in range(1, dbs.count + 1):
                     db = dbs.item(j)
                     if db.full_name is not None:
                         paths.append(db.full_name)
+
+            if paths:
+                logger.info(f'simulation database paths: {paths}')
+                return paths
+
+            cfg_db_collection = getattr(self.application.configuration.com_object.GeneralSetup.DatabaseSetup, 'Databases', None)
+            if cfg_db_collection is None:
+                logger.info('simulation database paths: []')
+                return []
+
+            from py_canoe.core.child_elements.databases import Databases
+            cfg_dbs = Databases(cfg_db_collection)
+            for j in range(1, cfg_dbs.count + 1):
+                db = cfg_dbs.item(j)
+                if db.full_name is not None:
+                    paths.append(db.full_name)
+
             logger.info(f'simulation database paths: {paths}')
             return paths
         except Exception as e:
             raise ConfigurationNotLoadedError(f"Cannot access simulation databases: {e}") from e
 
-    def get_signal_value(self, bus: BusType, channel: int, message: str, signal: str, raw_value: bool = False, return_timestamp: bool = False) -> Union[int, float, None, tuple]:
+    def get_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, raw_value: bool = False, return_timestamp: bool = False) -> Union[int, float, None, tuple]:
         """
         Gets the value of a signal.
 
         Args:
-            bus (BusType): The bus type.
+            bus (BusType | str | int): The bus type.
             channel (int): The channel number.
             message (str): The message name.
             signal (str): The signal name.
@@ -278,6 +325,7 @@ class CANoe:
         """
         signal_value = None
         try:
+            bus = self._normalize_bus_type(bus)
             signal_obj = self.application.bus(bus).get_signal(channel, message, signal)
             signal_value = signal_obj.raw_value if raw_value else signal_obj.value
             logger.info(f"Signal({signal_obj.full_name}) value = {signal_value}")
@@ -287,7 +335,7 @@ class CANoe:
             return signal_value, datetime.now(timezone.utc).timestamp()
         return signal_value
 
-    def profile_signal_value(self, bus: BusType, channel: int, message: str, signal: str, duration: float = 1.0, interval: float = 0.0, raw_value: bool = False, max_samples: Optional[int] = None, include_samples: bool = False, include_timestamps: bool = False,) -> dict:
+    def profile_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, duration: float = 1.0, interval: float = 0.0, raw_value: bool = False, max_samples: Optional[int] = None, include_samples: bool = False, include_timestamps: bool = False,) -> dict:
         """Profiles a signal by sampling it repeatedly and returning basic stats.
 
         This is useful for quickly observing signal stability, typical value range,
@@ -329,6 +377,7 @@ class CANoe:
             }
 
         try:
+            bus = self._normalize_bus_type(bus)
             signal_obj = self.application.bus(bus).get_signal(channel, message, signal)
         except Exception as e:
             logger.error(f"Error retrieving signal object for profiling: {e}")
@@ -410,7 +459,7 @@ class CANoe:
         )
         return profiled_signal
 
-    def set_signal_value(self, bus: BusType, channel: int, message: str, signal: str, value: Union[int, float], raw_value: bool = False) -> bool:
+    def set_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, value: Union[int, float], raw_value: bool = False) -> bool:
         """
         Sets the value of a signal.
 
@@ -426,6 +475,7 @@ class CANoe:
             bool: True if the operation was successful, False otherwise.
         """
         try:
+            bus = self._normalize_bus_type(bus)
             signal_obj = self.application.bus(bus).get_signal(channel, message, signal)
             if raw_value:
                 signal_obj.raw_value = int(value)
@@ -437,7 +487,7 @@ class CANoe:
             logger.error(f"Error setting {bus} bus signal value: {e}")
             return False
 
-    def get_signal_full_name(self, bus: BusType, channel: int, message: str, signal: str) -> Union[str, None]:
+    def get_signal_full_name(self, bus: BusType | str | int, channel: int, message: str, signal: str) -> Union[str, None]:
         """
         Gets the full name of a signal.
 
@@ -451,6 +501,7 @@ class CANoe:
             Union[str, None]: The full name of the signal or None if not found.
         """
         try:
+            bus = self._normalize_bus_type(bus)
             signal_obj = self.application.bus(bus).get_signal(channel, message, signal)
             full_name = signal_obj.full_name
             logger.info(f'Signal full name = {full_name}')
@@ -459,7 +510,7 @@ class CANoe:
             logger.error(f"Error retrieving {bus} bus signal full name: {e}")
             return None
 
-    def check_signal_online(self, bus: BusType, channel: int, message: str, signal: str) -> bool:
+    def check_signal_online(self, bus: BusType | str | int, channel: int, message: str, signal: str) -> bool:
         """
         Checks if a signal is online.
 
@@ -473,6 +524,7 @@ class CANoe:
             bool: True if the signal is online, False otherwise.
         """
         try:
+            bus = self._normalize_bus_type(bus)
             bus_obj = self.application.bus(bus)
             signal_obj = bus_obj.get_signal(channel, message, signal)
             is_online = signal_obj.is_online
@@ -482,7 +534,7 @@ class CANoe:
             logger.error(f"Error checking {bus} bus signal online status: {e}")
             return False
 
-    def check_signal_state(self, bus: BusType, channel: int, message: str, signal: str) -> int:
+    def check_signal_state(self, bus: BusType | str | int, channel: int, message: str, signal: str) -> int:
         """
         Checks the state of a signal.
 
@@ -496,6 +548,7 @@ class CANoe:
             int: The state of the signal.
         """
         try:
+            bus = self._normalize_bus_type(bus)
             bus_obj = self.application.bus(bus)
             signal_obj = bus_obj.get_signal(channel, message, signal)
             state = signal_obj.state
@@ -505,7 +558,7 @@ class CANoe:
             logger.error(f"Error checking {bus} bus signal state: {e}")
             return -1
 
-    def get_j1939_signal_value(self, bus: BusType, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, raw_value=False, return_timestamp=False) -> Union[float, int, None, tuple]:
+    def get_j1939_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, raw_value=False, return_timestamp=False) -> Union[float, int, None, tuple]:
         """
         Gets the value of a J1939 signal.
 
@@ -524,6 +577,7 @@ class CANoe:
         """
         signal_value = None
         try:
+            bus = self._normalize_bus_type(bus)
             signal_obj = self.application.bus(bus).get_j1939_signal(channel, message, signal, source_addr, dest_addr)
             signal_value = signal_obj.raw_value if raw_value else signal_obj.value
             logger.info(f'J1939 Signal({signal_obj.full_name}) value = {signal_value}')
@@ -533,7 +587,7 @@ class CANoe:
             return signal_value, datetime.now(timezone.utc).timestamp()
         return signal_value
 
-    def set_j1939_signal_value(self, bus: BusType, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, value: Union[float, int], raw_value: bool = False) -> bool:
+    def set_j1939_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, value: Union[float, int], raw_value: bool = False) -> bool:
         """
         Sets the value of a J1939 signal.
 
@@ -551,6 +605,7 @@ class CANoe:
             bool: True if the operation was successful, False otherwise.
         """
         try:
+            bus = self._normalize_bus_type(bus)
             signal_obj = self.application.bus(bus).get_j1939_signal(channel, message, signal, source_addr, dest_addr)
             if raw_value:
                 signal_obj.raw_value = int(value)
@@ -562,7 +617,7 @@ class CANoe:
             logger.error(f"Error setting J1939 bus signal value: {e}")
             return False
 
-    def get_j1939_signal_full_name(self, bus: BusType, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> Union[str, None]:
+    def get_j1939_signal_full_name(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> Union[str, None]:
         """
         Gets the full name of a J1939 signal.
 
@@ -578,6 +633,7 @@ class CANoe:
             Union[str, None]: The full name of the signal or None if not found.
         """
         try:
+            bus = self._normalize_bus_type(bus)
             signal_obj = self.application.bus(bus).get_j1939_signal(channel, message, signal, source_addr, dest_addr)
             full_name = signal_obj.full_name
             logger.info(f'J1939 Signal full name = {full_name}')
@@ -586,7 +642,7 @@ class CANoe:
             logger.error(f"Error retrieving J1939 bus signal full name: {e}")
             return None
 
-    def check_j1939_signal_online(self, bus: BusType, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> bool:
+    def check_j1939_signal_online(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> bool:
         """
         Checks if a J1939 signal is online.
 
@@ -602,6 +658,7 @@ class CANoe:
             bool: True if the signal is online, False otherwise.
         """
         try:
+            bus = self._normalize_bus_type(bus)
             bus_obj = self.application.bus(bus)
             signal_obj = bus_obj.get_j1939_signal(channel, message, signal, source_addr, dest_addr)
             is_online = signal_obj.is_online
@@ -611,7 +668,7 @@ class CANoe:
             logger.error(f"Error checking J1939 bus signal online status: {e}")
             return False
 
-    def check_j1939_signal_state(self, bus: BusType, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> int:
+    def check_j1939_signal_state(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> int:
         """
         Checks the state of a J1939 signal.
 
@@ -627,6 +684,7 @@ class CANoe:
             int: The state of the signal.
         """
         try:
+            bus = self._normalize_bus_type(bus)
             bus_obj = self.application.bus(bus)
             signal_obj = bus_obj.get_j1939_signal(channel, message, signal, source_addr, dest_addr)
             state = signal_obj.state
@@ -761,9 +819,9 @@ class CANoe:
         """Runs compilation for the current configuration."""
         return self.application.configuration.run_compilation()
 
-    def execute_all_test_configurations(self, enable_test_cases: Sequence[str] = (), 
-                                       disable_test_cases: Sequence[str] = (), 
-                                       match_by: str = "name", 
+    def execute_all_test_configurations(self, enable_test_cases: Sequence[str] = (),
+                                       disable_test_cases: Sequence[str] = (),
+                                       match_by: str = "name",
                                        wait_for_completion: bool = True) -> bool:
         """executes all test configurations available in test setup.
 
@@ -776,8 +834,8 @@ class CANoe:
         Returns:
             bool: True if the operation was successful, False otherwise.
         """
-        return self.application.configuration.execute_all_test_configurations(enable_test_cases, 
-                                                                            disable_test_cases, 
+        return self.application.configuration.execute_all_test_configurations(enable_test_cases,
+                                                                            disable_test_cases,
                                                                             match_by,
                                                                             wait_for_completion)
 
@@ -789,10 +847,10 @@ class CANoe:
         """
         return self.application.configuration.stop_all_test_configurations()
 
-    def execute_test_configuration(self, test_configuration_name: str, 
-                                   enable_test_cases: Sequence[str] = (), 
-                                   disable_test_cases: Sequence[str] = (), 
-                                   match_by: str = "name", 
+    def execute_test_configuration(self, test_configuration_name: str,
+                                   enable_test_cases: Sequence[str] = (),
+                                   disable_test_cases: Sequence[str] = (),
+                                   match_by: str = "name",
                                    wait_for_completion: bool = True) -> bool:
         """executes a specific test configuration.
 
@@ -806,15 +864,15 @@ class CANoe:
         Returns:
             bool: True if the operation was successful, False otherwise.
         """
-        return self.application.configuration.execute_test_configuration(test_configuration_name, 
-                                                                         enable_test_cases, 
-                                                                         disable_test_cases, 
+        return self.application.configuration.execute_test_configuration(test_configuration_name,
+                                                                         enable_test_cases,
+                                                                         disable_test_cases,
                                                                          match_by,
                                                                          wait_for_completion)
 
     def get_test_configuration_cases_result(self, test_conf_name: str) -> dict:
         return self.application.configuration.get_test_configurations_cases_result(test_conf_name)
-    
+
     def stop_test_configuration(self, test_configuration_name: str) -> bool:
         """stops execution of a specific test configuration.
 
@@ -965,7 +1023,7 @@ class CANoe:
 
     def add_database(self, database_file: str, network: str | int) -> bool:
         """adds database file to a network channel
-        
+
         Args:
             database_file (str): database file to attach. give full file path.
             network (str | int): network name or channel number on which you want to add database.
@@ -986,14 +1044,14 @@ class CANoe:
         Add a new Test Environment to TestSetup.
 
         If you need to create a new test environment, the name field contains the name of the new test environment.
-        If you need to load an existing test environment from a file, the name field contains the file path, 
+        If you need to load an existing test environment from a file, the name field contains the file path,
         which can be an absolute path or relative to the current configuration.
 
         Args:
             name (str): Name or path of the Test Environment
         """
         return self.application.configuration.add_testEnvironments(name)
-    
+
     def add_netWork(self, network_name: str, network_type: BusType = BusType.CAN,
                     sw_channel: int = 1) -> Bus:
         """Adds a new network to the configuration.
@@ -1067,7 +1125,7 @@ class CANoe:
             if bus.name == network_name:
                 return bus
         return None
-    
+
     def get_channelUsage(self, channel_type:BusType = BusType.CAN) -> list[dict]:
         """returns all available channels of a specific type.
 
@@ -1075,7 +1133,7 @@ class CANoe:
             channel_type (BusType): type of the channel (BusType.CAN for CAN, BusType.LIN for LIN, BusType.MOST for MOST, BusType.FlexRay for FlexRay, BusType.J1708 for J1708, BusType.Ethernet for Ethernet, BusType.WLAN for WLAN). Defaults to BusType.CAN.
         """
         return self.application.configuration.general_setup.get_channels_count(channel_type)
-    
+
     def set_channelUsage(self, channel_type:BusType, channel_count:int) -> bool:
         """sets the number of channels of a specific type.
 
