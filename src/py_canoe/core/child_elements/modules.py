@@ -42,6 +42,34 @@ class Modules:
 
         Returns:
             The newly created Module object.
+
+        Note on CANoe run mechanism (32-bit / 64-bit DLL):
+            CANoe has two independent concepts:
+
+            - **CANoe application process** (``CANoe64.exe`` / ``CANoe32.exe``):
+              the GUI process itself. It may be 64-bit while the RT kernel is
+              32-bit, and vice versa.
+            - **RT Kernel (real-time kernel) architecture**: the execution
+              environment that runs CAPL programs and loads external DLLs
+              (node layer modules / test modules). Its bitness is stored in
+              the configuration and **decides which DLLs can be loaded**:
+
+              - 32-bit RT Kernel → only **32-bit DLLs** can be loaded
+              - 64-bit RT Kernel → only **64-bit DLLs** can be loaded
+
+            A 64-bit program cannot load a 32-bit DLL, and vice versa. So if
+            ``add()`` fails (or the module is silently not usable) while the
+            DLL bitness matches the RT kernel, check the RT kernel architecture
+            via ``CANoe.get_rt_kernel_architecture()`` / 
+            ``CANoe.set_rt_kernel_architecture()``
+            (``0 = cWin32``, ``1 = cWin64``) and make sure the DLL matches.
+
+            By default the 32-bit RT kernel is used; existing configurations
+            may have been created with either variant. The variant is stored in
+            the configuration file and can also be overridden with the
+            ``EnforceRtkTargetArchitecture`` switch in ``CAN.ini`` (``[SYSTEM]``
+            section: ``0`` = use config, ``1`` = force 32-bit, ``2`` = force
+            64-bit).
         """
         module = Module(self.com_object.Add(full_name))
         logger.info(f'Modules: added module "{full_name}" as "{module.name}".')
