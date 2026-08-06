@@ -2,6 +2,7 @@
 
 from typing import List
 
+from py_canoe.helpers.bus_type import BusType
 from py_canoe.helpers.common import logger
 
 
@@ -49,23 +50,23 @@ class ChannelMappingSet:
             logger.error(f'Error copying channel mapping set "{self.name}": {e}')
             raise
 
-    def get(self, bus_type: int, source: int) -> int:
+    def get(self, bus_type: BusType, source: int) -> int:
         """Returns the destination channel number to which the source channel
         is mapped.
 
         The value 0 represents "ignore".
 
         Args:
-            bus_type (int): The type of the bus (e.g. 1 for CAN, see BusType enum).
+            bus_type (BusType): The type of the bus (e.g. BusType.CAN).
             source (int): The source channel number.
 
         Returns:
             int: The destination channel number; 0 represents "ignore".
         """
         try:
-            return self.com_object.Get(bus_type, source)
+            return self.com_object.Get(bus_type.value, source)
         except Exception as e:
-            logger.error(f'Error getting channel mapping (bus_type={bus_type}, source={source}): {e}')
+            logger.error(f'Error getting channel mapping (bus_type={bus_type.name}, source={source}): {e}')
             raise
 
     def get_by_bus_name(self, bus_name: str, source: int) -> int:
@@ -85,20 +86,20 @@ class ChannelMappingSet:
             logger.error(f'Error getting channel mapping (bus_name="{bus_name}", source={source}): {e}')
             raise
 
-    def put(self, bus_type: int, source: int, destination: int) -> None:
+    def put(self, bus_type: BusType, source: int, destination: int) -> None:
         """Sets the destination channel number to which the source channel
         is mapped.
 
         Args:
-            bus_type (int): The type of the bus (e.g. 1 for CAN, see BusType enum).
+            bus_type (BusType): The type of the bus (e.g. BusType.CAN).
             source (int): The source channel number.
             destination (int): The destination channel number.
         """
         try:
-            self.com_object.Put(bus_type, source, destination)
-            logger.info(f'Channel mapping set: bus_type={bus_type}, source={source} -> destination={destination}')
+            self.com_object.Put(bus_type.value, source, destination)
+            logger.info(f'Channel mapping set: bus_type={bus_type.name}, source={source} -> destination={destination}')
         except Exception as e:
-            logger.error(f'Error putting channel mapping (bus_type={bus_type}, source={source}, dest={destination}): {e}')
+            logger.error(f'Error putting channel mapping (bus_type={bus_type.name}, source={source}, dest={destination}): {e}')
             raise
 
     def put_by_bus_name(self, bus_name: str, source: int, destination: int) -> None:

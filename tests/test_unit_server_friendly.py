@@ -32,14 +32,11 @@ def _make_app(enable_events=False):
     app = Application(enable_events=enable_events)
     app.com_object = Mock()
     app.application_events = ApplicationEvents()
-    app.configuration = Mock()
-    app.measurement = Mock()
-    app.bus = Mock()
-    app.capl = Mock()
-    app.networks = Mock()
-    app.system = Mock()
-    app.ui = Mock()
-    app.version = Mock()
+    # Inject mocks into the lazy caches of the stateful wrappers. The stateless
+    # wrappers (capl/system/ui/version/...) are created on demand from com_object.
+    app._configuration = Mock()
+    app._measurement = Mock()
+    app._networks = Mock()
     return app
 
 
@@ -74,80 +71,64 @@ def _make_com_no_config() -> Mock:
 class TestApplicationEnableEvents:
     """Test Application with enable_events parameter."""
 
-    @patch("py_canoe.core.application.Measurement")
     @patch("win32com.client.WithEvents")
     @patch("win32com.client.gencache.EnsureDispatch")
-    def test_enable_events_true_registers_with_events(
-        self, mock_ensure, mock_with_events, mock_meas_cls
-    ):
+    def test_enable_events_true_registers_with_events(self, mock_ensure, mock_with_events):
         mock_ensure.return_value = _make_com_no_config()
         mock_with_events.return_value = Mock()
-        mock_meas_cls.return_value = Mock(measurement_events=Mock())
 
         app = Application(enable_events=True)
-        with patch.object(app, "_common_between_pre_and_post_cfg_open") as mock_common:
+        with patch.object(app, "_setup_post_configuration_loading") as mock_setup:
             app._launch_application()
 
         mock_with_events.assert_called_once()
-        mock_common.assert_not_called()
+        mock_setup.assert_not_called()
 
-    @patch("py_canoe.core.application.Measurement")
     @patch("win32com.client.WithEvents")
     @patch("win32com.client.gencache.EnsureDispatch")
-    def test_enable_events_false_skips_with_events(
-        self, mock_ensure, mock_with_events, mock_meas_cls
-    ):
+    def test_enable_events_false_skips_with_events(self, mock_ensure, mock_with_events):
         mock_ensure.return_value = _make_com_no_config()
-        mock_meas_cls.return_value = Mock(measurement_events=Mock())
 
         app = Application(enable_events=False)
-        with patch.object(app, "_common_between_pre_and_post_cfg_open") as mock_common:
+        with patch.object(app, "_setup_post_configuration_loading") as mock_setup:
             app._launch_application()
 
         mock_with_events.assert_not_called()
-        mock_common.assert_not_called()
+        mock_setup.assert_not_called()
 
-    @patch("py_canoe.core.application.Measurement")
     @patch("win32com.client.gencache.EnsureDispatch")
-    def test_enable_events_false_creates_dummy_events(
-        self, mock_ensure, mock_meas_cls
-    ):
+    def test_enable_events_false_creates_dummy_events(self, mock_ensure):
         mock_ensure.return_value = _make_com_no_config()
-        mock_meas_cls.return_value = Mock(measurement_events=Mock())
 
         app = Application(enable_events=False)
-        with patch.object(app, "_common_between_pre_and_post_cfg_open") as mock_common:
+        with patch.object(app, "_setup_post_configuration_loading") as mock_setup:
             app._launch_application()
 
-        mock_common.assert_not_called()
+        mock_setup.assert_not_called()
         assert isinstance(app.application_events, ApplicationEvents)
         assert app.application_events.OPENED is False
 
     @patch("py_canoe.core.application.Measurement")
     @patch("win32com.client.gencache.EnsureDispatch")
-    def test_measurement_created_with_enable_events_flag(
-        self, mock_ensure, mock_meas_cls
-    ):
+    def test_measurement_created_lazily_with_enable_events_flag(self, mock_ensure, mock_meas_cls):
         mock_ensure.return_value = _make_com_no_config()
         mock_meas_cls.return_value = Mock(measurement_events=Mock())
 
         app = Application(enable_events=False)
-        with patch.object(app, "_common_between_pre_and_post_cfg_open") as mock_common:
-            app._launch_application()
+        app._launch_application()
 
-        mock_common.assert_not_called()
+        # Measurement is created lazily on first access, not during launch
+        mock_meas_cls.assert_not_called()
+        m = app.measurement
         mock_meas_cls.assert_called_once_with(app, enable_events=False)
+        assert m is app.measurement
 
-    @patch("py_canoe.core.application.Measurement")
     @patch("win32com.client.gencache.EnsureDispatch")
-    def test_launch_initializes_config_when_already_loaded(
-        self, mock_ensure, mock_meas_cls
-    ):
+    def test_launch_initializes_config_when_already_loaded(self, mock_ensure):
         """Attach to running CANoe with project loaded → _setup_post_configuration_loading called."""
         com = Mock()
         com.Configuration.FullName = "D:/path/to/GTS_Testing.cfg"
         mock_ensure.return_value = com
-        mock_meas_cls.return_value = Mock(measurement_events=Mock())
 
         app = Application(enable_events=False)
         with patch.object(app, "_setup_post_configuration_loading") as mock_setup:
@@ -922,7 +903,7 @@ class TestApplicationQuit:
         test_module_events = SimpleNamespace(close=Mock())
         app.application_events = application_events
         nested = SimpleNamespace(test_module_events=test_module_events)
-        app.configuration = SimpleNamespace(test_modules=[{"object": nested}])
+        app._configuration = SimpleNamespace(test_modules=[{"object": nested}])
 
         app._release_event_sinks()
 
@@ -962,7 +943,7 @@ class TestApplicationQuit:
         com_proxy = SimpleNamespace(_oleobj_=object(), test_module_events=nested_sink)
         measurement_events = SimpleNamespace(close=Mock(), APP_COM_OBJ=com_proxy)
         app.application_events = application_events
-        app.measurement = SimpleNamespace(measurement_events=measurement_events, com_object=Mock())
+        app._measurement = SimpleNamespace(measurement_events=measurement_events, com_object=Mock())
 
         app._release_event_sinks()
 
@@ -1224,32 +1205,58 @@ class TestMeasurementOfflineMethods:
 # ---------------------------------------------------------------------------
 
 class TestApplicationInternalHelpers:
-    """Test internal helper methods for full coverage."""
+    """Test internal helper methods and lazy wrapper properties."""
 
-    @patch("py_canoe.core.application.Bus")
     @patch("py_canoe.core.application.Capl")
-    @patch("py_canoe.core.application.Configuration")
-    @patch("py_canoe.core.application.Environment")
-    @patch("py_canoe.core.application.Networks")
-    @patch("py_canoe.core.application.System")
-    @patch("py_canoe.core.application.Ui")
-    @patch("py_canoe.core.application.Version")
-    def test_common_between_pre_and_post_cfg_open(
-        self, mock_ver, mock_ui, mock_sys, mock_net, mock_env, mock_cfg, mock_capl, mock_bus
-    ):
+    def test_capl_property_creates_fresh_wrapper(self, mock_capl):
+        mock_capl.side_effect = MagicMock
+
         app = Application(enable_events=False)
         app.com_object = Mock()
 
-        app._common_between_pre_and_post_cfg_open()
+        first = app.capl
+        second = app.capl
 
-        mock_bus.assert_called_once_with(app)
-        mock_capl.assert_called_once_with(app)
+        assert mock_capl.call_count == 2
+        assert first is not second
+
+    @patch("py_canoe.core.application.Configuration")
+    def test_configuration_property_is_cached(self, mock_cfg):
+        app = Application(enable_events=False)
+        app.com_object = Mock()
+
+        first = app.configuration
+        second = app.configuration
+
         mock_cfg.assert_called_once_with(app)
-        mock_env.assert_called_once_with(app)
+        assert first is second
+
+    @patch("py_canoe.core.application.Networks")
+    def test_networks_property_is_cached(self, mock_net):
+        app = Application(enable_events=False)
+        app.com_object = Mock()
+
+        first = app.networks
+        second = app.networks
+
         mock_net.assert_called_once_with(app)
-        mock_sys.assert_called_once_with(app)
-        mock_ui.assert_called_once_with(app)
-        mock_ver.assert_called_once_with(app)
+        assert first is second
+
+    @patch("py_canoe.core.application.Bus")
+    def test_bus_method_uses_get_bus_with_enum_name(self, mock_bus):
+        from py_canoe.helpers.bus_type import BusType
+
+        app = Application(enable_events=False)
+        app.com_object = Mock()
+
+        app.bus(BusType.CAN)
+        app.bus(BusType.FlexRay)
+
+        mock_bus.assert_has_calls([
+            call(app.com_object.GetBus("CAN")),
+            call(app.com_object.GetBus("FlexRay")),
+        ])
+        assert mock_bus.call_count == 2
 
     @patch("py_canoe.core.application.Measurement")
     @patch("win32com.client.gencache.EnsureDispatch", side_effect=Exception("COM error"))
@@ -1259,25 +1266,29 @@ class TestApplicationInternalHelpers:
         with pytest.raises(Exception, match="COM error"):
             app._launch_application()
 
-    def test_setup_post_configuration_loading_calls_helpers(self):
+    @patch("py_canoe.core.application.Networks")
+    @patch("py_canoe.core.application.Configuration")
+    def test_setup_post_configuration_loading_calls_helpers(self, mock_cfg_cls, mock_net_cls):
         app = _make_app(enable_events=False)
-        app.networks.fetch_diagnostic_devices = Mock()
-        app.configuration.fetch_test_modules = Mock()
-        app.configuration.fetch_test_units = Mock()
+        mock_net = mock_net_cls.return_value
+        mock_cfg = mock_cfg_cls.return_value
+        mock_net.fetch_diagnostic_devices = Mock()
+        mock_cfg.fetch_test_modules = Mock()
+        mock_cfg.fetch_test_units = Mock()
 
-        with patch.object(app, "_common_between_pre_and_post_cfg_open"):
-            app._setup_post_configuration_loading()
+        app._setup_post_configuration_loading()
 
-        app.networks.fetch_diagnostic_devices.assert_called_once()
-        app.configuration.fetch_test_modules.assert_called_once()
-        app.configuration.fetch_test_units.assert_called_once()
+        mock_net.fetch_diagnostic_devices.assert_called_once()
+        mock_cfg.fetch_test_modules.assert_called_once()
+        mock_cfg.fetch_test_units.assert_called_once()
 
-    def test_setup_post_configuration_loading_exception(self):
+    @patch("py_canoe.core.application.Networks")
+    def test_setup_post_configuration_loading_exception(self, mock_net_cls):
         app = _make_app(enable_events=False)
+        mock_net_cls.return_value.fetch_diagnostic_devices.side_effect = Exception("error")
 
-        with patch.object(app, "_common_between_pre_and_post_cfg_open", side_effect=Exception("error")):
-            # Should not raise, just log
-            app._setup_post_configuration_loading()
+        # Should not raise, just log
+        app._setup_post_configuration_loading()
 
     def test_quit_exception_in_quit_call(self):
         app = _make_app(enable_events=False)

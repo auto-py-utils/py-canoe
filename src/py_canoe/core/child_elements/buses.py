@@ -19,11 +19,12 @@ class Buses:
             return Bus(self.com_object.Item(index))
     
     def add(self, name: str, bus_type: BusType = BusType.CAN) -> 'Bus':
-        """Adds a new bus with a specified type to the configuration. default bus_type is 1 (CAN).
+        """Adds a new bus with a specified type to the configuration. Default bus_type is BusType.CAN.
 
         Args:
             name (str): The name of the new bus.
-            bus_type (int): The type of the new bus (1 for CAN, 5 for LIN, 6 for MOST, 7 for FlexRay, 9 for J1708, 11 for Ethernet, 13 for WLAN).
+            bus_type (BusType): The type of the new bus (e.g. BusType.CAN, BusType.LIN,
+                BusType.MOST, BusType.FlexRay, BusType.J1708, BusType.Ethernet, BusType.WLAN).
 
         Returns:
             Bus: The newly added Bus object.

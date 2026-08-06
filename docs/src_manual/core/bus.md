@@ -1,3 +1,3 @@
-# py_canoe.core.bus.Bus
+# py_canoe.core.child_elements.bus.Bus
 
-::: src.py_canoe.core.bus.Bus
+::: src.py_canoe.core.child_elements.bus.Bus

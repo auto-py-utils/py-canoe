@@ -10,6 +10,7 @@ from py_canoe.core.child_elements.security_setup import SecuritySetup
 from py_canoe.core.child_elements.snippet_setup import SnippetSetup
 from py_canoe.core.child_elements.visual_sequence_setup import VisualSequenceSetup
 from py_canoe.core.child_elements.xcp_setup import XCPSetup
+from py_canoe.helpers.bus_type import BusType
 
 
 class GeneralSetup:
@@ -23,15 +24,37 @@ class GeneralSetup:
     def ccp_setup(self) -> 'CCPSetup':
         return CCPSetup(self.com_object.CCPSetup)
 
-    def get_channels_count(self, bust_type: int) -> int:
-        return self.com_object.Channels(bust_type)
+    def get_channels_count(self, bus_type: BusType) -> int:
+        """Returns the number of channels of the given bus type.
 
-    def set_channels_count(self, bust_type: int, channel: int):
-        self.com_object.SetChannels(bust_type, channel)
+        Args:
+            bus_type (BusType): The bus type (e.g. BusType.CAN).
 
-    @property
-    def controller_setup(self, bust_type: int, channel: int) -> 'CanController':
-        return CanController(self.com_object.ControllerSetup(bust_type, channel))
+        Returns:
+            int: The number of channels.
+        """
+        return self.com_object.Channels(bus_type.value)
+
+    def set_channels_count(self, bus_type: BusType, channel: int) -> None:
+        """Sets the number of channels of the given bus type.
+
+        Args:
+            bus_type (BusType): The bus type (e.g. BusType.CAN).
+            channel (int): The number of channels to set.
+        """
+        self.com_object.SetChannels(bus_type.value, channel)
+
+    def controller_setup(self, bus_type: BusType, channel: int) -> 'CanController':
+        """Returns the CanController object for the given bus type and channel.
+
+        Args:
+            bus_type (BusType): The bus type (e.g. BusType.CAN).
+            channel (int): The channel number.
+
+        Returns:
+            CanController: The controller setup object.
+        """
+        return CanController(self.com_object.ControllerSetup(bus_type.value, channel))
 
     @property
     def database_setup(self) -> 'DatabaseSetup':

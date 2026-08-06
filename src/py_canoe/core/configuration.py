@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from py_canoe.core.child_elements.measurement_setup import Logging, ExporterSymbol, Message
     from py_canoe.core.child_elements.test_configurations import TestConfiguration
 
-from py_canoe.core.bus import Bus
+from py_canoe.core.child_elements.bus import Bus
 from py_canoe.core.child_elements.channel import Channel
 from py_canoe.core.child_elements.test_environment import TestEnvironment
 from py_canoe.core.child_elements.test_module import TestModule
@@ -49,7 +49,6 @@ class Configuration:
     """
     def __init__(self, app: 'Application'):
         self.app = app
-        self.bus_types = self.app.bus_types
         self.com_object = win32com.client.Dispatch(self.app.com_object.Configuration)
         # self.configuration_events: ConfigurationEvents = win32com.client.WithEvents(self.com_object, ConfigurationEvents)
         self.configuration_test_configurations = lambda: self.test_configurations
@@ -267,7 +266,7 @@ class Configuration:
 
     def get_can_bus_statistics(self, channel: int) -> dict:
         try:
-            can_stat_obj = self.online_setup.bus_statistics.BusStatistic(self.bus_types['CAN'], channel)
+            can_stat_obj = self.online_setup.bus_statistics.BusStatistic(BusType.CAN.value, channel)
             keys = [
                 'BusLoad', 'ChipState', 'Error', 'ErrorTotal', 'Extended', 'ExtendedTotal',
                 'ExtendedRemote', 'ExtendedRemoteTotal', 'Overload', 'OverloadTotal', 'PeakLoad',
@@ -925,6 +924,23 @@ class Configuration:
         except Exception as e:
             logger.error(f'failed to stop all test environments. {e}')
 
+    def _add_database_to_channel(self, database_file: str, channel: int) -> bool:
+        """Add a database through the configuration-level database collection.
+
+        This is the stable fallback for COM interfaces where the bus object does
+        not expose ``Channels`` or ``Databases`` members, but the configuration
+        still provides a concrete ``DatabaseSetup.Databases`` collection.
+        """
+        try:
+            databases = Databases(self.com_object.GeneralSetup.DatabaseSetup.Databases)
+            database = databases.add(database_file)
+            database.channel = channel
+            logger.info(f'Database "{database_file}" added successfully to channel {channel}.')
+            return True
+        except Exception as e:
+            logger.error(f"Error adding database '{database_file}' to channel {channel}: {e}")
+            return False
+
     def add_database(self, database_file: str, network: str | int) -> bool:
         """
         Add a database file to the specified channel/network
@@ -946,8 +962,12 @@ class Configuration:
                     # Get the channel number based on the network name
                     for bus in self.simulation_setup.buses.item():
                         bus: Bus
-                        if bus.name == network:
-                            bus.databases.add(database_file)
+                        bus_name = getattr(bus, 'name', '')
+                        if bus_name == network:
+                            try:
+                                bus.databases.add(database_file)
+                            except AttributeError:
+                                return self._add_database_to_channel(database_file, 1)
                             logger.info(f'Database "{database_file}" added successfully to network "{network}".')
                             return True
                     logger.warning(f'Network "{network}" not found. Cannot add database.')
@@ -955,15 +975,15 @@ class Configuration:
                 elif isinstance(network, int):
                     for bus in self.simulation_setup.buses.item():
                         bus: Bus
-                        logger.info(f"Checking bus: {bus.name}, channels: {[channel.number for channel in bus.channels.item()]}")
-                        for channel in bus.channels.item():
+                        channels = bus.channels.item()
+                        logger.info(f"Checking bus channels: {[channel.number for channel in channels]}")
+                        if not channels:
+                            return self._add_database_to_channel(database_file, network)
+                        for channel in channels:
                             channel: Channel
                             if channel.number == network:
-                                bus.databases.add(database_file)
-                                logger.info(f'Database "{database_file}" added successfully to channel {channel.number}, bus.name: {bus.name}.')
-                                return True
-                    logger.warning(f'Channel {network} not found. Cannot add database.')
-                    return False
+                                return self._add_database_to_channel(database_file, network)
+                    return self._add_database_to_channel(database_file, network)
                 else:
                     logger.warning(f'Invalid network type: {type(network)}. Must be str (network name) or int (channel number).')
                     return False

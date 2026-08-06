@@ -159,18 +159,18 @@ canoe_inst.stop_measurement()
 ### 获取/设置总线信号值、检查信号状态、获取信号全名
 
 ```python
-from py_canoe import CANoe, wait
+from py_canoe import CANoe, BusType, wait
 
 canoe_inst = CANoe()
 canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_dev.cfg')
 
 canoe_inst.start_measurement()
-sig_full_name = canoe_inst.get_signal_full_name(bus='CAN', channel=1, message='LightState', signal='FlashLight')
-sig_value = canoe_inst.get_signal_value(bus='CAN', channel=1, message='LightState', signal='FlashLight', raw_value=False)
-canoe_inst.set_signal_value(bus='CAN', channel=1, message='LightState', signal='FlashLight', value=1, raw_value=False)
-sig_online_state = canoe_inst.check_signal_online(bus='CAN', channel=1, message='LightState', signal='FlashLight')
-sig_state = canoe_inst.check_signal_state(bus='CAN', channel=1, message='LightState', signal='FlashLight')
-sig_val = canoe_inst.get_signal_value(bus='CAN', channel=1, message='LightState', signal='FlashLight', raw_value=True)
+sig_full_name = canoe_inst.get_signal_full_name(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight')
+sig_value = canoe_inst.get_signal_value(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight', raw_value=False)
+canoe_inst.set_signal_value(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight', value=1, raw_value=False)
+sig_online_state = canoe_inst.check_signal_online(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight')
+sig_state = canoe_inst.check_signal_state(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight')
+sig_val = canoe_inst.get_signal_value(bus=BusType.CAN, channel=1, message='LightState', signal='FlashLight', raw_value=True)
 canoe_inst.stop_measurement()
 ```
 
@@ -372,6 +372,45 @@ all_modules = test_env.get_all_test_modules()
 # 访问报告设置
 report = test_env.report
 print(report.last_written_full_name)  # 最后一次生成的测试报告路径
+```
+
+### 管理测试模块的库和模块（DLL）
+
+`TestModule` 提供两个集合来管理其依赖：
+
+- **`modules`** — `Modules` 对象：可添加节点层模块（DLL）、程序集（DLL）、.NET 源文件（CS）、CAPL 源文件（CAN）
+- **`libraries`** — `TestLibraries` 对象：XML 或 .NET 测试模块中使用的测试用例文件
+
+```python
+from py_canoe import CANoe
+
+canoe_inst = CANoe()
+canoe_inst.open(canoe_cfg=r'tests\demo_cfg\demo_test_setup.cfg')
+
+test_env = canoe_inst.add_testEnvironments('NewTestEnv')
+test_module = test_env.add_test_module(r'path\to\TestCapl.can')
+
+# --- Modules（添加 DLL / CS / CAN 文件）---
+test_module.modules.add(r'path\to\node_layer.dll')   # 节点层模块（DLL）
+test_module.modules.add(r'path\to\assembly.dll')     # 程序集（DLL，.NET 测试节点）
+test_module.modules.add(r'path\to\source.cs')        # .NET 源文件
+test_module.modules.add(r'path\to\source.can')       # CAPL 源文件
+
+print(test_module.modules.count)   # 模块数量
+first_module = test_module.modules.item(1)
+print(first_module.name, first_module.full_name)
+
+# 按索引 / 文件名 / 完整路径移除模块
+test_module.modules.remove(1)
+
+# --- TestLibraries（XML / .NET 测试模块的测试用例文件）---
+test_module.libraries.add(r'path\to\test_cases.tsf')
+
+print(test_module.libraries.count)  # 测试用例文件数量
+lib = test_module.libraries.item(1)
+print(lib.name, lib.full_name)
+
+test_module.libraries.remove(1)
 ```
 
 ### 执行测试模块时选择性启用/禁用测试用例
