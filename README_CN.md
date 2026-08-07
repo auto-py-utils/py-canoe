@@ -413,6 +413,37 @@ print(lib.name, lib.full_name)
 test_module.libraries.remove(1)
 ```
 
+#### ⚠️ CANoe 运行机制：32 位与 64 位 DLL
+
+CANoe 有两个容易混淆的独立概念：
+
+- **CANoe 应用进程**（`CANoe64.exe` / `CANoe32.exe`）：GUI 进程本身。它可以是 64 位而 RT Kernel 是 32 位，反之亦然。
+- **RT Kernel（实时内核）架构**：运行 CAPL 程序并加载外部 DLL（节点层模块 / 测试模块）的执行环境。**它的位数决定了能加载哪种 DLL**：
+
+| RT Kernel | 可加载的 DLL |
+|---|---|
+| 32 位 | 仅 32 位 DLL |
+| 64 位 | 仅 64 位 DLL |
+
+64 位程序无法加载 32 位 DLL，反之亦然。因此如果 `modules.add()` 失败而 DLL 本身看起来没问题，请检查当前打开工程的 **RT Kernel 架构**：
+
+```python
+app = CANoe()
+app.open(r'path\to\your.cfg')
+
+# 0 = cWin32（32 位），1 = cWin64（64 位），2 = cLinux64 ...
+arch = app.get_rt_kernel_architecture()
+print('RT Kernel 架构:', arch)
+
+# 强制将当前工程的 RT Kernel 设为 64 位
+app.set_rt_kernel_architecture(1)
+app.save_configuration()   # 持久化该修改
+```
+
+- 默认使用 **32 位** RT Kernel；已存在的工程可能是任一位数创建的。
+- 位数存储在配置文件中，也可通过 `CAN.ini` → `[SYSTEM]` → `EnforceRtkTargetArchitecture` 覆盖（`0` = 使用配置，`1` = 强制 32 位，`2` = 强制 64 位）。
+- 实用规则：**让 DLL 位数与你打开的工程的 RT Kernel 位数一致**。如果始终使用 64 位 DLL，请确保工程的 RT Kernel 是 64 位。
+
 ### 执行测试模块时选择性启用/禁用测试用例
 
 `execute_test_module` 方法支持在执行前通过通配符或正则表达式模式选择性地启用或禁用测试用例。

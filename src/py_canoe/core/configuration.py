@@ -176,6 +176,17 @@ class Configuration:
     def test_setup(self) -> 'TestSetup':
         return TestSetup(self.com_object.TestSetup)
 
+    
+    @property
+    def execution_environment(self) -> int:
+        """Returns the current RT Kernel architecture (0=32-bit, 1=64-bit, ...)."""
+        return self.com_object.ExecutionEnvironment
+
+    @execution_environment.setter
+    def execution_environment(self, arch: int) -> None:
+        """Sets the current RT Kernel architecture (0=32-bit, 1=64-bit, ...)."""
+        self.com_object.ExecutionEnvironment = arch
+
     # UserFiles
 
     # VTSystem
@@ -1041,13 +1052,23 @@ class Configuration:
             the same name already exists.
         """
         try:
-            bus = self.simulation_setup.buses.add(network_name, network_type)
+            buses = self.simulation_setup.buses
+            bus = buses.add(network_name, network_type)
             if bus is None:
                 logger.warning(f"Network {network_name} already exists.")
-                return None
-            # Assign the software channel if it differs from the default (CAN 1)
-            if sw_channel != 1 and bus.channels.count > 0:
-                bus.channels.remove(1)
+                # Reset all data inside the existing bus
+                for existing_bus in buses.item():
+                    existing_bus: Bus
+                    if existing_bus.name == network_name:
+                        bus = existing_bus
+                        break
+                for i in range(bus.channels.count, 0, -1):
+                    bus.channels.remove(i)
+                # for i in range(bus.databases.count, 0, -1):
+                #     bus.databases.remove(i)
+                # for i in range(bus.nodes.count, 0, -1):
+                #     bus.nodes.remove(i)
+
             bus.channels.add(1, sw_channel)
             return bus
         except Exception as e:

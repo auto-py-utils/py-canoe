@@ -9,6 +9,8 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Union, TYPE_CHECKING, Iterable, Optional, Sequence
 
+from py_canoe.core.child_elements.can_controller import CanChannelConfiguration
+
 if TYPE_CHECKING:
     from py_canoe.core.child_elements.measurement_setup import Logging, ExporterSymbol, Message
     from py_canoe.core.child_elements.test_configurations import TestConfiguration
@@ -1070,7 +1072,10 @@ class CANoe:
     def add_netWork_with_hardware(self, network_name: str,
                                    network_type: BusType = BusType.CAN,
                                    sw_channel: int = 1,
-                                   hw_channel: ChannelInfo | None = None) -> Bus:
+                                   hw_channel: ChannelInfo | None = None,
+                                   arb_phase_config: CanChannelConfiguration | None = None,
+                                   data_phase_config: CanChannelConfiguration | None = None
+                                   ) -> Bus:
         """Add a network and optionally assign a physical hardware channel.
 
         This combines :meth:`add_netWork` + :meth:`set_hardware_channel`.
@@ -1089,7 +1094,20 @@ class CANoe:
         bus = self.add_netWork(network_name, network_type, sw_channel)
         if hw_channel is not None:
             # app-channel is 0-based; sw_channel is 1-based
-            self.set_hardware_channel(sw_channel - 1, hw_channel, network_type)
+            self.set_hardware_channel(sw_channel - 1, hw_channel, network_type)        
+        
+        if network_type == BusType.CAN and (arb_phase_config is not None or data_phase_config is not None):
+            # a network can only be bound to one channel
+            busController = bus.channels.item(1).controller
+            if arb_phase_config is not None and data_phase_config is None:
+                # can
+                arb_phase_config.apply_to_can_set_config(busController)
+            if arb_phase_config is not None and data_phase_config is not None:
+                # can fd
+                arb_phase_config.apply_to_can_set_fd_arb_phase_config(busController)
+                data_phase_config.apply_to_can_set_fd_data_phase_config(busController)
+            elif arb_phase_config is None and data_phase_config is not None:
+                raise ValueError("data_phase_config cannot be set without arb_phase_config")
         return bus
 
     def remove_netWork(self, name: str) -> bool:
@@ -1126,11 +1144,14 @@ class CANoe:
                 return bus
         return None
 
-    def get_channelUsage(self, channel_type:BusType = BusType.CAN) -> list[dict]:
-        """returns all available channels of a specific type.
+    def get_channelUsage(self, channel_type:BusType = BusType.CAN) -> int:
+        """returns the number of channels of a specific type.
 
         Args:
             channel_type (BusType): type of the channel (BusType.CAN for CAN, BusType.LIN for LIN, BusType.MOST for MOST, BusType.FlexRay for FlexRay, BusType.J1708 for J1708, BusType.Ethernet for Ethernet, BusType.WLAN for WLAN). Defaults to BusType.CAN.
+
+        Returns:
+            int: The number of channels of the specified type.
         """
         return self.application.configuration.general_setup.get_channels_count(channel_type)
 
@@ -1144,6 +1165,19 @@ class CANoe:
         self.application.configuration.general_setup.set_channels_count(channel_type, channel_count)
 
         return self.get_channelUsage(channel_type) == channel_count
+
+    def remove_all_channelUsage(self) -> None:
+        """removes all channels of all types."""
+        self.set_channelUsage(BusType.CAN, 0)
+        self.set_channelUsage(BusType.LIN, 0)
+        self.set_channelUsage(BusType.MOST, 0)
+        self.set_channelUsage(BusType.FlexRay, 0)
+        self.set_channelUsage(BusType.J1708, 0)
+        self.set_channelUsage(BusType.Ethernet, 0)
+        self.set_channelUsage(BusType.WLAN, 0)
+        self.set_channelUsage(BusType.AFDX, 0)
+        self.set_channelUsage(BusType.KLINE, 0)
+        self.set_channelUsage(BusType.A429, 0)
 
     # -- hardware channel mapping (XL Driver) --------------------------------
 
@@ -1623,3 +1657,12 @@ class CANoe:
             dict: The version information.
         """
         return self.application.version.get_canoe_version_info()
+
+    def get_rt_kernel_architecture(self) -> int:
+        """Returns the current RT Kernel architecture (0=32-bit, 1=64-bit, ...)."""
+        return self.application.configuration.execution_environment
+
+    def set_rt_kernel_architecture(self, arch: int) -> bool:
+        """Sets the RT Kernel architecture (0=32-bit, 1=64-bit)."""
+        self.application.configuration.execution_environment = arch
+        return True
