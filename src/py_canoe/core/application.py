@@ -1,4 +1,5 @@
 from pathlib import Path
+import sys
 from typing import Any, Union
 import win32com
 import win32com.client
@@ -199,7 +200,11 @@ class Application:
             try:
                 self.com_object = gencache.EnsureDispatch(self.CANOE_APP_NAME)
             except AttributeError:
-                logger.warning("gencache cache error, fallback using Dispatch (no type hint)")
+                logger.warning("gencache encountered a cache error. After clearing the corrupted gen_py module, revert to using Dispatch.")
+                # 清除 sys.modules 中损坏的 gen_py 缓存模块，防止 Dispatch 再次命中损坏缓存
+                for key in list(sys.modules.keys()):
+                    if 'win32com.gen_py' in key:
+                        del sys.modules[key]
                 self.com_object = win32com.client.Dispatch(self.CANOE_APP_NAME)
             if self._enable_events:
                 self.application_events = win32com.client.WithEvents(self.com_object, ApplicationEvents)
