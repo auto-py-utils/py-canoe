@@ -136,6 +136,22 @@ class TestApplicationEnableEvents:
 
         mock_setup.assert_called_once()
 
+    @patch("py_canoe.core.application.logger.warning")
+    @patch("win32com.client.Dispatch")
+    @patch("win32com.client.gencache.EnsureDispatch", side_effect=AttributeError("broken cache"))
+    def test_launch_attribute_error_logs_root_cause_and_falls_back(self, mock_ensure, mock_dispatch, mock_warning):
+        mock_dispatch.return_value = _make_com_no_config()
+
+        app = Application(enable_events=False)
+        with patch.object(app, "_setup_post_configuration_loading") as mock_setup:
+            app._launch_application()
+
+        mock_dispatch.assert_called_once_with(app.CANOE_APP_NAME)
+        mock_setup.assert_not_called()
+        mock_warning.assert_called_once()
+        assert "EnsureDispatch AttributeError: broken cache" in mock_warning.call_args[0][0]
+        assert "falling back to Dispatch" in mock_warning.call_args[0][0]
+
 
 # ---------------------------------------------------------------------------
 # Application: open_config

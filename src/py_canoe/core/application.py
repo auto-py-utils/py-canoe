@@ -198,8 +198,8 @@ class Application:
             logger.info(f"pywin32 gencache path: {win32com.__gen_path__}")
             try:
                 self.com_object = gencache.EnsureDispatch(self.CANOE_APP_NAME)
-            except AttributeError:
-                logger.warning("gencache cache error, fallback using Dispatch (no type hint)")
+            except AttributeError as e:
+                logger.warning(f"EnsureDispatch AttributeError: {e}; falling back to Dispatch (no type hint)")
                 self.com_object = win32com.client.Dispatch(self.CANOE_APP_NAME)
             if self._enable_events:
                 self.application_events = win32com.client.WithEvents(self.com_object, ApplicationEvents)
