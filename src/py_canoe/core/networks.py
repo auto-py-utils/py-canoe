@@ -78,44 +78,40 @@ class Networks:
                     diag_request = diag_device.create_request(request, **kwargs)
                 diag_request.send()
                 logger.info(f'{diag_ecu_qualifier_name}: Diagnostic Request = {request}')
+
                 start_time = time.time()
-                while (diag_request.responses.count == 0 and (time.time() - start_time) < timeout):
-                    if (time.time() - start_time) >= timeout:
-                        logger.warning(f"Diagnostic request timed out after {timeout}s: {request}")
-                        return f"ERROR: timeout after {timeout}s"
+                while (time.time() - start_time) < timeout:
+                    if not diag_request.pending and diag_request.responses.count > 0:
+                        break
                     wait(poll_s)
-                if diag_request.responses.count > 0:
-                    wait(poll_s)
-                diag_responses_dict = {}
-                diag_response_including_sender_name = {}
-                for i in range(1, diag_request.responses.count + 1):
+                response_count = diag_request.responses.count
+                if response_count == 0:
+                    logger.warning(f"Diagnostic request timed out after {timeout}s: {request}")
+                    return f"ERROR: timeout after {timeout}s"
+                if diag_request.pending:
+                    logger.warning(f"Diagnostic request still pending after {timeout}s, reporting the last response received: {request}")
+                final_responses = {}
+                response_pending_responses = {}
+                for i in range(1, response_count + 1):
                     diag_response = diag_request.responses.item(i)
-                    diag_response_positive = diag_response.positive
-                    response_code = diag_response.response_code
                     response_sender = diag_response.sender
                     response_stream = diag_response.stream
                     response_stream_in_str = " ".join(f"{d:02X}" for d in response_stream).upper()
-                    diag_responses_dict[response_sender] = {
-                        "positive": diag_response_positive,
-                        "response_code": response_code,
-                        "stream": response_stream,
-                        "stream_in_str": response_stream_in_str
-                    }
-                    if response_in_bytearray:
-                        diag_response_including_sender_name[response_sender] = response_stream
+                    logger.info(f'{response_sender}: Diagnostic Response = {response_stream_in_str}')
+                    response_value = response_stream if response_in_bytearray else response_stream_in_str
+                    if diag_response.is_response_pending:
+                        response_pending_responses[response_sender] = response_value
                     else:
-                        diag_response_including_sender_name[response_sender] = response_stream_in_str
-                    if diag_response_positive:
-                        logger.info(f'{response_sender}: Diagnostic Response = {response_stream_in_str}')
-                    else:
-                        logger.info(f'{response_sender}: Diagnostic Response = {response_stream_in_str}')
+                        final_responses[response_sender] = response_value
+                # A 0x78 is only reported when that sender never produced anything better.
+                diag_response_including_sender_name = {**response_pending_responses, **final_responses}
                 if return_sender_name:
                     return diag_response_including_sender_name
                 if diag_ecu_qualifier_name in diag_response_including_sender_name:
                     return diag_response_including_sender_name[diag_ecu_qualifier_name]
                 return next(iter(diag_response_including_sender_name.values()), "")
             else:
-                logger.warning(f'No responses received for request: {request}')
+                logger.warning(f'No diagnostic device found for: {diag_ecu_qualifier_name}')
                 return {"error": "No responses received"}
         except com_error as e:
             logger.error("Error sending diagnostic request: %s", e)
