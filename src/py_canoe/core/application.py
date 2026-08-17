@@ -201,7 +201,8 @@ class Application:
                 self.com_object = gencache.EnsureDispatch(self.CANOE_APP_NAME)
             except AttributeError:
                 logger.warning("gencache encountered a cache error. After clearing the corrupted gen_py module, revert to using Dispatch.")
-                # Clear corrupted gen_py cache modules from sys.modules to prevent Dispatch from reusing stale modules
+                # Clear corrupted gen_py cache modules from sys.modules to prevent Dispatch from reusing stale modules
+
                 for key in list(sys.modules.keys()):
                     if 'win32com.gen_py' in key:
                         del sys.modules[key]
