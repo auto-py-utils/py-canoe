@@ -14,6 +14,10 @@ class DiagnosticResponse:
         return self.com_object.ResponseCode
 
     @property
+    def is_response_pending(self) -> bool:
+        return not self.positive and self.response_code == 0x78
+
+    @property
     def sender(self) -> str:
         return self.com_object.Sender
 
