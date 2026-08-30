@@ -99,6 +99,10 @@
     <li class="toctree-l3"><a class="reference internal" href="#create-test-environment-and-add-test-modules-folders">create test environment and add test modules / folders</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#manage-test-libraries-and-modules-dll-of-a-test-module">manage test libraries and modules (DLL) of a test module</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#canoe-run-mechanism-32-bit-vs-64-bit-dll">⚠️ CANoe run mechanism: 32-bit vs 64-bit DLL</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#execute-test-module-with-selective-test-case-enabledisable">execute test module with selective test case enable/disable</a>
     </li>
@@ -537,6 +541,47 @@ print(lib.name, lib.full_name)
 
 test_module.libraries.remove(1)
 </code></pre>
+<h4 id="canoe-run-mechanism-32-bit-vs-64-bit-dll">⚠️ CANoe run mechanism: 32-bit vs 64-bit DLL</h4>
+<p>CANoe has two independent concepts that are easy to confuse:</p>
+<ul>
+<li><strong>CANoe application process</strong> (<code>CANoe64.exe</code> / <code>CANoe32.exe</code>): the GUI process. It can be 64-bit while the RT kernel is 32-bit, and vice versa.</li>
+<li><strong>RT Kernel (real-time kernel) architecture</strong>: the execution environment that runs CAPL programs and loads external DLLs (node layer modules / test modules). <strong>Its bitness decides which DLLs can be loaded</strong>:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>RT Kernel</th>
+<th>Loadable DLL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>32-bit</td>
+<td>32-bit DLL only</td>
+</tr>
+<tr>
+<td>64-bit</td>
+<td>64-bit DLL only</td>
+</tr>
+</tbody>
+</table>
+<p>A 64-bit program cannot load a 32-bit DLL, and vice versa. So if <code>modules.add()</code> fails while the DLL looks correct, check the <strong>RT kernel architecture</strong> of the currently open configuration:</p>
+<pre><code class="language-python">app = CANoe()
+app.open(r'path\to\your.cfg')
+
+# 0 = cWin32 (32-bit), 1 = cWin64 (64-bit), 2 = cLinux64 ...
+arch = app.get_rt_kernel_architecture()
+print('RT Kernel architecture:', arch)
+
+# force 64-bit RT kernel for the current configuration
+app.set_rt_kernel_architecture(1)
+app.save_configuration()   # persist the change
+</code></pre>
+<ul>
+<li>By default the <strong>32-bit</strong> RT kernel is used; existing configurations may have been created with either variant.</li>
+<li>The variant is stored in the configuration file, and can also be overridden via <code>CAN.ini</code> → <code>[SYSTEM]</code> → <code>EnforceRtkTargetArchitecture</code> (<code>0</code> = use config, <code>1</code> = force 32-bit, <code>2</code> = force 64-bit).</li>
+<li>Practical rule: <strong>match the DLL bitness to the RT kernel bitness</strong> of the configuration you open. If you always use 64-bit DLLs, ensure the configuration's RT kernel is 64-bit.</li>
+</ul>
 <h3 id="execute-test-module-with-selective-test-case-enabledisable">execute test module with selective test case enable/disable</h3>
 <p>The <code>execute_test_module</code> method supports selectively enabling or disabling test cases before execution using wildcard or regex patterns.</p>
 <p><strong>Pattern matching rules:</strong>
@@ -802,5 +847,5 @@ manually — it is auto-generated. To regenerate it run:</p>
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2026-08-05 18:21:44.837816+00:00
+Build Date UTC : 2026-08-30 13:21:02.814694+00:00
 -->
