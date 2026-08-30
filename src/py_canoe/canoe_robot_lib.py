@@ -1,13 +1,14 @@
 # ---------------------------------------------------------------------------
 # THIS FILE IS AUTO-GENERATED - DO NOT EDIT MANUALLY
-# Generated: 2026-08-05T18:09:47.918861+00:00
-# py-canoe package version: 26.4.0
+# Generated: 2026-08-30T13:10:23.786376+00:00
+# py-canoe package version: 26.4.1
 # To update this file, run the generator: python -m py_canoe.helpers.gen_canoe_robot_lib
 # ---------------------------------------------------------------------------
 
 from typing import Iterable, Optional, Sequence, TYPE_CHECKING, Union
 from collections.abc import Sequence
 from pathlib import Path
+from py_canoe.core.child_elements.can_controller import CanChannelConfiguration
 if TYPE_CHECKING:
     from py_canoe.core.child_elements.measurement_setup import Logging, ExporterSymbol, Message
     from py_canoe.core.child_elements.test_configurations import TestConfiguration
@@ -687,7 +688,7 @@ class CanoeRobotLib:
         """
         return self._source.add_netWork(network_name, network_type, sw_channel)
 
-    def canoe_add_netWork_with_hardware(self, network_name: str, network_type: BusType=BusType.CAN, sw_channel: int=1, hw_channel: ChannelInfo | None=None) -> Bus:
+    def canoe_add_netWork_with_hardware(self, network_name: str, network_type: BusType=BusType.CAN, sw_channel: int=1, hw_channel: ChannelInfo | None=None, arb_phase_config: CanChannelConfiguration | None=None, data_phase_config: CanChannelConfiguration | None=None) -> Bus:
         """
         Add a network and optionally assign a physical hardware channel.
         
@@ -704,7 +705,7 @@ class CanoeRobotLib:
         Returns:
             The newly added :class:`Bus` object.
         """
-        return self._source.add_netWork_with_hardware(network_name, network_type, sw_channel, hw_channel)
+        return self._source.add_netWork_with_hardware(network_name, network_type, sw_channel, hw_channel, arb_phase_config, data_phase_config)
 
     def canoe_remove_netWork(self, name: str) -> bool:
         """
@@ -740,12 +741,15 @@ class CanoeRobotLib:
         """
         return self._source.get_network(network_name)
 
-    def canoe_get_channelUsage(self, channel_type: BusType=BusType.CAN) -> list[dict]:
+    def canoe_get_channelUsage(self, channel_type: BusType=BusType.CAN) -> int:
         """
-        returns all available channels of a specific type.
+        returns the number of channels of a specific type.
         
         Args:
             channel_type (BusType): type of the channel (BusType.CAN for CAN, BusType.LIN for LIN, BusType.MOST for MOST, BusType.FlexRay for FlexRay, BusType.J1708 for J1708, BusType.Ethernet for Ethernet, BusType.WLAN for WLAN). Defaults to BusType.CAN.
+        
+        Returns:
+            int: The number of channels of the specified type.
         """
         return self._source.get_channelUsage(channel_type)
 
@@ -758,6 +762,10 @@ class CanoeRobotLib:
             channel_count (int): number of channels to set.
         """
         return self._source.set_channelUsage(channel_type, channel_count)
+
+    def canoe_remove_all_channelUsage(self) -> None:
+        """removes all channels of all types."""
+        return self._source.remove_all_channelUsage()
 
     def canoe_get_hardware_channels(self, bus_type: BusType=BusType.CAN) -> list[ChannelInfo]:
         """
@@ -1215,4 +1223,12 @@ class CanoeRobotLib:
             dict: The version information.
         """
         return self._source.get_canoe_version_info()
+
+    def canoe_get_rt_kernel_architecture(self) -> int:
+        """Returns the current RT Kernel architecture (0=32-bit, 1=64-bit, ...)."""
+        return self._source.get_rt_kernel_architecture()
+
+    def canoe_set_rt_kernel_architecture(self, arch: int) -> bool:
+        """Sets the RT Kernel architecture (0=32-bit, 1=64-bit)."""
+        return self._source.set_rt_kernel_architecture(arch)
 
