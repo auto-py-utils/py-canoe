@@ -13,7 +13,7 @@ cd ..
 REM ----------------------------
 REM 1. Ensure uv is available and sync dependencies via helper
 REM ----------------------------
-call "%~dp0\uv_helper.bat" sync --link-mode=copy
+call "%~dp0\uv_helper.bat" sync --link-mode=copy --all-extras
 if %ERRORLEVEL% NEQ 0 goto ERROR
 echo Completed syncing dependencies.
 
