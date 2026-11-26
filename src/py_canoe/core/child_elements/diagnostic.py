@@ -3,6 +3,7 @@ from win32com.universal import com_error
 from py_canoe.core.child_elements.diagnostic_request import DiagnosticRequest
 from py_canoe.helpers.common import logger
 
+
 class Diagnostic:
     def __init__(self, com_object):
         self.com_object = com_object

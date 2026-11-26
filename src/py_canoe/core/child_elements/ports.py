@@ -1,10 +1,10 @@
-import win32com.client
+from py_canoe.core.com_session import dispatch_com_object
 
 
 class Ports:
     """The Ports object represents all ports of a specific Ethernet bus in Network-based Access mode as a collection."""
     def __init__(self, ports_com_obj):
-        self.com_object = win32com.client.Dispatch(ports_com_obj)
+        self.com_object = dispatch_com_object(ports_com_obj)
 
     @property
     def count(self) -> int:
@@ -46,7 +46,7 @@ class Ports:
 class Port:
     """The Port object represents a specific port of a CANoe configuration."""
     def __init__(self, port_com_obj):
-        self.com_object = win32com.client.Dispatch(port_com_obj)
+        self.com_object = dispatch_com_object(port_com_obj)
 
     @property
     def is_active(self) -> bool:

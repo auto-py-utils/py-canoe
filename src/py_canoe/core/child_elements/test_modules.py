@@ -1,4 +1,5 @@
 import os
+from collections.abc import Iterator
 
 from py_canoe.core.child_elements.test_module import TestModule
 from py_canoe.helpers.common import logger
@@ -11,6 +12,10 @@ class TestModules:
     @property
     def count(self) -> int:
         return self.com_object.Count
+
+    def iter_items(self) -> Iterator[TestModule]:
+        for index in range(1, self.count + 1):
+            yield TestModule(self.com_object.Item(index))
 
     def add(self, full_name: str) -> 'TestModule':
         """Adds a test module to a test environment or a test setup folder.
@@ -50,8 +55,4 @@ class TestModules:
         logger.info(f'TestModules: removed test module at index/name "{index}".')
 
     def fetch_test_modules(self) -> dict['str': 'TestModule']:
-        test_modules = dict()
-        for index in range(1, self.count + 1):
-            tm_inst = TestModule(self.com_object.Item(index))
-            test_modules[tm_inst.name] = tm_inst
-        return test_modules
+        return {module.name: module for module in self.iter_items()}

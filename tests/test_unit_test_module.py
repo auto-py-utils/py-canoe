@@ -9,13 +9,15 @@ Unit tests for test module and test case features:
 - Configuration.get_test_module_result (report + test case verdicts)
 """
 
-from unittest.mock import MagicMock, Mock, patch, PropertyMock
+from unittest.mock import MagicMock, Mock, patch
 
 from py_canoe.core.child_elements.test_case import TestCase
 from py_canoe.core.child_elements.test_module import TestModule
-from py_canoe.core.child_elements.test_tree_element import TestTreeElement, TestTreeElementType
+from py_canoe.core.child_elements.test_tree_element import (
+    TestTreeElement,
+    TestTreeElementType,
+)
 from py_canoe.core.configuration import Configuration
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -511,7 +513,6 @@ class TestApplyTestCaseSelection:
 
         com = MagicMock()
         com.Name = "TestMod1"
-        com._oleobj_ = MagicMock()  # present on real (raw) CANoe COM objects
         com.Sequence = _make_sequence_mock(items)
 
         # In production, _find_test_module returns a TestModule wrapper (built in
@@ -526,6 +527,7 @@ class TestApplyTestCaseSelection:
         cfg._Configuration__test_modules = [
             {"name": "TestMod1", "object": tm_wrapper, "environment": "Env1"}
         ]
+        cfg._Configuration__test_modules_loaded = True
 
         return cfg, tm_wrapper, items
 
@@ -648,6 +650,7 @@ class TestFindTestModule:
         cfg._Configuration__test_modules = [
             {"name": "TestMod1", "object": mock_tm, "environment": "Env1"}
         ]
+        cfg._Configuration__test_modules_loaded = True
         result = cfg._find_test_module("TestMod1")
         assert result is mock_tm
 
@@ -656,6 +659,7 @@ class TestFindTestModule:
         cfg._Configuration__test_modules = [
             {"name": "TestMod1", "object": Mock(), "environment": "Env1"}
         ]
+        cfg._Configuration__test_modules_loaded = True
         result = cfg._find_test_module("NonExistent")
         assert result is None
 
@@ -667,11 +671,13 @@ class TestFindTestModule:
             {"name": "TestMod1", "object": mock_tm1, "environment": "Env1"},
             {"name": "TestMod2", "object": mock_tm2, "environment": "Env2"},
         ]
+        cfg._Configuration__test_modules_loaded = True
         assert cfg._find_test_module("TestMod2") is mock_tm2
 
     def test_empty_list_returns_none(self):
         cfg = Configuration.__new__(Configuration)
         cfg._Configuration__test_modules = []
+        cfg._Configuration__test_modules_loaded = True
         result = cfg._find_test_module("AnyModule")
         assert result is None
 
@@ -691,6 +697,7 @@ class TestExecuteTestModuleWithPatterns:
         cfg._Configuration__test_modules = [
             {"name": "TestMod1", "object": mock_tm, "environment": "Env1"}
         ]
+        cfg._Configuration__test_modules_loaded = True
         return cfg, mock_tm
 
     def test_execute_without_patterns_unchanged(self):
@@ -738,6 +745,7 @@ class TestExecuteTestModuleWithPatterns:
     def test_execute_not_found_returns_zero(self):
         cfg = Configuration.__new__(Configuration)
         cfg._Configuration__test_modules = []
+        cfg._Configuration__test_modules_loaded = True
 
         result = cfg.execute_test_module("NonExistent")
         assert result == 0
@@ -749,6 +757,7 @@ class TestExecuteTestModuleWithPatterns:
         cfg._Configuration__test_modules = [
             {"name": "TestMod1", "object": mock_tm, "environment": "Env1"}
         ]
+        cfg._Configuration__test_modules_loaded = True
 
         with patch("py_canoe.core.configuration.Configuration._apply_test_case_selection"):
             result = cfg.execute_test_module("TestMod1")
@@ -778,6 +787,7 @@ class TestGetTestModuleResult:
         cfg._Configuration__test_modules = [
             {"name": "TestMod1", "object": tm_wrapper, "environment": "Env1"}
         ]
+        cfg._Configuration__test_modules_loaded = True
         return cfg, tm_wrapper
 
     def test_result_structure(self):
@@ -916,11 +926,13 @@ class TestGetTestModuleResult:
     def test_result_not_found_returns_empty(self):
         cfg = Configuration.__new__(Configuration)
         cfg._Configuration__test_modules = []
+        cfg._Configuration__test_modules_loaded = True
         assert cfg.get_test_module_result("NonExistent") == {}
 
     def test_result_exception_returns_empty(self):
         cfg = Configuration.__new__(Configuration)
         cfg._Configuration__test_modules = []
+        cfg._Configuration__test_modules_loaded = True
         with patch("py_canoe.core.configuration.Configuration._find_test_module", side_effect=Exception("error")):
             assert cfg.get_test_module_result("TestMod1") == {}
 

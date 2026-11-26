@@ -1,7 +1,7 @@
-from typing import Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
-from py_canoe.helpers.common import logger
-from py_canoe.helpers.common import wait
+from py_canoe.helpers.common import logger, wait
+
 if TYPE_CHECKING:
     from py_canoe.core.application import Application
 from py_canoe.core.child_elements.capl_function import CaplFunction
@@ -22,7 +22,7 @@ class Capl:
         """Return the result of the last CAPL compilation as a CompileResult object."""
         return CompileResult(self.com_object.CompileResult)
 
-    def compile(self, wait_time: Union[int, float] = 5) -> Union['CompileResult', None]:
+    def compile(self, wait_time: float = 5) -> Union['CompileResult', None]:
         """Compile all CAPL nodes in the configuration and return the result as a CompileResult object. Optionally, specify a wait time (in seconds) for the compilation to complete."""
         try:
             self.com_object.Compile()

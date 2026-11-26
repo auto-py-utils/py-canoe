@@ -5,7 +5,8 @@ from py_canoe.core.child_elements.test_case import TestCase
 from py_canoe.core.child_elements.test_libraries import TestLibraries
 from py_canoe.core.child_elements.test_report import TestReport
 from py_canoe.core.child_elements.test_setup_item import TestSetupItem
-from py_canoe.helpers.common import logger, wait, DoEventsUntil
+from py_canoe.core.com_session import dispatch_com_object, with_com_events
+from py_canoe.helpers.common import DoEventsUntil, logger, wait
 
 TEST_MODULE_START_EVENT_TIMEOUT = 5  # seconds
 
@@ -26,7 +27,7 @@ class TestModuleEvents:
             2: "GeneralError: The test module was stopped by measurement stop"
         }
         self.TM_REPORT_GENERATED = False
-        self.TEST_REPORT_INFORMATION = dict()
+        self.TEST_REPORT_INFORMATION = {}
         self.TC_FAIL = False
 
     def OnStart(self):
@@ -62,8 +63,8 @@ class TestModule(TestSetupItem):
 
     def __init__(self, com_object):
         super().__init__(com_object)
-        self.com_object = win32com.client.Dispatch(com_object)
-        self.test_module_events: TestModuleEvents = win32com.client.WithEvents(self.com_object, TestModuleEvents)
+        self.com_object = dispatch_com_object(com_object)
+        self.test_module_events: TestModuleEvents = with_com_events(self.com_object, TestModuleEvents)
         self.VALUE_TABLE_VERDICT = {
             0: "NotAvailable",
             1: "Passed",
@@ -284,7 +285,7 @@ class TestModule(TestSetupItem):
         self.test_module_events.TM_STOPPED = False
         self.test_module_events.TM_STOP_REASON = -1
         self.test_module_events.TM_REPORT_GENERATED = False
-        self.test_module_events.TEST_REPORT_INFORMATION = dict()
+        self.test_module_events.TEST_REPORT_INFORMATION = {}
         self.test_module_events.TC_FAIL = False
 
     def start(self) -> bool:
@@ -302,7 +303,7 @@ class TestModule(TestSetupItem):
             logger.warning(f'Test Module ({self.name}) did not start within {TEST_MODULE_START_EVENT_TIMEOUT}s.')
         return status
 
-    def wait_for_completion(self, timeout: int = None) -> bool:
+    def wait_for_completion(self, timeout: int | None = None) -> bool:
         """Waits for the test module to complete execution.
 
         Args:
@@ -336,7 +337,7 @@ class TestModule(TestSetupItem):
         )
         return True
 
-    def pause(self, timeout: int = None) -> bool:
+    def pause(self, timeout: int | None = None) -> bool:
         """Pauses the test module and waits for the OnPause event.
 
         Args:
@@ -380,7 +381,7 @@ class TestModule(TestSetupItem):
             logger.warning(f'Test Module ({self.name}) is not started. Start the Test Module first.')
             return False
 
-    def stop(self, timeout: int = None) -> bool:
+    def stop(self, timeout: int | None = None) -> bool:
         """Stops the test module and waits for the OnStop event.
 
         Args:
@@ -437,7 +438,7 @@ class TestModule(TestSetupItem):
                 testGroup = win32com.client.CastTo(testSequenceItem, "ITestGroup")
                 if testGroup.Sequence.Count != 0:
                     self._collect_test_cases(testGroup.Sequence, test_cases)
-            except Exception as e:
+            except Exception:
                 # Not a TestGroup (or group has no nested sequence): treat it
                 # as a TestCase. If even that cast fails, log and skip so we
                 # don't silently drop the item.

@@ -9,10 +9,10 @@ import ast
 import datetime
 import logging
 import py_compile
-from importlib.metadata import version as _dist_version, PackageNotFoundError
 from datetime import timezone
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _dist_version
 from pathlib import Path
-
 
 
 class RobotLibraryGenerator:
@@ -148,13 +148,19 @@ class RobotLibraryGenerator:
                 preserved_lines.append(ast.unparse(stmt))
                 continue
 
-            if isinstance(stmt, ast.ImportFrom) and stmt.module == "typing":
-                if any(alias.name == "TYPE_CHECKING" for alias in stmt.names):
-                    type_checking_import_line = ast.unparse(stmt)
+            if (
+                isinstance(stmt, ast.ImportFrom)
+                and stmt.module == "typing"
+                and any(alias.name == "TYPE_CHECKING" for alias in stmt.names)
+            ):
+                type_checking_import_line = ast.unparse(stmt)
 
-        if type_checking_block_relevant and type_checking_import_line is not None:
-            if type_checking_import_line not in preserved_lines:
-                preserved_lines.insert(0, type_checking_import_line)
+        if (
+            type_checking_block_relevant
+            and type_checking_import_line is not None
+            and type_checking_import_line not in preserved_lines
+        ):
+            preserved_lines.insert(0, type_checking_import_line)
 
         return preserved_lines, has_future_annotations, annotation_names
 

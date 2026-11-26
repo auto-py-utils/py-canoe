@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING
+
 from py_canoe.helpers.common import logger
+
 if TYPE_CHECKING:
     from py_canoe.core.application import Application
 from py_canoe.core.child_elements.write import Write

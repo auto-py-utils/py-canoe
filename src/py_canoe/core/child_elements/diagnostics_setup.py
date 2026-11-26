@@ -1,4 +1,4 @@
-import win32com.client
+from py_canoe.core.com_session import dispatch_com_object
 
 
 class DiagnosticsSetup:
@@ -21,13 +21,13 @@ class DiagDescriptions:
     def item(self, index: int) -> 'DiagDescription':
         return DiagDescription(self.com_object.Item(index))
 
-    def add(self, network: str, file_path: str, ecu_identifier: str=None) -> 'DiagDescription':
+    def add(self, network: str, file_path: str, ecu_identifier: str | None=None) -> 'DiagDescription':
         if ecu_identifier is None:
             return DiagDescription(self.com_object.Add(network, file_path))
         else:
             return DiagDescription(self.com_object.AddEx(network, file_path, ecu_identifier))
 
-    def add_diag_access(self, network: str, file_path: str, ecu_identifier: str=None) -> 'DiagDescription':
+    def add_diag_access(self, network: str, file_path: str, ecu_identifier: str | None=None) -> 'DiagDescription':
         if ecu_identifier is None:
             return DiagDescription(self.com_object.AddDiagAccess(network, file_path))
         else:
@@ -39,7 +39,7 @@ class DiagDescriptions:
 
 class DiagDescription:
     def __init__(self, com_object):
-        self.com_object = win32com.client.Dispatch(com_object)
+        self.com_object = dispatch_com_object(com_object)
 
     @property
     def additional_descriptions(self) -> 'AdditionalDescriptions':
@@ -125,13 +125,13 @@ class DiagDescription:
     def variant(self, variant_qualifier: str):
         self.com_object.Variant = variant_qualifier
 
-    def close_windows(self, windows: int = None):
+    def close_windows(self, windows: int | None = None):
         if windows is None:
             self.com_object.CloseWindows()
         else:
             self.com_object.CloseWindows(windows)
 
-    def open_windows(self, windows: int = None):
+    def open_windows(self, windows: int | None = None):
         if windows is None:
             self.com_object.OpenWindows()
         else:
@@ -152,7 +152,7 @@ class AdditionalDescriptions:
     def item(self, index: int) -> 'AdditionalDescription':
         return AdditionalDescription(self.com_object.Item(index))
 
-    def add(self, file_path: str, ecu_identifier: str=None) -> 'AdditionalDescription':
+    def add(self, file_path: str, ecu_identifier: str | None=None) -> 'AdditionalDescription':
         if ecu_identifier is None:
             return AdditionalDescription(self.com_object.Add(file_path))
         else:
@@ -164,7 +164,7 @@ class AdditionalDescriptions:
 
 class AdditionalDescription:
     def __init__(self, com_object):
-        self.com_object = win32com.client.Dispatch(com_object)
+        self.com_object = dispatch_com_object(com_object)
 
     @property
     def diag_variants(self) -> 'DiagVariants':
@@ -202,13 +202,13 @@ class AdditionalDescription:
     def variant(self, variant_qualifier: str):
         self.com_object.Variant = variant_qualifier
 
-    def close_windows(self, windows: int = None):
+    def close_windows(self, windows: int | None = None):
         if windows is None:
             self.com_object.CloseWindows()
         else:
             self.com_object.CloseWindows(windows)
 
-    def open_windows(self, windows: int = None):
+    def open_windows(self, windows: int | None = None):
         if windows is None:
             self.com_object.OpenWindows()
         else:

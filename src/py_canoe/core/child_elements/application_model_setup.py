@@ -1,4 +1,3 @@
-import win32com.client
 
 from py_canoe.core.child_elements.application_models import ApplicationModels
 

@@ -1,4 +1,3 @@
-from typing import Union
 
 from py_canoe.helpers.common import logger
 
@@ -8,7 +7,7 @@ class Write:
         self.com_object = com_object
 
     @property
-    def text(self) -> Union[str, None]:
+    def text(self) -> str | None:
         try:
             text_data: str = self.com_object.Text
             return text_data

@@ -1,7 +1,6 @@
-import win32com.client
-
 from py_canoe.core.child_elements.application_model_files import ApplicationModelFiles
 from py_canoe.core.child_elements.participants import Participants
+from py_canoe.core.com_session import dispatch_com_object
 
 
 class ApplicationModel:
@@ -9,7 +8,7 @@ class ApplicationModel:
     Represents a single application model.
     """
     def __init__(self, com_object) -> None:
-        self.com_object = win32com.client.Dispatch(com_object)
+        self.com_object = dispatch_com_object(com_object)
 
     @property
     def application_model_files(self) -> 'ApplicationModelFiles':

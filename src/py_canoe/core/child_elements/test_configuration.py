@@ -1,12 +1,21 @@
 from enum import Enum
-import win32com.client
 
-from py_canoe.core.child_elements.test_configuration_report import TestConfigurationReport
-from py_canoe.core.child_elements.test_configuration_settings import TestConfigurationSettings
+from py_canoe.core.child_elements.tcp_ip_stack_setting import TcpIpStackSetting
+from py_canoe.core.child_elements.test_configuration_report import (
+    TestConfigurationReport,
+)
+from py_canoe.core.child_elements.test_configuration_settings import (
+    TestConfigurationSettings,
+)
 from py_canoe.core.child_elements.test_tree_elements import TestTreeElements
 from py_canoe.core.child_elements.test_units import TestUnits
-from py_canoe.core.child_elements.tcp_ip_stack_setting import TcpIpStackSetting
-from py_canoe.helpers.common import logger, wait, DoEventsUntil
+from py_canoe.core.com_session import (
+    ComObjectProxy,
+    dispatch_com_object,
+    invoke_com_dispatch,
+    with_com_events,
+)
+from py_canoe.helpers.common import DoEventsUntil, logger
 
 TEST_CONFIGURATION_TIMEOUT = 10  # seconds
 
@@ -54,8 +63,8 @@ class TestConfigurationEvents:
 class TestConfiguration:
     """The TestConfiguration object represents a single test configuration within the CANoe configuration."""
     def __init__(self, com_object):
-        self.com_object = win32com.client.Dispatch(com_object)
-        self.test_configuration_events: TestConfigurationEvents = win32com.client.WithEvents(self.com_object, TestConfigurationEvents)
+        self.com_object = dispatch_com_object(com_object)
+        self.test_configuration_events: TestConfigurationEvents = with_com_events(self.com_object, TestConfigurationEvents)
 
     @property
     def caption(self) -> str:
@@ -87,6 +96,10 @@ class TestConfiguration:
 
     @property
     def running(self) -> bool:
+        if isinstance(self.com_object, ComObjectProxy):
+            return invoke_com_dispatch(
+                self.com_object, 17, "property_get", (11, 0), ()
+            )
         return self.com_object.Running
 
     @property

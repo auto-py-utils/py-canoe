@@ -1,7 +1,6 @@
-import win32com.client
 
-from py_canoe.core.child_elements.ccp_setup import CCPSetup
 from py_canoe.core.child_elements.can_controller import CanController
+from py_canoe.core.child_elements.ccp_setup import CCPSetup
 from py_canoe.core.child_elements.database_setup import DatabaseSetup
 from py_canoe.core.child_elements.diagnostics_setup import DiagnosticsSetup
 from py_canoe.core.child_elements.macros_setup import MacrosSetup

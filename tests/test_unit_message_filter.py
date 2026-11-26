@@ -1,7 +1,6 @@
 """Unit tests for COMRetryMessageFilter."""
 
-import ctypes
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -123,21 +122,28 @@ class TestCOMRetryMessageFilter:
 
 
 class TestApplicationMessageFilterIntegration:
-    """Tests that Application registers the message filter."""
+    """Tests that the message filter is registered on the owning STA."""
 
-    @pytest.fixture
-    def mock_dependencies(self):
-        """Mock all COM dependencies."""
-        with patch("py_canoe.core.application.win32com.client") as mock_win32:
-            with patch("py_canoe.core.application.pythoncom"):
-                with patch("py_canoe.core.message_filter._CoRegisterMessageFilter") as mock_reg:
-                    mock_reg.return_value = 0
-                    yield {"win32com": mock_win32, "co_register": mock_reg}
+    def test_com_session_registers_filter_on_owner_thread(self):
+        from threading import get_ident
 
-    def test_application_init_registers_filter(self, mock_dependencies):
-        """Application.__init__ registers the IMessageFilter."""
-        from py_canoe.core.application import Application
-        app = Application(enable_events=False)
-        assert app._message_filter is not None
-        assert app._message_filter._registered is True
-        assert mock_dependencies["co_register"].called
+        from py_canoe.core.com_session import ComSession
+
+        registration_threads = []
+
+        def register_filter(*args):
+            registration_threads.append(get_ident())
+            return 0
+
+        with patch(
+            "py_canoe.core.message_filter._CoRegisterMessageFilter",
+            side_effect=register_filter,
+        ):
+            session = ComSession()
+            try:
+                owner_thread = session.invoke(get_ident)
+            finally:
+                session.close()
+
+        assert registration_threads
+        assert set(registration_threads) == {owner_thread}

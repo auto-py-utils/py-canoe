@@ -3,12 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, List
 
 from py_canoe.helpers.vxlapi.enums import XlBusType
-
-if TYPE_CHECKING:
-    from py_canoe.helpers.vxlapi.driver import VxlDriver
 
 
 @dataclass
@@ -76,4 +72,4 @@ class DeviceInfo:
     hw_index: int
     serial_number: int
     article_number: int
-    channels: List[ChannelInfo] = field(default_factory=list)
+    channels: list[ChannelInfo] = field(default_factory=list)

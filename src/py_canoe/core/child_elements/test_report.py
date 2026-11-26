@@ -1,4 +1,4 @@
-import win32com.client
+from py_canoe.core.com_session import dispatch_com_object, with_com_events
 
 
 class TestReportEvents:
@@ -26,8 +26,8 @@ class TestReport:
     __test__ = False
 
     def __init__(self, com_object):
-        self.com_object = win32com.client.Dispatch(com_object)
-        self.test_report_events: TestReportEvents = win32com.client.WithEvents(
+        self.com_object = dispatch_com_object(com_object)
+        self.test_report_events: TestReportEvents = with_com_events(
             self.com_object, TestReportEvents
         )
 

@@ -1,11 +1,12 @@
 # TODO: complete implementation of the Environment class
-from typing import Union, TYPE_CHECKING
+from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from py_canoe.core.application import Application
-from py_canoe.helpers.common import logger
 from py_canoe.core.child_elements.environment_group import EnvironmentGroup
 from py_canoe.core.child_elements.environment_info import EnvironmentInfo
 from py_canoe.core.child_elements.environment_variable import EnvironmentVariable
+from py_canoe.helpers.common import logger
 
 
 class Environment:
@@ -27,7 +28,7 @@ class Environment:
         """Get an environment variable by name and return it as an EnvironmentVariable object."""
         return EnvironmentVariable(self.com_object.GetVariable(name))
 
-    def get_variables(self, vars: list[list[Union[str, int, float]]]) -> list:
+    def get_variables(self, vars: list[list[str | int | float]]) -> list:
         """Get the values of multiple environment variables specified in a list of lists, where each inner list contains the variable name and its type. Returns a list of variable values."""
         return self.com_object.GetVariables(vars)
 
@@ -35,7 +36,7 @@ class Environment:
         """Set the values of multiple environment variables specified in a dictionary, where keys are variable names and values are the corresponding values to set."""
         self.com_object.SetVariables(vars)
 
-    def get_environment_variable_value(self, env_var_name: str) -> Union[int, float, str, tuple, None]:
+    def get_environment_variable_value(self, env_var_name: str) -> int | float | str | tuple | None:
         """Get the value of an environment variable by name. Returns the value as an integer, float, string, or tuple, or None if an error occurs."""
         try:
             variable = self.get_variable(env_var_name)
@@ -46,7 +47,7 @@ class Environment:
             logger.error(f"Failed to get environment variable '{env_var_name}': {e}")
             return None
 
-    def set_environment_variable_value(self, env_var_name: str, value: Union[int, float, str, tuple]) -> bool:
+    def set_environment_variable_value(self, env_var_name: str, value: float | str | tuple) -> bool:
         """Set the value of an environment variable by name. The value can be an integer, float, string, or tuple. Returns True if successful, False otherwise."""
         try:
             variable = self.get_variable(env_var_name)

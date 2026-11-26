@@ -1,3 +1,5 @@
+from collections.abc import Iterator
+
 from py_canoe.core.child_elements.namespace import Namespace
 
 
@@ -12,12 +14,12 @@ class Namespaces:
     def item(self, index: int) -> 'Namespace':
         return Namespace(self.com_object.Item(index))
 
+    def iter_items(self) -> Iterator['Namespace']:
+        for index in range(1, self.count + 1):
+            yield self.item(index)
+
     def fetch_all(self) -> list['Namespace']:
-        result = []
-        count = self.count
-        for i in range(1, count + 1):
-            result.append(self.item(i))
-        return result
+        return list(self.iter_items())
 
     def add(self, name: str):
         return self.com_object.Add(name)

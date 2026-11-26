@@ -1,22 +1,22 @@
 # ---------------------------------------------------------------------------
 # THIS FILE IS AUTO-GENERATED - DO NOT EDIT MANUALLY
-# Generated: 2026-08-30T13:10:23.786376+00:00
-# py-canoe package version: 26.4.1
+# Generated: 2026-11-26T17:47:43.148159+00:00
+# py-canoe package version: 26.5.0
 # To update this file, run the generator: python -m py_canoe.helpers.gen_canoe_robot_lib
 # ---------------------------------------------------------------------------
 
-from typing import Iterable, Optional, Sequence, TYPE_CHECKING, Union
-from collections.abc import Sequence
+from typing import ClassVar, TYPE_CHECKING
+from collections.abc import Iterable, Sequence
 from pathlib import Path
 from py_canoe.core.child_elements.can_controller import CanChannelConfiguration
 if TYPE_CHECKING:
-    from py_canoe.core.child_elements.measurement_setup import Logging, ExporterSymbol, Message
+    from py_canoe.core.child_elements.measurement_setup import ExporterSymbol, Logging, Message
     from py_canoe.core.child_elements.test_configurations import TestConfiguration
-from py_canoe.core.child_elements.bus import Bus
 from py_canoe.core.capl import CompileResult
+from py_canoe.core.child_elements.bus import Bus
 from py_canoe.core.child_elements.test_environment import TestEnvironment
 from py_canoe.helpers.bus_type import BusType
-from py_canoe.helpers.vxlapi import ChannelInfo, HwType, VxlDriver, XlBusType
+from py_canoe.helpers.vxlapi import ChannelInfo, VxlDriver, XlBusType
 
 from py_canoe.canoe import CANoe
 
@@ -24,7 +24,7 @@ from py_canoe.canoe import CANoe
 class CanoeRobotLib:
     """Robot Framework library wrapper around CANoe."""
 
-    def __init__(self, py_canoe_log_dir: str | Path='', user_capl_functions: Sequence[str]=tuple(), clean_gen_py_cache: bool=False):
+    def __init__(self, py_canoe_log_dir: str | Path='', user_capl_functions: Sequence[str]=(), clean_gen_py_cache: bool=False):
         self._source = CANoe(py_canoe_log_dir, user_capl_functions, clean_gen_py_cache)
 
     def canoe_new(self, auto_save=False, prompt_user=False, timeout=5) -> bool:
@@ -117,7 +117,7 @@ class CanoeRobotLib:
         """Returns all simulation database paths from the current application."""
         return self._source.get_simulation_database_paths()
 
-    def canoe_get_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, raw_value: bool=False, return_timestamp: bool=False) -> Union[int, float, None, tuple]:
+    def canoe_get_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, raw_value: bool=False, return_timestamp: bool=False) -> int | float | None | tuple:
         """
         Gets the value of a signal.
         
@@ -134,7 +134,7 @@ class CanoeRobotLib:
         """
         return self._source.get_signal_value(bus, channel, message, signal, raw_value, return_timestamp)
 
-    def canoe_profile_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, duration: float=1.0, interval: float=0.0, raw_value: bool=False, max_samples: Optional[int]=None, include_samples: bool=False, include_timestamps: bool=False) -> dict:
+    def canoe_profile_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, duration: float=1.0, interval: float=0.0, raw_value: bool=False, max_samples: int | None=None, include_samples: bool=False, include_timestamps: bool=False) -> dict:
         """
         Profiles a signal by sampling it repeatedly and returning basic stats.
         
@@ -166,7 +166,7 @@ class CanoeRobotLib:
         """
         return self._source.profile_signal_value(bus, channel, message, signal, duration, interval, raw_value, max_samples, include_samples, include_timestamps)
 
-    def canoe_set_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, value: Union[int, float], raw_value: bool=False) -> bool:
+    def canoe_set_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, value: float, raw_value: bool=False) -> bool:
         """
         Sets the value of a signal.
         
@@ -183,7 +183,7 @@ class CanoeRobotLib:
         """
         return self._source.set_signal_value(bus, channel, message, signal, value, raw_value)
 
-    def canoe_get_signal_full_name(self, bus: BusType | str | int, channel: int, message: str, signal: str) -> Union[str, None]:
+    def canoe_get_signal_full_name(self, bus: BusType | str | int, channel: int, message: str, signal: str) -> str | None:
         """
         Gets the full name of a signal.
         
@@ -228,7 +228,7 @@ class CanoeRobotLib:
         """
         return self._source.check_signal_state(bus, channel, message, signal)
 
-    def canoe_get_j1939_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, raw_value=False, return_timestamp=False) -> Union[float, int, None, tuple]:
+    def canoe_get_j1939_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, raw_value=False, return_timestamp=False) -> float | int | None | tuple:
         """
         Gets the value of a J1939 signal.
         
@@ -247,7 +247,7 @@ class CanoeRobotLib:
         """
         return self._source.get_j1939_signal_value(bus, channel, message, signal, source_addr, dest_addr, raw_value, return_timestamp)
 
-    def canoe_set_j1939_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, value: Union[float, int], raw_value: bool=False) -> bool:
+    def canoe_set_j1939_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, value: float, raw_value: bool=False) -> bool:
         """
         Sets the value of a J1939 signal.
         
@@ -266,7 +266,7 @@ class CanoeRobotLib:
         """
         return self._source.set_j1939_signal_value(bus, channel, message, signal, source_addr, dest_addr, value, raw_value)
 
-    def canoe_get_j1939_signal_full_name(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> Union[str, None]:
+    def canoe_get_j1939_signal_full_name(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> str | None:
         """
         Gets the full name of a J1939 signal.
         
@@ -317,7 +317,7 @@ class CanoeRobotLib:
         """
         return self._source.check_j1939_signal_state(bus, channel, message, signal, source_addr, dest_addr)
 
-    def canoe_compile_all_capl_nodes(self, wait_time: Union[int, float]=5) -> Union[CompileResult, None]:
+    def canoe_compile_all_capl_nodes(self, wait_time: float=5) -> CompileResult | None:
         """
         Compiles all CAPL nodes in the application.
         
@@ -731,7 +731,7 @@ class CanoeRobotLib:
         """
         return self._source.remove_all_networks()
 
-    def canoe_get_network(self, network_name: str=None) -> Bus:
+    def canoe_get_network(self, network_name: str | None=None) -> Bus:
         """
         Return a specific network by name, or *None* if not found.
         
@@ -885,7 +885,7 @@ class CanoeRobotLib:
         """
         return self._source.set_configuration_modified(modified)
 
-    def canoe_get_environment_variable_value(self, env_var_name: str, return_timestamp: bool=False) -> Union[int, float, str, tuple, None]:
+    def canoe_get_environment_variable_value(self, env_var_name: str, return_timestamp: bool=False) -> int | float | str | tuple | None:
         """
         returns a environment variable value.
         
@@ -898,7 +898,7 @@ class CanoeRobotLib:
         """
         return self._source.get_environment_variable_value(env_var_name, return_timestamp)
 
-    def canoe_set_environment_variable_value(self, env_var_name: str, value: Union[int, float, str, tuple]) -> bool:
+    def canoe_set_environment_variable_value(self, env_var_name: str, value: float | str | tuple) -> bool:
         """
         Sets the value of an environment variable.
         
@@ -1029,7 +1029,7 @@ class CanoeRobotLib:
         """
         return self._source.set_measurement_index(index)
 
-    def canoe_send_diag_request(self, diag_ecu_qualifier_name: str, request: str, request_in_bytes=True, return_sender_name=False, response_in_bytearray=False, timeout: float=30, poll_s: float=0.01, **kwargs) -> Union[str, dict]:
+    def canoe_send_diag_request(self, diag_ecu_qualifier_name: str, request: str, request_in_bytes=True, return_sender_name=False, response_in_bytearray=False, timeout: float=30, poll_s: float=0.01, **kwargs) -> str | dict:
         """
         Sends a diagnostic request.
         
@@ -1064,7 +1064,7 @@ class CanoeRobotLib:
         """
         return self._source.control_tester_present(diag_ecu_qualifier_name, value)
 
-    def canoe_define_system_variable(self, sys_var_name: str, value: Union[int, float, str], read_only: bool=False) -> object:
+    def canoe_define_system_variable(self, sys_var_name: str, value: float | str, read_only: bool=False) -> object:
         """
         Defines a system variable.
         
@@ -1078,7 +1078,7 @@ class CanoeRobotLib:
         """
         return self._source.define_system_variable(sys_var_name, value, read_only)
 
-    def canoe_get_system_variable_value(self, sys_var_name: str, return_symbolic_name: bool=False, return_timestamp: bool=False, enable_events: bool=True) -> Union[int, float, str, None, tuple]:
+    def canoe_get_system_variable_value(self, sys_var_name: str, return_symbolic_name: bool=False, return_timestamp: bool=False, enable_events: bool=True) -> int | float | str | None | tuple:
         """
         Gets the value of a system variable.
         
@@ -1101,7 +1101,7 @@ class CanoeRobotLib:
         """Returns all variables in the specified namespace."""
         return self._source.get_all_variables_in_namespace(namespace_name)
 
-    def canoe_set_system_variable_value(self, sys_var_name: str, value: Union[int, float, str], enable_events: bool=True) -> bool:
+    def canoe_set_system_variable_value(self, sys_var_name: str, value: float | str, enable_events: bool=True) -> bool:
         """
         Sets the value of a system variable.
         
@@ -1163,7 +1163,7 @@ class CanoeRobotLib:
         """
         return self._source.write_text_in_write_window(text)
 
-    def canoe_read_text_from_write_window(self) -> Union[str, None]:
+    def canoe_read_text_from_write_window(self) -> str | None:
         """
         Reads text from the write window.
         

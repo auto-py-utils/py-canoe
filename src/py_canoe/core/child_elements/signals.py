@@ -1,4 +1,3 @@
-from typing import Union
 
 
 class Signals:
@@ -31,9 +30,9 @@ class Signal:
         return self.com_object.State
 
     @property
-    def value(self) -> Union[int, float]:
+    def value(self) -> int | float:
         return self.com_object.Value
 
     @value.setter
-    def value(self, value: Union[int, float]):
+    def value(self, value: float):
         self.com_object.Value = value

@@ -1,11 +1,10 @@
-import win32com.client
-
 from py_canoe.core.child_elements.test_module import TestModule
 from py_canoe.core.child_elements.test_modules import TestModules
+from py_canoe.core.child_elements.test_report import TestReport
 from py_canoe.core.child_elements.test_setup_folder_ext import TestSetupFolderExt
 from py_canoe.core.child_elements.test_setup_folders import TestSetupFolders
 from py_canoe.core.child_elements.test_setup_items import TestSetupItems
-from py_canoe.core.child_elements.test_report import TestReport
+from py_canoe.core.com_session import dispatch_com_object
 
 
 class TestEnvironment:
@@ -33,7 +32,7 @@ class TestEnvironment:
     __test__ = False
 
     def __init__(self, com_object):
-        self.com_object = win32com.client.Dispatch(com_object)
+        self.com_object = dispatch_com_object(com_object)
 
     @property
     def enabled(self) -> bool:
@@ -102,7 +101,7 @@ class TestEnvironment:
         """
         self.com_object.ExecuteAll()
 
-    def save(self, name: str = None, prompt_user: bool = False) -> None:
+    def save(self, name: str | None = None, prompt_user: bool = False) -> None:
         """Saves the test environment.
 
         Args:
@@ -153,7 +152,7 @@ class TestEnvironment:
             all_test_modules[tm_name] = tm_inst
 
         # Recursively fetch test modules from all folders
-        for folder_name, folder_inst in self.folders.fetch_test_setup_folders().items():
+        for folder_inst in self.folders.fetch_test_setup_folders().values():
             for tm_name, tm_inst in self.__fetch_test_modules_from_folder(folder_inst).items():
                 all_test_modules[tm_name] = tm_inst
 
@@ -168,13 +167,13 @@ class TestEnvironment:
             all_test_modules[tm_name] = tm_inst
 
         # Recursively fetch test modules from sub-folders
-        for sub_folder_name, sub_folder_inst in folder.folders.fetch_test_setup_folders().items():
+        for sub_folder_inst in folder.folders.fetch_test_setup_folders().values():
             for tm_name, tm_inst in self.__fetch_test_modules_from_folder(sub_folder_inst).items():
                 all_test_modules[tm_name] = tm_inst
 
         return all_test_modules
 
-    def add_test_module(self, full_name: str, name: str = None) -> TestModule:
+    def add_test_module(self, full_name: str, name: str | None = None) -> TestModule:
         """Adds a test module to the test environment.
 
         Uses the recommended TestModules COM object (preferred over the

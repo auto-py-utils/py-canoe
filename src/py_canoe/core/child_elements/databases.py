@@ -1,3 +1,5 @@
+from collections.abc import Iterator
+
 from py_canoe.core.child_elements.database import Database
 
 
@@ -9,9 +11,13 @@ class Databases:
     def count(self) -> int:
         return self.com_object.Count
 
-    def item(self, index: int = None) -> 'Database | list[Database]':
+    def iter_items(self) -> Iterator[Database]:
+        for index in range(1, self.count + 1):
+            yield Database(self.com_object.Item(index))
+
+    def item(self, index: int | None = None) -> 'Database | list[Database]':
         if index is None:
-            return [Database(self.com_object.Item(i)) for i in range(1, self.count + 1)]
+            return list(self.iter_items())
         return Database(self.com_object.Item(index))
 
     def add(self, full_name: str) -> 'Database':

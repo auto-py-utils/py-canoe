@@ -1,5 +1,7 @@
-import win32com.client
-from typing import Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
+
+from py_canoe.core.com_session import with_com_events
+
 if TYPE_CHECKING:
     from py_canoe.core.application import Application
 
@@ -12,7 +14,7 @@ class SimulationEvents:
     pumps the STA message queue continuously (via wait() / PumpWaitingMessages).
     """
 
-    EVENTS_INFORMATION = {}
+    EVENTS_INFORMATION: ClassVar[dict[str, int]] = {}
 
     @staticmethod
     def OnIdle(timeHigh, time):
@@ -29,15 +31,15 @@ class Simulation:
     def __init__(self, app: 'Application', enable_events: bool = False):
         self.com_object = app.com_object.Simulation
         if enable_events:
-            win32com.client.WithEvents(self.com_object, SimulationEvents)
+            with_com_events(self.com_object, SimulationEvents)
 
     @property
-    def animation(self) -> Union[int, float]:
+    def animation(self) -> int | float:
         """Return the current animation speed of the simulation. The value is a float between 0 and 1, where 0 means no animation and 1 means full animation speed."""
         return self.com_object.Animation
 
     @animation.setter
-    def animation(self, value: Union[int, float]):
+    def animation(self, value: float):
         """Set the animation speed of the simulation. The value must be a float between 0 and 1, where 0 means no animation and 1 means full animation speed."""
         self.com_object.Animation = value
 

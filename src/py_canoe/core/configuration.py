@@ -1,33 +1,42 @@
 import os
 import re
 import time
+from collections.abc import Iterable, Sequence
 from fnmatch import fnmatchcase
-import win32com.client
-from typing import TYPE_CHECKING, Iterable, Sequence, Union
+from typing import TYPE_CHECKING
+
+from py_canoe.core.com_session import dispatch_com_object
 
 if TYPE_CHECKING:
     from py_canoe.core.application import Application
-    from py_canoe.core.child_elements.measurement_setup import Logging, ExporterSymbol, Message
+    from py_canoe.core.child_elements.measurement_setup import (
+        ExporterSymbol,
+        Logging,
+        Message,
+    )
     from py_canoe.core.child_elements.test_configurations import TestConfiguration
 
 from py_canoe.core.child_elements.bus import Bus
-from py_canoe.core.child_elements.channel import Channel
-from py_canoe.core.child_elements.test_environment import TestEnvironment
-from py_canoe.core.child_elements.test_module import TestModule
-from py_canoe.helpers.bus_type import BusType
 from py_canoe.core.child_elements.c_libraries import CLibraries
+from py_canoe.core.child_elements.channel import Channel
 from py_canoe.core.child_elements.communication_setup import CommunicationSetup
+from py_canoe.core.child_elements.databases import Databases
 from py_canoe.core.child_elements.distributed_mode import DistributedMode
 from py_canoe.core.child_elements.fdx_files import FDXFiles
 from py_canoe.core.child_elements.general_setup import GeneralSetup
 from py_canoe.core.child_elements.measurement_setup import MeasurementSetup
-from py_canoe.core.child_elements.databases import Databases
 from py_canoe.core.child_elements.replay_collection import ReplayCollection
 from py_canoe.core.child_elements.simulation_setup import SimulationSetup
 from py_canoe.core.child_elements.test_configurations import TestConfigurations
+from py_canoe.core.child_elements.test_environment import TestEnvironment
+from py_canoe.core.child_elements.test_module import TestModule
 from py_canoe.core.child_elements.test_setup import TestSetup
-from py_canoe.core.child_elements.test_tree_elements import TestTreeElements, TestTreeElementType
+from py_canoe.core.child_elements.test_tree_elements import (
+    TestTreeElements,
+    TestTreeElementType,
+)
 from py_canoe.core.child_elements.test_unit import TestUnit
+from py_canoe.helpers.bus_type import BusType
 from py_canoe.helpers.common import logger, wait
 
 
@@ -49,26 +58,52 @@ class Configuration:
     """
     def __init__(self, app: 'Application'):
         self.app = app
-        self.com_object = win32com.client.Dispatch(self.app.com_object.Configuration)
-        # self.configuration_events: ConfigurationEvents = win32com.client.WithEvents(self.com_object, ConfigurationEvents)
+        self.com_object = dispatch_com_object(self.app.com_object.Configuration)
+        # self.configuration_events: ConfigurationEvents = with_com_events(self.com_object, ConfigurationEvents)
         self.configuration_test_configurations = lambda: self.test_configurations
         self.configuration_test_setup = lambda: self.test_setup
-        self.__test_setup_environments = self.configuration_test_setup().test_environments.fetch_all_test_environments()
-        self.__test_configurations = self.configuration_test_configurations().fetch_all_test_configurations()
-        self.__test_modules = list()
-        self.__test_units = list()
+        self.__test_setup_environments = None
+        self.__test_configurations = None
+        self.__test_modules = []
+        self.__test_modules_loaded = False
+        self.__test_units = []
+
+    @property
+    def _test_setup_environments(self) -> dict:
+        if self.__test_setup_environments is None:
+            self.__test_setup_environments = (
+                self.configuration_test_setup()
+                .test_environments.fetch_all_test_environments()
+            )
+        return self.__test_setup_environments
+
+    @property
+    def _test_configurations(self) -> dict:
+        if self.__test_configurations is None:
+            self.__test_configurations = (
+                self.configuration_test_configurations()
+                .fetch_all_test_configurations()
+            )
+        return self.__test_configurations
 
     def fetch_test_modules(self):
         """Get all test modules from all test environments and store them in self.__test_modules."""
-        for te_name, te_inst in self.__test_setup_environments.items():
+        if self.__test_modules_loaded:
+            return
+        test_modules = []
+        for te_name, te_inst in self._test_setup_environments.items():
             for tm_name, tm_inst in te_inst.get_all_test_modules().items():
                 # A TestSetupItem object that either can be a TestModule object or a TestSetupFolder object.
                 # A TestSetupFolder has items that contain nested TestSetupItems.
-                self.__test_modules.append({'name': tm_name, 'object': tm_inst, 'environment': te_name})
+                test_modules.append(
+                    {'name': tm_name, 'object': tm_inst, 'environment': te_name}
+                )
+        self.__test_modules = test_modules
+        self.__test_modules_loaded = True
 
     def fetch_test_units(self):
         """Get all test units from all test configurations and store them in self.__test_units."""
-        for tc_name, tc_inst in self.__test_configurations.items():
+        for tc_name, tc_inst in self._test_configurations.items():
             for tu_index in range(1, tc_inst.test_units.count + 1):
                 tu_inst = tc_inst.test_units.item(tu_index)
                 self.__test_units.append({'name': tu_inst.name, 'object': tu_inst, 'test_configuration': tc_name})
@@ -300,7 +335,7 @@ class Configuration:
                 return False
             offline_sources_obj = self.com_object.OfflineSetup.Source.Sources
             offline_sources_files = [offline_sources_obj.Item(i) for i in range(1, offline_sources_obj.Count + 1)]
-            file_already_added = any([file == absolute_log_file_path for file in offline_sources_files])
+            file_already_added = any(file == absolute_log_file_path for file in offline_sources_files)
             if file_already_added:
                 logger.warning(f"Offline source log file '{absolute_log_file_path}' is already added.")
             else:
@@ -314,7 +349,7 @@ class Configuration:
     def set_replay_block_file(self, block_name: str, recording_file_path: str) -> bool:
         try:
             replay_collection_obj = ReplayCollection(self.com_object.SimulationSetup.ReplayCollection)
-            replay_blocks_obj_dict = dict()
+            replay_blocks_obj_dict = {}
             for i in range(1, replay_collection_obj.count + 1):
                 replay_block_obj = replay_collection_obj.item(i)
                 replay_blocks_obj_dict[replay_block_obj.name] = replay_block_obj
@@ -332,7 +367,7 @@ class Configuration:
     def control_replay_block(self, block_name: str, start_stop: bool) -> bool:
         try:
             replay_collection_obj = ReplayCollection(self.com_object.SimulationSetup.ReplayCollection)
-            replay_blocks_obj_dict = dict()
+            replay_blocks_obj_dict = {}
             for i in range(1, replay_collection_obj.count + 1):
                 replay_block_obj = replay_collection_obj.item(i)
                 replay_blocks_obj_dict[replay_block_obj.name] = replay_block_obj
@@ -354,7 +389,7 @@ class Configuration:
     def enable_disable_replay_block(self, block_name: str, enable_disable: bool) -> bool:
         try:
             replay_collection_obj = ReplayCollection(self.com_object.SimulationSetup.ReplayCollection)
-            replay_blocks_obj_dict = dict()
+            replay_blocks_obj_dict = {}
             for i in range(1, replay_collection_obj.count + 1):
                 replay_block_obj = replay_collection_obj.item(i)
                 replay_blocks_obj_dict[replay_block_obj.name] = replay_block_obj
@@ -371,7 +406,7 @@ class Configuration:
 
     def get_test_configurations(self) -> dict[str, 'TestConfiguration']:
         try:
-            return self.__test_configurations
+            return self._test_configurations
         except Exception as e:
             logger.error(f'failed to get test configurations. {e}')
             return {}
@@ -392,12 +427,12 @@ class Configuration:
         }
         
         test_cases = {}
-        for t_conf_name in self.__test_configurations.keys():
+        for t_conf_name in self._test_configurations:
             if t_conf_name != test_conf_name: continue
-            test_units_obj: dict[str, TestUnit] = self.__test_configurations[t_conf_name].test_units.fetch_all_test_units()
-            report_path = self.__test_configurations[t_conf_name].report.full_path
-            for tn_name in test_units_obj.keys():
-                test_elements: TestTreeElements = test_units_obj[tn_name].elements
+            test_units_obj: dict[str, TestUnit] = self._test_configurations[t_conf_name].test_units.fetch_all_test_units()
+            report_path = self._test_configurations[t_conf_name].report.full_path
+            for test_unit in test_units_obj.values():
+                test_elements: TestTreeElements = test_unit.elements
                 test_elements.get_test_tree_element_cases(test_cases)
         
         return {
@@ -475,10 +510,9 @@ class Configuration:
                 if tc['tte_obj'].enabled:
                     tc['tte_obj'].enabled = False
                     logger.info(f'Test case "{tc_name}" disabled by pattern match.')
-            elif should_enable:
-                if not tc['tte_obj'].enabled:
-                    tc['tte_obj'].enabled = True
-                    logger.info(f'Test case "{tc_name}" enabled by pattern match.')
+            elif should_enable and not tc['tte_obj'].enabled:
+                tc['tte_obj'].enabled = True
+                logger.info(f'Test case "{tc_name}" enabled by pattern match.')
 
 
 
@@ -487,8 +521,8 @@ class Configuration:
                                         match_by: str = "name",
                                         wait_for_completion: bool = True) -> bool:
         try:
-            for tc_name, tc_inst in self.__test_configurations.items():
-                self.enable_test_configurations_cases(self.__test_configurations[tc_name],
+            for tc_name, tc_inst in self._test_configurations.items():
+                self.enable_test_configurations_cases(self._test_configurations[tc_name],
                                                       enable_test_case,
                                                       disable_test_case,
                                                       match_by)
@@ -504,7 +538,7 @@ class Configuration:
 
     def stop_all_test_configurations(self,) -> bool:
         try:
-            for _, tc_inst in self.__test_configurations.items():
+            for tc_inst in self._test_configurations.values():
                 if tc_inst.running:
                     tc_inst.stop()
             return True
@@ -517,13 +551,13 @@ class Configuration:
                                    match_by: str = "name",
                                    wait_for_completion: bool = True) -> bool:
         try:
-            if tc_name in self.__test_configurations.keys():
-                self.enable_test_configurations_cases(self.__test_configurations[tc_name],
+            if tc_name in self._test_configurations:
+                self.enable_test_configurations_cases(self._test_configurations[tc_name],
                                                       enable_test_case,
                                                       disable_test_case,
                                                       match_by)
                 
-                tc_inst = self.__test_configurations[tc_name]
+                tc_inst = self._test_configurations[tc_name]
                 tc_inst.start()
                 if wait_for_completion:
                     while tc_inst.running:
@@ -539,8 +573,8 @@ class Configuration:
 
     def stop_test_configuration(self, tc_name: str) -> bool:
         try:
-            if tc_name in self.__test_configurations.keys():
-                tc_inst = self.__test_configurations[tc_name]
+            if tc_name in self._test_configurations:
+                tc_inst = self._test_configurations[tc_name]
                 if tc_inst.running:
                     tc_inst.stop()
                 else:
@@ -555,7 +589,7 @@ class Configuration:
 
     def get_test_environments(self) -> dict:
         try:
-            return self.__test_setup_environments
+            return self._test_setup_environments
         except Exception as e:
             logger.error(f'failed to get test environments. {e}')
             return {}
@@ -564,7 +598,7 @@ class Configuration:
         try:
             test_environments = self.get_test_environments()
             if len(test_environments) > 0:
-                if env_name in test_environments.keys():
+                if env_name in test_environments:
                     return test_environments[env_name].get_all_test_modules()
                 else:
                     logger.warning(f'"{env_name}" not found in configuration')
@@ -723,13 +757,12 @@ class Configuration:
                 if not tc.enabled:
                     tc.enabled = True
                     logger.debug(f'Test case "{tc_name}" enabled by pattern match.')
-            elif enable_patterns:
+            elif enable_patterns and tc.enabled:
                 # Enable patterns provided but this case didn't match any of
                 # them (and wasn't caught by a disable pattern either).
                 # Disable it so only the requested cases actually run.
-                if tc.enabled:
-                    tc.enabled = False
-                    logger.debug(f'Test case "{tc_name}" disabled (not in enable list).')
+                tc.enabled = False
+                logger.debug(f'Test case "{tc_name}" disabled (not in enable list).')
 
     def execute_test_module(self, test_module_name: str, enable_test_cases: Sequence[str] = (), disable_test_cases: Sequence[str] = (), match_by: str = "name") -> int:
         try:
@@ -752,12 +785,13 @@ class Configuration:
             logger.error(f'failed to execute test module. {e}')
             return 0
 
-    def _find_test_module(self, test_module_name: str) -> Union[TestModule, None]:
+    def _find_test_module(self, test_module_name: str) -> TestModule | None:
         """Find a test module by name from the cached test modules list.
 
         Returns:
             TestModule wrapper object if found, None otherwise.
         """
+        self.fetch_test_modules()
         for tm in self.__test_modules:
             if tm['name'] == test_module_name:
                 return tm['object']
@@ -886,7 +920,7 @@ class Configuration:
         try:
             test_modules = self.get_test_modules(env_name=env_name)
             if test_modules:
-                for tm_name in test_modules.keys():
+                for tm_name in test_modules:
                     self.execute_test_module(
                         tm_name,
                         enable_test_cases=enable_test_cases,
@@ -902,7 +936,7 @@ class Configuration:
         try:
             test_modules = self.get_test_modules(env_name=env_name)
             if test_modules:
-                for tm_name in test_modules.keys():
+                for tm_name in test_modules:
                     self.stop_test_module(tm_name)
             else:
                 logger.warning(f'test modules not available in "{env_name}" test environment')
@@ -913,7 +947,7 @@ class Configuration:
         try:
             test_environments = self.get_test_environments()
             if len(test_environments) > 0:
-                for test_env_name in test_environments.keys():
+                for test_env_name in test_environments:
                     logger.info(f'executing test environment "{test_env_name}". please wait...')
                     self.execute_all_test_modules_in_test_env(test_env_name)
                     logger.info(f'completed executing test environment "{test_env_name}"')
@@ -926,7 +960,7 @@ class Configuration:
         try:
             test_environments = self.get_test_environments()
             if len(test_environments) > 0:
-                for test_env_name in test_environments.keys():
+                for test_env_name in test_environments:
                     logger.info(f'stopping test environment "{test_env_name}" execution. please wait...')
                     self.stop_all_test_modules_in_test_env(test_env_name)
                     logger.info(f'completed stopping test environment "{test_env_name}"')
@@ -1012,7 +1046,7 @@ class Configuration:
             else:
                 databases = Databases(self.com_object.GeneralSetup.DatabaseSetup.Databases)
                 databases_info = {databases.item(index).full_name: databases.item(index) for index in range(1, databases.count + 1)}
-                if database_file not in databases_info.keys():
+                if database_file not in databases_info:
                     logger.warning(f'database "{database_file}" not available to remove')
                     return False
                 else:

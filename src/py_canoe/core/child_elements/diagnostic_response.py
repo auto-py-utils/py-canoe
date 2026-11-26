@@ -1,4 +1,3 @@
-from typing import Union
 
 
 class DiagnosticResponse:
@@ -28,10 +27,10 @@ class DiagnosticResponse:
     def get_complex_iteration_count(self, qualifier: str) -> int:
         return self.com_object.GetComplexIterationCount(qualifier)
 
-    def get_complex_parameter(self, qualifier: str, iteration: int, sub_parameter: str, mode: int) -> Union[bytearray, int, str]:
+    def get_complex_parameter(self, qualifier: str, iteration: int, sub_parameter: str, mode: int) -> bytearray | int | str:
         return self.com_object.GetComplexParameter(qualifier, iteration, sub_parameter, mode)
 
-    def get_parameter(self, qualifier: str, mode: int) -> Union[bytearray, int, str]:
+    def get_parameter(self, qualifier: str, mode: int) -> bytearray | int | str:
         return self.com_object.GetParameter(qualifier, mode)
 
     def is_complex_parameter(self, qualifier: str) -> bool:

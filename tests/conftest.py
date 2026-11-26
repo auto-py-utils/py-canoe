@@ -1,4 +1,5 @@
 import sys
+
 import pytest
 
 
@@ -8,10 +9,14 @@ def is_canoe_available() -> bool:
         return False
 
     try:
-        import win32com.client
-        win32com.client.Dispatch("CANoe.Application")
+        import winreg
+
+        with winreg.OpenKey(
+            winreg.HKEY_CLASSES_ROOT, r"CANoe.Application\CLSID"
+        ) as key:
+            winreg.QueryValueEx(key, "")
         return True
-    except Exception:
+    except OSError:
         return False
 
 

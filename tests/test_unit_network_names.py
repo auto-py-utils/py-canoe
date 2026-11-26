@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock, PropertyMock
+
 from py_canoe.core.networks import Networks
 
 

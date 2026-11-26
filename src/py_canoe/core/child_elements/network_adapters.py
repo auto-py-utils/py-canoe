@@ -1,9 +1,10 @@
-import win32com.client
+from py_canoe.core.com_session import dispatch_com_object
+
 
 class NetworkAdapters:
     """Represents the collection of available network adapters for VT System communication."""
     def __init__(self, network_adapters_com_obj):
-        self.com_object = win32com.client.Dispatch(network_adapters_com_obj)
+        self.com_object = dispatch_com_object(network_adapters_com_obj)
 
     @property
     def count(self) -> int:

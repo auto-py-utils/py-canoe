@@ -1,5 +1,4 @@
-import win32com.client
-
+from py_canoe.core.com_session import dispatch_com_object, with_com_events
 from py_canoe.helpers.common import DoEventsUntil
 
 
@@ -19,8 +18,8 @@ class TestConfigurationReportEvents:
 class TestConfigurationReport:
     """The TestConfigurationReport object represents the reporting settings of a test configuration."""
     def __init__(self, com_object):
-        self.com_object = win32com.client.Dispatch(com_object)
-        self.test_configuration_report_events: TestConfigurationReportEvents = win32com.client.WithEvents(self.com_object, TestConfigurationReportEvents)
+        self.com_object = dispatch_com_object(com_object)
+        self.test_configuration_report_events: TestConfigurationReportEvents = with_com_events(self.com_object, TestConfigurationReportEvents)
 
     @property
     def filter_settings(self) -> 'TestConfigurationReport':

@@ -1,3 +1,5 @@
+from collections.abc import Iterator
+
 from py_canoe.core.child_elements.channel import Channel
 
 
@@ -9,9 +11,13 @@ class Channels:
     def count(self) -> int:
         return self.com_object.Count
 
+    def iter_items(self) -> Iterator[Channel]:
+        for index in range(1, self.count + 1):
+            yield Channel(self.com_object.Item(index))
+
     def item(self, index: int | None = None) -> Channel | list[Channel]:
         if index is None:
-            return [Channel(self.com_object.Item(i)) for i in range(1, self.count + 1)]
+            return list(self.iter_items())
         else:
             return Channel(self.com_object.Item(index))
 

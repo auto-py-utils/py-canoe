@@ -1,9 +1,11 @@
+from unittest.mock import MagicMock, PropertyMock, patch
+
 import pytest
-from unittest.mock import MagicMock, patch, PropertyMock
+
 from py_canoe.core.child_elements.namespaces import Namespaces
 from py_canoe.core.child_elements.variables import Variables
 from py_canoe.core.system import System
-from py_canoe.helpers.exceptions import PyCanoeError, NamespaceNotFoundError
+from py_canoe.helpers.exceptions import NamespaceNotFoundError, PyCanoeError
 
 
 def _make_namespaces(names):
@@ -36,6 +38,7 @@ def _make_variables(entries):
     com.Item.side_effect = item_side_effect
     var_obj = Variables.__new__(Variables)
     var_obj.com_object = com
+    var_obj.namespace_name = None
     return var_obj
 
 
@@ -60,7 +63,7 @@ class TestNamespacesFetchAll:
         def item_side_effect(index):
             call_count[0] += 1
             if call_count[0] == 2:
-                raise Exception("COM error on item 2")
+                raise RuntimeError("COM error on item 2")
             ns = MagicMock()
             ns.Name = f"ns_{index}"
             return ns
@@ -68,15 +71,15 @@ class TestNamespacesFetchAll:
         com.Item.side_effect = item_side_effect
         ns_obj = Namespaces.__new__(Namespaces)
         ns_obj.com_object = com
-        with pytest.raises(Exception):
+        with pytest.raises(RuntimeError):
             ns_obj.fetch_all()
 
     def test_raises_on_count_exception(self):
         com = MagicMock()
-        type(com).Count = PropertyMock(side_effect=Exception("COM error"))
+        type(com).Count = PropertyMock(side_effect=RuntimeError("COM error"))
         ns_obj = Namespaces.__new__(Namespaces)
         ns_obj.com_object = com
-        with pytest.raises(Exception):
+        with pytest.raises(RuntimeError):
             ns_obj.fetch_all()
 
 
@@ -87,7 +90,10 @@ class TestVariablesFetchAll:
             {"name": "level", "value": 5,   "full_name": "demo::level"},
         ]
         var_obj = _make_variables(entries)
-        with patch("py_canoe.core.child_elements.variable.win32com.client.Dispatch", side_effect=lambda x: x):
+        with patch(
+            "py_canoe.core.child_elements.variable.dispatch_com_object",
+            side_effect=lambda value: value,
+        ):
             result = var_obj.fetch_all()
         assert len(result) == 2
         assert result[0].name == "speed"
@@ -100,10 +106,10 @@ class TestVariablesFetchAll:
 
     def test_raises_on_count_exception(self):
         com = MagicMock()
-        type(com).Count = PropertyMock(side_effect=Exception("COM error"))
+        type(com).Count = PropertyMock(side_effect=RuntimeError("COM error"))
         var_obj = Variables.__new__(Variables)
         var_obj.com_object = com
-        with pytest.raises(Exception):
+        with pytest.raises(RuntimeError):
             var_obj.fetch_all()
 
 
@@ -164,7 +170,10 @@ class TestSystemGetAllVariablesInNamespace:
     def test_returns_correct_dict_keys(self):
         entries = [{"name": "speed", "value": 10, "full_name": "demo::speed"}]
         sys_obj = self._make_system_with_namespace(entries)
-        with patch("py_canoe.core.child_elements.variable.win32com.client.Dispatch", side_effect=lambda x: x):
+        with patch(
+            "py_canoe.core.child_elements.variable.dispatch_com_object",
+            side_effect=lambda value: value,
+        ):
             result = sys_obj.get_all_variables_in_namespace("demo")
         assert len(result) == 1
         assert result[0]["name"] == "speed"
