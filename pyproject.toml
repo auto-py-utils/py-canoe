@@ -17,9 +17,9 @@ classifiers = [
     "Operating System :: Microsoft :: Windows"
 ]
 dependencies = [
-    "pydantic>=2.14.4",
+    "pydantic",
     "pywin32",
-    "tenacity>=9.2.1",
+    "tenacity",
 ]
 
 [project.scripts]
