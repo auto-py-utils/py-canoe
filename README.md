@@ -23,15 +23,6 @@ Python 🐍 Package for accessing Vector CANoe 🛶 Tool via COM Interface
 - [visual studio code](https://code.visualstudio.com/Download)
 - Windows PC(recommended windows 11 OS along with 16GB RAM)
 
-## COM threading and lifecycle
-
-py-canoe owns CANoe automation through a dedicated STA thread. Calls made through
-the package wrappers are routed to that thread. Do not retain or use wrapper
-references after closing, resetting, or loading another configuration. Use
-`CANoe` as a context manager when deterministic cleanup is needed. Pass only
-references returned by py-canoe to its wrappers and session APIs. Raw pywin32
-COM references are rejected at those boundaries.
-
 ## installation
 
 ### standard way
