@@ -1,4 +1,3 @@
-import win32com.client
 
 from py_canoe.core.child_elements.channels import Channels
 from py_canoe.core.child_elements.databases import Databases

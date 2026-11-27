@@ -18,6 +18,5 @@ class CommunicationSetup:
     def data_source_setup(self) -> 'DataSourceSetup':
         return DataSourceSetup(self.com_object.DataSourceSetup)
 
-    @property
     def import_vtt_sut(self, sut_manifest_path: str) -> 'VttSutImportResult':
         return VttSutImportResult(self.com_object.ImportVttSut(sut_manifest_path))

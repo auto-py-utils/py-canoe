@@ -1,4 +1,4 @@
-from typing import List
+from collections.abc import Iterator
 
 from py_canoe.core.child_elements.bus import Bus
 from py_canoe.helpers.bus_type import BusType
@@ -12,9 +12,13 @@ class Buses:
     def count(self) -> int:
         return self.com_object.Count
 
-    def item(self, index: int | None = None) -> Bus | List[Bus]:
+    def iter_items(self) -> Iterator[Bus]:
+        for index in range(1, self.count + 1):
+            yield Bus(self.com_object.Item(index))
+
+    def item(self, index: int | None = None) -> Bus | list[Bus]:
         if index is None:
-            return [Bus(self.com_object.Item(i)) for i in range(1, self.count + 1)]
+            return list(self.iter_items())
         else:
             return Bus(self.com_object.Item(index))
     
@@ -34,7 +38,7 @@ class Buses:
                 return None # Bus with the same name already exists
         return Bus(self.com_object.AddWithType(name, bus_type.value))
     
-    def remove(self, index: int = None, name: str = None) -> None:
+    def remove(self, index: int | None = None, name: str | None = None) -> None:
         """Removes an existing bus.
 
         It is only possible to remove a bus when measurement is stopped and more than one bus is configured.

@@ -419,7 +419,7 @@ test_module.libraries.remove(1)
 
 CANoe has two independent concepts that are easy to confuse:
 
-- **CANoe application process** (`CANoe64.exe` / `CANoe32.exe`): the GUI process. It can be 64-bit while the RT kernel is 32-bit, and vice versa.
+- **CANoe application process** (`CANoe64.exe` / `CANoe32.exe`): the GUI process. Its bitness can differ from that of the RT kernel.
 - **RT Kernel (real-time kernel) architecture**: the execution environment that runs CAPL programs and loads external DLLs (node layer modules / test modules). **Its bitness decides which DLLs can be loaded**:
 
 | RT Kernel | Loadable DLL |
@@ -427,7 +427,7 @@ CANoe has two independent concepts that are easy to confuse:
 | 32-bit | 32-bit DLL only |
 | 64-bit | 64-bit DLL only |
 
-A 64-bit program cannot load a 32-bit DLL, and vice versa. So if `modules.add()` fails while the DLL looks correct, check the **RT kernel architecture** of the currently open configuration:
+The RT kernel determines which DLLs can be loaded. If `modules.add()` fails even though the DLL looks correct, check the **RT kernel architecture** of the currently open configuration:
 
 ```python
 app = CANoe()
@@ -442,8 +442,8 @@ app.set_rt_kernel_architecture(1)
 app.save_configuration()   # persist the change
 ```
 
-- By default the **32-bit** RT kernel is used; existing configurations may have been created with either variant.
-- The variant is stored in the configuration file, and can also be overridden via `CAN.ini` → `[SYSTEM]` → `EnforceRtkTargetArchitecture` (`0` = use config, `1` = force 32-bit, `2` = force 64-bit).
+- The **32-bit** RT kernel is used by default. Existing configurations may use either variant.
+- The variant is stored in the configuration file and can also be overridden via `CAN.ini` → `[SYSTEM]` → `EnforceRtkTargetArchitecture` (`0` = use config, `1` = force 32-bit, `2` = force 64-bit).
 - Practical rule: **match the DLL bitness to the RT kernel bitness** of the configuration you open. If you always use 64-bit DLLs, ensure the configuration's RT kernel is 64-bit.
 
 ### execute test module with selective test case enable/disable

@@ -1,8 +1,8 @@
+from py_canoe.core.child_elements.application_socket import ApplicationSocket
 from py_canoe.core.child_elements.audio_interface import AudioInterface
 from py_canoe.core.child_elements.diagnostic import Diagnostic
 from py_canoe.core.child_elements.most_disassembler import MostDisassembler
 from py_canoe.core.child_elements.most_network_interface import MostNetworkInterface
-from py_canoe.core.child_elements.application_socket import ApplicationSocket
 
 
 class Device:

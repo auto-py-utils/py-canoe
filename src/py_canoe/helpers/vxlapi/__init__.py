@@ -15,7 +15,7 @@ Usage::
 """
 
 from py_canoe.helpers.vxlapi.driver import VxlDriver
-from py_canoe.helpers.vxlapi.enums import XlBusType, ChannelCapability, HwType
+from py_canoe.helpers.vxlapi.enums import ChannelCapability, HwType, XlBusType
 from py_canoe.helpers.vxlapi.types import ChannelInfo, DeviceInfo
 
-__all__ = ["VxlDriver", "XlBusType", "HwType", "ChannelCapability", "ChannelInfo", "DeviceInfo"]
+__all__ = ["ChannelCapability", "ChannelInfo", "DeviceInfo", "HwType", "VxlDriver", "XlBusType"]

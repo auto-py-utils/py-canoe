@@ -1,27 +1,19 @@
-from typing import Union, TYPE_CHECKING
 import time
-import win32com.client
-import pythoncom
+from typing import TYPE_CHECKING
+
+from py_canoe.core.com_session import with_com_events
+
 if TYPE_CHECKING:
     from py_canoe.core.application import Application
 from py_canoe.core.capl import CaplFunction
-from py_canoe.helpers.common import DoEventsUntil
-from py_canoe.helpers.common import logger, wait
+from py_canoe.helpers.common import DoEventsUntil, logger
 
 
 class MeasurementEvents:
     """COM event sink for CANoe Measurement events (OnStart, OnStop, OnInit, OnExit).
 
-    **STA threading note:** WithEvents registers this sink in the caller's STA thread.
-    CANoe delivers callbacks (OnVerdictChanged, OnStop, ...) via that same STA queue.
-    If the caller blocks with time.sleep() during measurement — without pumping the
-    COM message queue — pending callbacks accumulate. Any outgoing COM call made while
-    a callback delivery is pending (e.g. UI.Write.Text) will be rejected with
-    RPC_E_CALL_REJECTED ("program is busy").
-
-    Fix: replace time.sleep() with wait() (which calls PumpWaitingMessages) during
-    any wait period while measurement is running. This keeps the STA queue drained
-    so outgoing COM calls are never rejected.
+    The sink is registered on the owning STA. Its worker pumps the COM message queue
+    while the caller waits, so callbacks continue to be delivered during sleeps.
     """
 
     def __init__(self):
@@ -30,8 +22,8 @@ class MeasurementEvents:
         self.START: bool = False
         self.STOP: bool = False
         self.EXIT: bool = False
-        self.CAPL_FUNCTION_OBJECTS = dict()
-        self.CAPL_FUNCTION_NAMES = tuple()
+        self.CAPL_FUNCTION_OBJECTS = {}
+        self.CAPL_FUNCTION_NAMES = ()
 
     def OnInit(self):
         """measurement is initialized"""
@@ -55,6 +47,7 @@ class MeasurementEvents:
 
 class Measurement:
     def __init__(self, app: 'Application', enable_events: bool = True):
+        self.app = app
         # Use the Application's Measurement object directly - do NOT create a
         # separate Dispatch wrapper. A separate Dispatch creates a different COM
         # proxy that races with the Application's internal proxy, causing
@@ -62,7 +55,7 @@ class Measurement:
         self.com_object = app.com_object.Measurement
         self._enable_events = enable_events
         if enable_events:
-            self.measurement_events: MeasurementEvents = win32com.client.WithEvents(self.com_object, MeasurementEvents)
+            self.measurement_events: MeasurementEvents = with_com_events(self.com_object, MeasurementEvents)
             self.measurement_events.APP_COM_OBJ = app.com_object
         else:
             self.measurement_events = MeasurementEvents()
@@ -169,7 +162,7 @@ class Measurement:
         if post_stop_pump > 0:
             logger.info(f"stop_ex: draining COM callbacks for {post_stop_pump}s...")
             for _ in range(post_stop_pump * 10):
-                pythoncom.PumpWaitingMessages()
+                self.app.pump_messages()
                 time.sleep(0.1)
         return status
 

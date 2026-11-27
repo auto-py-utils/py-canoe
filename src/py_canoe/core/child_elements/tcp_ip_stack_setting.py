@@ -1,11 +1,11 @@
-import win32com.client
+from py_canoe.core.com_session import dispatch_com_object
 
 
 class TcpIpAdapter:
     """Wrapper for a single TCP/IP adapter in CANoe."""
 
     def __init__(self, com_object):
-        self.com_object = win32com.client.Dispatch(com_object)
+        self.com_object = dispatch_com_object(com_object)
 
     def __getattr__(self, item):
         return getattr(self.com_object, item)
@@ -15,7 +15,7 @@ class TcpIpAdapters:
     """Collection of TcpIpAdapter objects."""
 
     def __init__(self, com_object):
-        self.com_object = win32com.client.Dispatch(com_object)
+        self.com_object = dispatch_com_object(com_object)
 
     @property
     def count(self) -> int:
@@ -29,7 +29,7 @@ class SecurityConfiguration:
     """Wrapper for the SecurityConfiguration COM object."""
 
     def __init__(self, com_object):
-        self.com_object = win32com.client.Dispatch(com_object)
+        self.com_object = dispatch_com_object(com_object)
 
     def __getattr__(self, item):
         return getattr(self.com_object, item)
@@ -39,7 +39,7 @@ class TcpIpStackSetting:
     """The TcpIpStackSetting object represents CANoe TCP/IP stack settings."""
 
     def __init__(self, com_object):
-        self.com_object = win32com.client.Dispatch(com_object)
+        self.com_object = dispatch_com_object(com_object)
 
     def __getattr__(self, item):
         return getattr(self.com_object, item)

@@ -1,21 +1,14 @@
+from unittest.mock import MagicMock, PropertyMock
+
 import pytest
-from unittest.mock import MagicMock, PropertyMock, patch
 
-from py_canoe.helpers.exceptions import ConfigurationNotLoadedError
-from py_canoe.core.child_elements.simulation_setup import SimulationSetup
-from py_canoe.core.child_elements.buses import Buses
 from py_canoe.core.child_elements.bus import Bus
-from py_canoe.core.child_elements.databases import Databases
+from py_canoe.core.child_elements.buses import Buses
 from py_canoe.core.child_elements.database import Database
+from py_canoe.core.child_elements.databases import Databases
+from py_canoe.core.child_elements.simulation_setup import SimulationSetup
 from py_canoe.core.configuration import Configuration
-
-
-@pytest.fixture(autouse=True)
-def _patch_child_element_dispatch():
-    with patch("py_canoe.core.child_elements.bus.win32com.client.Dispatch", side_effect=lambda x: x), \
-         patch("py_canoe.core.child_elements.simulation_setup.win32com.client.Dispatch", side_effect=lambda x: x), \
-         patch("py_canoe.core.child_elements.database.win32com.client.Dispatch", side_effect=lambda x: x):
-        yield
+from py_canoe.helpers.exceptions import ConfigurationNotLoadedError
 
 
 def _make_sim_buses(bus_specs):

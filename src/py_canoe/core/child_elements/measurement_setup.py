@@ -1,13 +1,10 @@
-from typing import TYPE_CHECKING
 
-from py_canoe.core.child_elements.channel_mapping_sets import ChannelMappingSet, ChannelMappingSets
-if TYPE_CHECKING:
-    from py_canoe.core.configuration import Configuration
-
-import os
-import win32com.client
-
-from py_canoe.helpers.common import DoEventsUntil, logger, wait
+from py_canoe.core.child_elements.channel_mapping_sets import (
+    ChannelMappingSet,
+    ChannelMappingSets,
+)
+from py_canoe.core.com_session import dispatch_com_object
+from py_canoe.helpers.common import logger
 
 
 class MeasurementSetup:
@@ -15,7 +12,7 @@ class MeasurementSetup:
     The MeasurementSetup object represents the Measurement Setup in CANoe.
     """
     def __init__(self, meas_com_object) -> None:
-        self.com_object = win32com.client.Dispatch(meas_com_object)
+        self.com_object = dispatch_com_object(meas_com_object)
 
     @property
     def animation_factor(self):
@@ -206,7 +203,7 @@ class MeasurementSetup:
         Args:
             file_name: Full path of the CHMAP file.
             overwrite_existing: If True, existing mapping sets with the same ID
-                will be overwritten; if False, they are preserved.
+                will be overwritten. If False, they are left unchanged.
 
         Returns:
             ChannelMappingSets: The imported mapping sets.
@@ -243,7 +240,7 @@ class MeasurementSetup:
         """
         try:
             self.com_object.RemoveMappingSet(mapping_set.com_object if hasattr(mapping_set, 'com_object') else mapping_set)
-            logger.info(f'Mapping set removed.')
+            logger.info('Mapping set removed.')
         except Exception as e:
             logger.error(f'Error removing mapping set: {e}')
             raise
@@ -254,7 +251,7 @@ class LoggingCollection:
     The LoggingCollection object is a collection of all Logging Blocks belonging to a Measurement Setup
     """
     def __init__(self, logging_collection_com):
-        self.com_object = win32com.client.Dispatch(logging_collection_com)
+        self.com_object = dispatch_com_object(logging_collection_com)
 
     @property
     def count(self) -> int:
@@ -275,7 +272,7 @@ class Logging:
     The Logging object represents a Logging Block in the Measurement Setup.
     """
     def __init__(self, logging_com):
-        self.com_object = win32com.client.Dispatch(logging_com)
+        self.com_object = dispatch_com_object(logging_com)
 
     @property
     def exporter(self) -> 'Exporter':
@@ -305,7 +302,7 @@ class Exporter:
     The Exporter object represents an export dialog, as it can be used in CANoe e.g. in a Logging Block in the Measurement Setup.
     """
     def __init__(self, exporter_com):
-        self.com_object = win32com.client.Dispatch(exporter_com)
+        self.com_object = dispatch_com_object(exporter_com)
 
     def destinations(self):
         raise NotImplementedError("Destinations access is not implemented yet.")
@@ -351,7 +348,7 @@ class Messages:
     The Messages object represents a collection of messages.
     """
     def __init__(self, messages_com):
-        self.com_object = win32com.client.Dispatch(messages_com)
+        self.com_object = dispatch_com_object(messages_com)
 
     @property
     def count(self) -> int:
@@ -366,7 +363,7 @@ class Message:
     The Message object represents a single message
     """
     def __init__(self, message_com):
-        self.com_object = win32com.client.Dispatch(message_com)
+        self.com_object = dispatch_com_object(message_com)
 
     @property
     def full_name(self) -> str:
@@ -378,7 +375,7 @@ class ExporterSymbols:
     The ExporterSymbols object represents a collection of signals, system variables and bus statistics information, found in source files, loaded by the Exporter.
     """
     def __init__(self, symbols_com):
-        self.com_object = win32com.client.Dispatch(symbols_com)
+        self.com_object = dispatch_com_object(symbols_com)
 
     @property
     def count(self) -> int:
@@ -393,7 +390,7 @@ class ExporterSymbol:
     The ExporterSymbol object represents a symbol (signal, system variable or bus statistics information), found in a source file, loaded by the Exporter.
     """
     def __init__(self, message_com):
-        self.com_object = win32com.client.Dispatch(message_com)
+        self.com_object = dispatch_com_object(message_com)
 
     @property
     def full_name(self) -> str:
@@ -405,7 +402,7 @@ class Filter:
     The Filter object represents a Pass Filter for messages and signals in usage with an exporter.
     """
     def __init__(self, filter_com):
-        self.com_object = win32com.client.Dispatch(filter_com)
+        self.com_object = dispatch_com_object(filter_com)
 
     @property
     def count(self) -> int:
@@ -437,7 +434,7 @@ class Trigger:
     The Trigger object represents the trigger block that is located before the Logging Block in the Measurement Setup.
     """
     def __init__(self, trigger_com):
-        self.com_object = win32com.client.Dispatch(trigger_com)
+        self.com_object = dispatch_com_object(trigger_com)
 
     @property
     def active(self) -> bool:

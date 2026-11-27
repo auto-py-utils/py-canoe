@@ -1,5 +1,5 @@
-from py_canoe.core.child_elements.test_setup_item import TestSetupItem
 from py_canoe.core.child_elements.test_report import TestReport
+from py_canoe.core.child_elements.test_setup_item import TestSetupItem
 
 
 class TestSetupFolder(TestSetupItem):

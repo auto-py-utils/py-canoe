@@ -1,4 +1,5 @@
 import os
+
 import pytest
 from win32com.universal import com_error
 
@@ -42,6 +43,26 @@ class TestStandalonePyCanoe:
         assert self.canoe_inst.start_measurement()
         assert self.canoe_inst.stop_measurement()
         wait(1)
+
+    def test_open_new_quit_methods(self):
+        logger.info("test_open_new_quit_methods started".center(120, '-'))
+        assert self.canoe_inst.new(auto_save=False, prompt_user=False)
+        assert self.canoe_inst.quit()
+        assert self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=False, prompt_user=False)
+        assert self.canoe_inst.quit()
+        assert self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=True, prompt_user=False)
+        assert self.canoe_inst.new(auto_save=True, prompt_user=False)
+        assert self.canoe_inst.quit()
+        assert self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=True, auto_save=True, prompt_user=True)
+        assert self.canoe_inst.new(auto_save=True, prompt_user=True)
+        assert self.canoe_inst.quit()
+        assert self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=False, auto_save=True, prompt_user=True)
+        assert self.canoe_inst.quit()
+        assert self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=False, auto_save=False, prompt_user=True)
+        assert self.canoe_inst.quit()
+        assert self.canoe_inst.open(canoe_cfg=self.canoe_cfg_dev, visible=False, auto_save=False, prompt_user=False)
+        assert self.canoe_inst.new(auto_save=False, prompt_user=True)
+        assert self.canoe_inst.quit()
 
     def test_attach_to_active_application(self):
         logger.info("test_attach_to_active_application started".center(120, '-'))
@@ -226,7 +247,7 @@ class TestStandalonePyCanoe:
         wait(1)
         self.canoe_inst.execute_all_test_environments()
         test_environments = self.canoe_inst.get_test_environments()
-        for te_name, _ in test_environments.items():
+        for te_name in test_environments:
             self.canoe_inst.execute_all_test_modules_in_test_env(te_name)
         self.canoe_inst.execute_test_module('demo_test_node_001')
         self.canoe_inst.execute_test_module('demo_test_node_002')
@@ -334,7 +355,7 @@ class TestStandalonePyCanoe:
         self.canoe_inst.open(canoe_cfg=r'C:\Users\Public\Documents\Vector\CANoe\Sample Configurations 11.0.81\CAN\Diagnostics\UDSSystem\UDSSystem.cfg')
         assert self.canoe_inst.start_measurement()
         test_configurations = self.canoe_inst.get_test_configurations()
-        for tc_name in test_configurations.keys():
+        for tc_name in test_configurations:
             assert self.canoe_inst.execute_test_configuration(tc_name, wait_for_completion=True)
         assert self.canoe_inst.application.configuration.execute_all_test_configurations(wait_for_completion=False)
         wait(5)

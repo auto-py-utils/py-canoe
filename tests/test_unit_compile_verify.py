@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock
+
 from py_canoe.core.configuration import Configuration
 
 

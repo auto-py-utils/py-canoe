@@ -1,14 +1,15 @@
-import win32com.client
+from collections.abc import Iterator
 
 from py_canoe.core.child_elements.test_configuration import TestConfiguration
-from py_canoe.core.child_elements.test_unit import TestUnit
 from py_canoe.core.child_elements.test_tree_elements import TestTreeElements
+from py_canoe.core.child_elements.test_unit import TestUnit
+from py_canoe.core.com_session import dispatch_com_object
 
 
 class TestConfigurations:
     """The TestConfigurations object represents the test configurations within CANoe's test setup."""
     def __init__(self, com_object):
-        self.com_object = win32com.client.Dispatch(com_object)
+        self.com_object = dispatch_com_object(com_object)
 
     @property
     def count(self) -> int:
@@ -17,6 +18,10 @@ class TestConfigurations:
     def item(self, index: int) -> TestConfiguration:
         return TestConfiguration(self.com_object.Item(index))
 
+    def iter_items(self) -> Iterator[TestConfiguration]:
+        for index in range(1, self.count + 1):
+            yield self.item(index)
+
     def add(self, name: str) -> 'TestConfiguration':
         return TestConfiguration(self.com_object.Add(name))
 
@@ -24,19 +29,18 @@ class TestConfigurations:
         self.com_object.Remove(index, prompt_user)
 
     def fetch_all_test_configurations(self) -> dict[str, TestConfiguration]:
-        test_configurations = dict()
-        for index in range(1, self.count + 1):
-            tc_inst = self.item(index)
-            test_configurations[tc_inst.name] = tc_inst
-        return test_configurations
+        return {
+            configuration.name: configuration
+            for configuration in self.iter_items()
+        }
 
     def __get_elements_or_cases(self, title:str):
         test_elements_or_cases = {}
         test_confs = self.fetch_all_test_configurations()
-        for t_conf_name in test_confs.keys():
-            test_units_obj: dict[str, TestUnit] = test_confs[t_conf_name].test_units.fetch_all_test_units()
-            for tn_name in test_units_obj.keys():
-                test_elements: TestTreeElements= test_units_obj[tn_name].elements
+        for test_configuration in test_confs.values():
+            test_units_obj: dict[str, TestUnit] = test_configuration.test_units.fetch_all_test_units()
+            for tn_name, test_unit in test_units_obj.items():
+                test_elements: TestTreeElements= test_unit.elements
                 if title == "elements":
                     test_elements_or_cases[tn_name] = test_elements.fetch_all_test_tree_elements()
                 elif title == "case":

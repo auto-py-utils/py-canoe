@@ -1,4 +1,4 @@
-import win32com.client
+from py_canoe.core.com_session import dispatch_com_object
 
 
 class DataSourceIssue:
@@ -6,7 +6,7 @@ class DataSourceIssue:
     Represents a single issue from a DataSource import operation.
     """
     def __init__(self, com_object) -> None:
-        self.com_object = win32com.client.Dispatch(com_object)
+        self.com_object = dispatch_com_object(com_object)
 
     @property
     def description(self) -> str:

@@ -1,44 +1,45 @@
 import re
+import shutil
 import sys
 import time
-import shutil
-import win32com
-import pythoncom
+from collections.abc import Iterable, Sequence
 from datetime import datetime, timezone
-from collections.abc import Sequence
 from pathlib import Path
-from typing import Union, TYPE_CHECKING, Iterable, Optional, Sequence
+from typing import TYPE_CHECKING, ClassVar
+
+import win32com
 
 from py_canoe.core.child_elements.can_controller import CanChannelConfiguration
 
 if TYPE_CHECKING:
-    from py_canoe.core.child_elements.measurement_setup import Logging, ExporterSymbol, Message
+    from py_canoe.core.child_elements.measurement_setup import (
+        ExporterSymbol,
+        Logging,
+        Message,
+    )
     from py_canoe.core.child_elements.test_configurations import TestConfiguration
 
 from py_canoe.core.application import Application
-from py_canoe.core.child_elements.bus import Bus
 from py_canoe.core.capl import CompileResult
+from py_canoe.core.child_elements.bus import Bus
 from py_canoe.core.child_elements.test_environment import TestEnvironment
 from py_canoe.core.database_utils.db import fetch_database_info
 from py_canoe.helpers.bus_type import BusType
 from py_canoe.helpers.common import logger, update_logger_file_path, wait
 from py_canoe.helpers.exceptions import ConfigurationNotLoadedError
-from py_canoe.helpers.vxlapi import ChannelInfo, HwType, VxlDriver, XlBusType
+from py_canoe.helpers.vxlapi import ChannelInfo, VxlDriver, XlBusType
 
 
 class CANoe:
-    def __init__(self, py_canoe_log_dir: str | Path = "", user_capl_functions: Sequence[str] = tuple(), clean_gen_py_cache: bool = False) -> None:
+    def __init__(self, py_canoe_log_dir: str | Path = "", user_capl_functions: Sequence[str] = (), clean_gen_py_cache: bool = False) -> None:
         self.application: Application = None
         try:
-            pythoncom.CoInitialize()
             if py_canoe_log_dir:
                 update_logger_file_path(logger, py_canoe_log_dir)
             if clean_gen_py_cache:
                 self._clean_gen_py_cache()
-        except pythoncom.com_error:
-            logger.warning("COM already initialized in this thread.")
         except Exception as e:
-            logger.error(f"COM init error: {e}")
+            logger.error(f"CANoe initialization error: {e}")
         finally:
             self.user_capl_functions = user_capl_functions
 
@@ -50,13 +51,13 @@ class CANoe:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
-        Exit context manager and cleanup resources. Explicitly release resources and uninitialize COM.
+        Exit context manager and release the owned COM session.
         """
         try:
             if self.application is not None:
-                pythoncom.CoUninitialize()
+                self.application.close()
         except Exception as e:
-            logger.error(f"Error during COM uninitialization: {e}.")
+            logger.error(f"Error during COM session cleanup: {e}.")
         finally:
             self.application = None
 
@@ -79,11 +80,9 @@ class CANoe:
             logger.error(f"Error clearing win32com gen_py cache: {e}")
 
     def _reset_application(self):
-        """Reset application reference without trying to clean up event sinks.
-
-        After a successful quit, the COM server is already shut down, so the event sinks
-        are invalid. We just release the Python reference here.
-        """
+        """Close the old COM session and drop its application wrapper."""
+        if self.application is not None:
+            self.application.close()
         self.application = None
 
     @staticmethod
@@ -310,7 +309,7 @@ class CANoe:
         except Exception as e:
             raise ConfigurationNotLoadedError(f"Cannot access simulation databases: {e}") from e
 
-    def get_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, raw_value: bool = False, return_timestamp: bool = False) -> Union[int, float, None, tuple]:
+    def get_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, raw_value: bool = False, return_timestamp: bool = False) -> int | float | None | tuple:
         """
         Gets the value of a signal.
 
@@ -337,7 +336,7 @@ class CANoe:
             return signal_value, datetime.now(timezone.utc).timestamp()
         return signal_value
 
-    def profile_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, duration: float = 1.0, interval: float = 0.0, raw_value: bool = False, max_samples: Optional[int] = None, include_samples: bool = False, include_timestamps: bool = False,) -> dict:
+    def profile_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, duration: float = 1.0, interval: float = 0.0, raw_value: bool = False, max_samples: int | None = None, include_samples: bool = False, include_timestamps: bool = False,) -> dict:
         """Profiles a signal by sampling it repeatedly and returning basic stats.
 
         This is useful for quickly observing signal stability, typical value range,
@@ -424,10 +423,8 @@ class CANoe:
 
             if isinstance(numeric, (int, float)) and not isinstance(numeric, bool):
                 count += 1
-                if numeric < min_value:
-                    min_value = numeric
-                if numeric > max_value:
-                    max_value = numeric
+                min_value = min(min_value, numeric)
+                max_value = max(max_value, numeric)
 
                 # Welford's online algorithm for mean and variance
                 delta = numeric - mean
@@ -461,7 +458,7 @@ class CANoe:
         )
         return profiled_signal
 
-    def set_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, value: Union[int, float], raw_value: bool = False) -> bool:
+    def set_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, value: float, raw_value: bool = False) -> bool:
         """
         Sets the value of a signal.
 
@@ -489,7 +486,7 @@ class CANoe:
             logger.error(f"Error setting {bus} bus signal value: {e}")
             return False
 
-    def get_signal_full_name(self, bus: BusType | str | int, channel: int, message: str, signal: str) -> Union[str, None]:
+    def get_signal_full_name(self, bus: BusType | str | int, channel: int, message: str, signal: str) -> str | None:
         """
         Gets the full name of a signal.
 
@@ -560,7 +557,7 @@ class CANoe:
             logger.error(f"Error checking {bus} bus signal state: {e}")
             return -1
 
-    def get_j1939_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, raw_value=False, return_timestamp=False) -> Union[float, int, None, tuple]:
+    def get_j1939_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, raw_value=False, return_timestamp=False) -> float | int | None | tuple:
         """
         Gets the value of a J1939 signal.
 
@@ -589,7 +586,7 @@ class CANoe:
             return signal_value, datetime.now(timezone.utc).timestamp()
         return signal_value
 
-    def set_j1939_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, value: Union[float, int], raw_value: bool = False) -> bool:
+    def set_j1939_signal_value(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int, value: float, raw_value: bool = False) -> bool:
         """
         Sets the value of a J1939 signal.
 
@@ -619,7 +616,7 @@ class CANoe:
             logger.error(f"Error setting J1939 bus signal value: {e}")
             return False
 
-    def get_j1939_signal_full_name(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> Union[str, None]:
+    def get_j1939_signal_full_name(self, bus: BusType | str | int, channel: int, message: str, signal: str, source_addr: int, dest_addr: int) -> str | None:
         """
         Gets the full name of a J1939 signal.
 
@@ -696,7 +693,7 @@ class CANoe:
             logger.error(f"Error checking J1939 bus signal state: {e}")
             return -1
 
-    def compile_all_capl_nodes(self, wait_time: Union[int, float] = 5) -> Union[CompileResult, None]:
+    def compile_all_capl_nodes(self, wait_time: float = 5) -> CompileResult | None:
         """
         Compiles all CAPL nodes in the application.
 
@@ -1132,7 +1129,7 @@ class CANoe:
         """
         return self.application.configuration.remove_all_networks()
 
-    def get_network(self,network_name: str = None) -> Bus:
+    def get_network(self,network_name: str | None = None) -> Bus:
         """Return a specific network by name, or *None* if not found.
 
         Args:
@@ -1181,8 +1178,12 @@ class CANoe:
 
     # -- hardware channel mapping (XL Driver) --------------------------------
 
-    _BUS_MAP = {BusType.CAN: XlBusType.CAN, BusType.LIN: XlBusType.LIN,
-                 BusType.FlexRay: XlBusType.FLEXRAY, BusType.Ethernet: XlBusType.ETHERNET}
+    _BUS_MAP: ClassVar[dict[BusType, XlBusType]] = {
+        BusType.CAN: XlBusType.CAN,
+        BusType.LIN: XlBusType.LIN,
+        BusType.FlexRay: XlBusType.FLEXRAY,
+        BusType.Ethernet: XlBusType.ETHERNET,
+    }
 
     @staticmethod
     def _to_xl_bus(bus_type: BusType) -> XlBusType:
@@ -1306,7 +1307,7 @@ class CANoe:
         """
         return self.application.configuration.set_configuration_modified(modified)
 
-    def get_environment_variable_value(self, env_var_name: str, return_timestamp: bool = False) -> Union[int, float, str, tuple, None]:
+    def get_environment_variable_value(self, env_var_name: str, return_timestamp: bool = False) -> int | float | str | tuple | None:
         """
         returns a environment variable value.
 
@@ -1322,7 +1323,7 @@ class CANoe:
             return variable_value, datetime.now(timezone.utc).timestamp()
         return variable_value
 
-    def set_environment_variable_value(self, env_var_name: str, value: Union[int, float, str, tuple]) -> bool:
+    def set_environment_variable_value(self, env_var_name: str, value: float | str | tuple) -> bool:
         """
         Sets the value of an environment variable.
 
@@ -1460,7 +1461,7 @@ class CANoe:
         self.application.measurement.measurement_index = index
         return True
 
-    def send_diag_request(self, diag_ecu_qualifier_name: str, request: str, request_in_bytes=True, return_sender_name=False, response_in_bytearray=False, timeout: float = 30, poll_s: float = 0.01, **kwargs) -> Union[str, dict]:
+    def send_diag_request(self, diag_ecu_qualifier_name: str, request: str, request_in_bytes=True, return_sender_name=False, response_in_bytearray=False, timeout: float = 30, poll_s: float = 0.01, **kwargs) -> str | dict:
         """
         Sends a diagnostic request.
 
@@ -1495,7 +1496,7 @@ class CANoe:
         """
         return self.application.networks.control_tester_present(diag_ecu_qualifier_name, value)
 
-    def define_system_variable(self, sys_var_name: str, value: Union[int, float, str], read_only: bool = False) -> object:
+    def define_system_variable(self, sys_var_name: str, value: float | str, read_only: bool = False) -> object:
         """
         Defines a system variable.
 
@@ -1509,7 +1510,7 @@ class CANoe:
         """
         return self.application.system.add_variable(sys_var_name, value, read_only)
 
-    def get_system_variable_value(self, sys_var_name: str, return_symbolic_name: bool = False, return_timestamp: bool = False, enable_events: bool = True) -> Union[int, float, str, None, tuple]:
+    def get_system_variable_value(self, sys_var_name: str, return_symbolic_name: bool = False, return_timestamp: bool = False, enable_events: bool = True) -> int | float | str | None | tuple:
         """
         Gets the value of a system variable.
 
@@ -1535,7 +1536,7 @@ class CANoe:
         """Returns all variables in the specified namespace."""
         return self.application.system.get_all_variables_in_namespace(namespace_name)
 
-    def set_system_variable_value(self, sys_var_name: str, value: Union[int, float, str], enable_events: bool = True) -> bool:
+    def set_system_variable_value(self, sys_var_name: str, value: float | str, enable_events: bool = True) -> bool:
         """
         Sets the value of a system variable.
 
@@ -1597,7 +1598,7 @@ class CANoe:
         """
         return self.application.ui.write.output(text)
 
-    def read_text_from_write_window(self) -> Union[str, None]:
+    def read_text_from_write_window(self) -> str | None:
         """
         Reads text from the write window.
 

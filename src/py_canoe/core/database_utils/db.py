@@ -4,12 +4,12 @@ try:
 except ImportError:
     CANMATRIX_AVAILABLE = False
 
-from typing import Dict, Any
+from typing import Any
 
 from py_canoe.helpers.common import logger
 
 
-def fetch_database_info(db_path: str) -> Dict[str, Dict[str, Any]]:
+def fetch_database_info(db_path: str) -> dict[str, dict[str, Any]]:
     """
     Load a database from the given path and extract structured information.
 

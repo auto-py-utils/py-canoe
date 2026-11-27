@@ -1,7 +1,6 @@
-import win32com.client
-
 from py_canoe.core.child_elements.modules import Modules
 from py_canoe.core.child_elements.signals import Signals
+from py_canoe.core.com_session import dispatch_com_object
 
 
 class Nodes:
@@ -35,7 +34,7 @@ class Nodes:
 class Node:
     """The Node object represents a node of the Simulation Setup / System and Communication Setup of the CANoe application."""
     def __init__(self, node_com_obj):
-        self.com_object = win32com.client.Dispatch(node_com_obj)
+        self.com_object = dispatch_com_object(node_com_obj)
 
     @property
     def active(self) -> bool:

@@ -1,5 +1,6 @@
-import win32com.client
+from typing import ClassVar
 
+from py_canoe.core.com_session import dispatch_com_object
 from py_canoe.helpers.common import logger
 
 
@@ -12,7 +13,7 @@ class TestCase:
 
     __test__ = False
 
-    VALUE_TABLE_VERDICT = {
+    VALUE_TABLE_VERDICT: ClassVar[dict[int, str]] = {
         0: "NotAvailable",
         1: "Passed",
         2: "Failed",
@@ -23,7 +24,7 @@ class TestCase:
 
     def __init__(self, com_object):
         self.obj = com_object
-        self.com_object = win32com.client.Dispatch(com_object)
+        self.com_object = dispatch_com_object(com_object)
 
     @property
     def name(self) -> str:
@@ -80,7 +81,7 @@ class TestCase:
         to refresh the state (e.g. Verdict) after test execution.
         """
         try:
-            self.com_object = win32com.client.Dispatch(self.obj)
+            self.com_object = dispatch_com_object(self.obj)
             logger.info(f'Refreshed test case ({self.name}) data.')
         except Exception as e:
             logger.error(f'Error refreshing test case: {e}')

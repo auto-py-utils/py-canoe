@@ -1,6 +1,4 @@
-
-
-from typing import List
+from __future__ import annotations
 
 from py_canoe.helpers.bus_type import BusType
 from py_canoe.helpers.common import logger
@@ -38,7 +36,7 @@ class ChannelMappingSet:
         except Exception as e:
             logger.error(f'Error clearing mapping table for "{self.name}": {e}')
 
-    def copy(self) -> 'ChannelMappingSet':
+    def copy(self) -> ChannelMappingSet:
         """Creates a copy of the channel mapping set.
 
         Returns:
@@ -61,7 +59,7 @@ class ChannelMappingSet:
             source (int): The source channel number.
 
         Returns:
-            int: The destination channel number; 0 represents "ignore".
+            int: The destination channel number. A value of 0 means "ignore".
         """
         try:
             return self.com_object.Get(bus_type.value, source)
@@ -78,7 +76,7 @@ class ChannelMappingSet:
             source (int): The source channel number.
 
         Returns:
-            int: The destination channel number; 0 represents "ignore".
+            int: The destination channel number. A value of 0 means "ignore".
         """
         try:
             return self.com_object.GetByBusName(bus_name, source)
@@ -136,7 +134,7 @@ class ChannelMappingSets:
     def __len__(self) -> int:
         return self.com_object.Count if self.com_object else 0
 
-    def __getitem__(self, index: int) -> 'ChannelMappingSet':
+    def __getitem__(self, index: int) -> ChannelMappingSet:
         if self.com_object is None or index < 0 or index >= len(self):
             raise IndexError("Index out of range")
         return ChannelMappingSet(self.com_object.Item(index + 1))
@@ -150,7 +148,9 @@ class ChannelMappingSets:
         """Returns the number of channel mapping sets in the collection."""
         return self.com_object.Count if self.com_object else 0
 
-    def item(self, index: int | None = None) -> 'ChannelMappingSet' | List['ChannelMappingSet']:
+    def item(
+        self, index: int | None = None
+    ) -> ChannelMappingSet | list[ChannelMappingSet] | None:
         """Returns a ChannelMappingSet by 1-based index, or all mapping sets
         if *index* is ``None``.
 

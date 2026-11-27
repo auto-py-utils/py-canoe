@@ -1,16 +1,17 @@
+from py_canoe.core.com_session import dispatch_com_object
 
-import win32com.client
 from .available_modules import AvailableModules
-from .configured_modules import ConfiguredModules, ConfiguredChannel, ConfiguredModule
+from .configured_modules import ConfiguredChannel, ConfiguredModule, ConfiguredModules
 from .connected_modules import ConnectedModules
 from .network_adapters import NetworkAdapters
+
 
 class VTSystem:
 	"""
 	Represents the VT System configuration in CANoe.
 	"""
 	def __init__(self, vt_system_com_object) -> None:
-		self.com_object = win32com.client.Dispatch(vt_system_com_object)
+		self.com_object = dispatch_com_object(vt_system_com_object)
 
 	@property
 	def available_modules(self) -> AvailableModules:

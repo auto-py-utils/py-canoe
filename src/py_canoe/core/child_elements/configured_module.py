@@ -1,4 +1,3 @@
-import win32com.client
 
 
 class ConfiguredModule:

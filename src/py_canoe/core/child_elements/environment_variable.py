@@ -1,4 +1,3 @@
-from typing import Union
 
 from py_canoe.helpers.common import DoEventsUntil
 
@@ -41,11 +40,11 @@ class EnvironmentVariable:
         return self.com_object.Type
 
     @property
-    def value(self) -> Union[str, int, float]:
+    def value(self) -> str | int | float:
         return self.com_object.Value
 
     @value.setter
-    def value(self, value: Union[str, int, float]):
+    def value(self, value: str | float):
         self.com_object.Value = value
         DoEventsUntil(lambda: self._check_value_updated(value), ENV_VAR_CHANGE_TIMEOUT, "Environment Variable Change")
 

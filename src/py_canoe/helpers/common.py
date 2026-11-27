@@ -1,10 +1,10 @@
+import logging
 import os
 import sys
 import time
-import logging
-import pythoncom
 from datetime import datetime
 from pathlib import Path
+
 
 def check_if_path_exists(path: str, create_if_not_exist: bool=False) -> bool:
     """Check if a given path exists. Optionally create it if it doesn't."""
@@ -58,8 +58,7 @@ def update_logger_file_path(logger: logging.Logger, log_dir_path: str | Path) ->
 logger = setup_logger()
 
 def wait(timeout_seconds=0.1):
-    """Pump waiting COM messages and sleep for the given timeout."""
-    pythoncom.PumpWaitingMessages()
+    """Wait while the owning COM session pumps its STA message queue."""
     time.sleep(timeout_seconds)
 
 def DoEvents() -> None:

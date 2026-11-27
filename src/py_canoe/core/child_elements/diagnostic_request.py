@@ -1,7 +1,6 @@
-from typing import Union
 
-from py_canoe.core.child_elements.diagnostic_responses import DiagnosticResponses
 from py_canoe.core.child_elements.diagnostic_response import DiagnosticResponse
+from py_canoe.core.child_elements.diagnostic_responses import DiagnosticResponses
 
 DIAGNOSTIC_RESPONSE_TIMEOUT_VALUE = 300 # 5 minutes
 
@@ -11,7 +10,7 @@ class DiagnosticRequestEvents:
     def __init__(self) -> None:
         self.TIMEOUT: bool = False
         self.RECEIVED_RESPONSE: bool = False
-        self.RESPONSE: Union['DiagnosticResponse', None] = None
+        self.RESPONSE: DiagnosticResponse | None = None
 
     def OnCompletion(self):
         pass
@@ -30,7 +29,7 @@ class DiagnosticRequestEvents:
 class DiagnosticRequest:
     def __init__(self, com_object):
         self.com_object = com_object
-        # self.diagnostic_request_events: DiagnosticRequestEvents = win32com.client.WithEvents(self.com_object, DiagnosticRequestEvents)
+        # self.diagnostic_request_events: DiagnosticRequestEvents = with_com_events(self.com_object, DiagnosticRequestEvents)
 
     @property
     def pending(self) -> bool:

@@ -1,4 +1,5 @@
 import os
+from collections.abc import Iterator
 
 from py_canoe.core.child_elements.test_library import TestLibrary
 from py_canoe.helpers.common import logger
@@ -28,6 +29,10 @@ class TestLibraries:
         """Returns the number of test libraries contained."""
         return self.com_object.Count
 
+    def iter_items(self) -> Iterator[TestLibrary]:
+        for index in range(1, self.count + 1):
+            yield TestLibrary(self.com_object.Item(index))
+
     def item(self, index: int | None = None) -> TestLibrary | list[TestLibrary]:
         """Returns a TestLibrary object from the collection.
 
@@ -38,7 +43,7 @@ class TestLibraries:
             The TestLibrary at the given index.
         """
         if index is None:
-            return [TestLibrary(self.com_object.Item(i)) for i in range(1, self.count + 1)]
+            return list(self.iter_items())
         return TestLibrary(self.com_object.Item(index))
 
     def add(self, full_name: str) -> TestLibrary:
@@ -88,6 +93,5 @@ class TestLibraries:
             A list of TestLibrary objects.
         """
         libraries = []
-        for index in range(1, self.count + 1):
-            libraries.append(self.item(index))
+        libraries.extend(self.iter_items())
         return libraries

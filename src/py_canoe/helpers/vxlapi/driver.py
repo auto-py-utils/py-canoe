@@ -21,7 +21,8 @@ import ctypes
 import os
 import struct
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+
+from typing_extensions import Self
 
 from py_canoe.helpers.common import logger
 from py_canoe.helpers.vxlapi.enums import HwType, XlBusType
@@ -118,7 +119,7 @@ class _DrvCfg(ctypes.Structure):
 # DLL loading 鈥?automatic, once-only, releases on exit
 # ---------------------------------------------------------------------------
 
-_DLL: Optional[ctypes.CDLL] = None
+_DLL: ctypes.CDLL | None = None
 _OPEN_COUNT: int = 0
 
 def _find_dll() -> Path:
@@ -160,9 +161,8 @@ def _get_dll() -> ctypes.CDLL:
 
 def _open() -> None:
     global _OPEN_COUNT
-    if _OPEN_COUNT == 0:
-        if _get_dll().xlOpenDriver() != 0:
-            raise RuntimeError("xlOpenDriver failed")
+    if _OPEN_COUNT == 0 and _get_dll().xlOpenDriver() != 0:
+        raise RuntimeError("xlOpenDriver failed")
     _OPEN_COUNT += 1
 
 def _close() -> None:
@@ -191,7 +191,7 @@ class VxlDriver:
         _open()
 
     # -- context manager ---------------------------------------------------
-    def __enter__(self) -> VxlDriver:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *a) -> None:
@@ -202,14 +202,14 @@ class VxlDriver:
 
     # -- channels ----------------------------------------------------------
 
-    def get_devices(self) -> List[DeviceInfo]:
+    def get_devices(self) -> list[DeviceInfo]:
         """Return all Vector devices with their channels."""
         dll = _get_dll()
         cfg = _DrvCfg()
         if dll.xlGetDriverConfig(ctypes.byref(cfg)) != 0:
             raise RuntimeError("xlGetDriverConfig failed")
 
-        devs: Dict[Tuple[int, int], DeviceInfo] = {}
+        devs: dict[tuple[int, int], DeviceInfo] = {}
         for i in range(cfg.channelCount):
             c = cfg.channel[i]
             key = (c.hwType, c.hwIndex)
@@ -233,7 +233,7 @@ class VxlDriver:
             devs[key].channels.append(ch)
         return list(devs.values())
 
-    def get_channels(self, bus: XlBusType | None = None) -> List[ChannelInfo]:
+    def get_channels(self, bus: XlBusType | None = None) -> list[ChannelInfo]:
         """Return channels, optionally filtered by bus type."""
         return [ch for dev in self.get_devices()
                 for ch in dev.channels
@@ -307,7 +307,7 @@ class VxlDriver:
                               max_channels: int = 16) -> None:
         """Clear hardware mappings for all channels of *app*.
 
-        Scans channels 0..*max_channels*-1; only unmaps configured ones."""
+        Scans channels 0..*max_channels*-1 and unmaps configured ones only."""
         count = 0
         for ch in range(max_channels):
             if self.get_appl_config(app, ch) is not None:

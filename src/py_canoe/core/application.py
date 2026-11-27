@@ -1,17 +1,25 @@
-from pathlib import Path
 import sys
-from typing import Any, Union
+from pathlib import Path
+from typing import Any
+
+import pythoncom
 import win32com
 import win32com.client
 from win32com.client import gencache
-import pythoncom
 
-from py_canoe.core.child_elements.bus import Bus
 from py_canoe.core.capl import Capl
+from py_canoe.core.child_elements.bus import Bus
+from py_canoe.core.com_session import (
+    ComEventSinkProxy,
+    ComObjectProxy,
+    ComSession,
+    ComSessionClosedError,
+    StaleComReferenceError,
+    with_com_events,
+)
 from py_canoe.core.configuration import Configuration
 from py_canoe.core.environment import Environment
 from py_canoe.core.measurement import Measurement
-from py_canoe.core.message_filter import COMRetryMessageFilter
 from py_canoe.core.networks import Networks
 from py_canoe.core.performance import Performance
 from py_canoe.core.simulation import Simulation
@@ -45,26 +53,21 @@ class Application:
         self.CANOE_APP_NAME = "CANoe.Application"
         self._enable_events = enable_events
         self.com_object: Any = None
-        self.application_events: Union[ApplicationEvents, Any] = None
+        self.application_events: ApplicationEvents | Any = None
+        self._com_session: ComSession | None = None
         self.capl_function_objects = object()
-        self.user_capl_functions = tuple()
-        # Register IMessageFilter to suppress "Server Busy" dialogs and auto-retry
-        # rejected COM calls. The filter stays active for the Application's lifetime.
-        self._message_filter = COMRetryMessageFilter()
-        self._message_filter.register()
+        self.user_capl_functions = ()
         # Lazy wrapper caches: only the wrappers that hold mutable state fetched
         # from CANoe are cached as singletons:
         #   - Measurement registers a COM event sink (WithEvents) that must stay
         #     alive and unique for the Application's lifetime.
-        #   - Configuration and Networks cache data fetched when a configuration
-        #     is loaded (test environments/modules, diagnostic devices) that is
-        #     consumed by later calls; they are re-created on each configuration
-        #     load (see _setup_post_configuration_loading).
+        #   - Configuration and Networks cache configuration-scoped data and are
+        #     re-created on each configuration load.
         # All other wrappers are stateless facades over read-only COM properties
         # and are created on demand.
-        self._configuration: Union[Configuration, None] = None
-        self._networks: Union[Networks, None] = None
-        self._measurement: Union[Measurement, None] = None
+        self._configuration: Configuration | None = None
+        self._networks: Networks | None = None
+        self._measurement: Measurement | None = None
 
     @property
     def full_name(self) -> str:
@@ -122,8 +125,8 @@ class Application:
     def configuration(self) -> Configuration:
         """Returns the Configuration object (read-only, mirrors COM Application.Configuration).
 
-        The wrapper is cached because it holds test environment/module data that
-        is fetched when a configuration is loaded and consumed by later calls.
+        The wrapper is cached because it lazily caches test environment and
+        configuration data for later calls.
         """
         if self._configuration is None:
             self._configuration = Configuration(self)
@@ -196,19 +199,30 @@ class Application:
 
     def _launch_application(self) -> None:
         try:
+            if self._com_session is not None and self.com_object is not None:
+                return
+            if self._com_session is None:
+                self._com_session = ComSession()
             logger.info(f"pywin32 gencache path: {win32com.__gen_path__}")
-            try:
-                self.com_object = gencache.EnsureDispatch(self.CANOE_APP_NAME)
-            except AttributeError:
-                logger.warning("gencache encountered a cache error. After clearing the corrupted gen_py module, revert to using Dispatch.")
-                # Clear corrupted gen_py cache modules from sys.modules to prevent Dispatch from reusing stale modules
+            def create_application():
+                try:
+                    return gencache.EnsureDispatch(self.CANOE_APP_NAME)
+                except AttributeError as error:
+                    logger.warning(
+                        f"EnsureDispatch AttributeError: {error}; clearing "
+                        "generated typelib modules and falling back to Dispatch."
+                    )
+                    for key in list(sys.modules.keys()):
+                        if key.startswith("win32com.gen_py."):
+                            del sys.modules[key]
+                    return win32com.client.Dispatch(self.CANOE_APP_NAME)
 
-                for key in list(sys.modules.keys()):
-                    if 'win32com.gen_py' in key:
-                        del sys.modules[key]
-                self.com_object = win32com.client.Dispatch(self.CANOE_APP_NAME)
+            handle = self._com_session.invoke(create_application)
+            self.com_object = ComObjectProxy(self._com_session, handle)
             if self._enable_events:
-                self.application_events = win32com.client.WithEvents(self.com_object, ApplicationEvents)
+                self.application_events = with_com_events(
+                    self.com_object, ApplicationEvents
+                )
             else:
                 self.application_events = ApplicationEvents()
             if self.com_object.Configuration.FullName:
@@ -219,19 +233,25 @@ class Application:
 
     def _setup_post_configuration_loading(self) -> None:
         try:
-            # Configuration and Networks cache state fetched from the loaded
-            # configuration (test environments/modules, diagnostic devices).
-            # Re-create them on every configuration load so the cached state
-            # always reflects the currently loaded configuration.
+            if self._com_session is not None and self.com_object is not None:
+                self._release_event_sinks()
+                (handle,) = self._com_session.invalidate(self.com_object._handle)
+                self.com_object = ComObjectProxy(self._com_session, handle)
+                if self._enable_events:
+                    self.application_events = with_com_events(
+                        self.com_object, ApplicationEvents
+                    )
+                else:
+                    self.application_events = ApplicationEvents()
+                self._measurement = None
+            # Re-create configuration-scoped caches for each loaded configuration.
             self._configuration = None
             self._networks = None
             self.networks.fetch_diagnostic_devices()
-            self.configuration.fetch_test_modules()
-            self.configuration.fetch_test_units()
         except Exception as e:
             logger.error(f"Error initializing objects after loading configuration: {e}")
 
-    def _release_event_sinks(self, preserve_application_events: bool = False) -> None:
+    def _release_event_sinks(self, abandon: bool = False) -> None:
         """Disconnect pywin32 event sinks before COM objects become unreachable."""
         visited = set()
 
@@ -240,6 +260,23 @@ class Application:
             if obj is None or obj_id in visited:
                 return
             visited.add(obj_id)
+
+            if isinstance(obj, ComEventSinkProxy):
+                try:
+                    if abandon:
+                        obj.abandon()
+                    else:
+                        obj.close()
+                except (
+                    pythoncom.com_error,
+                    ComSessionClosedError,
+                    StaleComReferenceError,
+                ) as error:
+                    logger.warning(f"Error disconnecting COM event sink: {error}")
+                return
+
+            if isinstance(obj, ComObjectProxy):
+                return
 
             # Avoid walking into COM proxy wrappers. These wrappers may expose
             # nested attributes that are not owned by our Python object graph
@@ -261,15 +298,23 @@ class Application:
                 return
 
             for name, value in tuple(vars(obj).items()):
-                if value is None or name == "com_object":
-                    continue
-                if preserve_application_events and name == "application_events":
+                if value is None or name in {
+                    "com_object",
+                    "_com_session",
+                    "_enable_events",
+                }:
                     continue
                 if name.endswith("_events") or name == "events":
                     close = getattr(value, "close", None)
                     if callable(close):
                         try:
-                            close()
+                            if isinstance(value, ComEventSinkProxy):
+                                if abandon:
+                                    value.abandon()
+                                else:
+                                    close()
+                            else:
+                                close()
                         except pythoncom.com_error as e:
                             # These errors commonly occur when the COM server has already shut down
                             # and Python is still trying to disconnect stale event sink wrappers.
@@ -286,8 +331,8 @@ class Application:
                             logger.warning(f"Error disconnecting COM event sink '{name}': {e}")
                     try:
                         setattr(obj, name, None)
-                    except Exception:
-                        pass
+                    except Exception as error:
+                        logger.debug(f"Could not clear closed COM event sink '{name}': {error}")
                     continue
                 walk(value)
 
@@ -340,6 +385,7 @@ class Application:
     def quit(self, timeout: int = 5) -> bool:
         """Quit the CANoe application gracefully."""
         status = False
+        abandon_event_sinks = False
         try:
             if self._configuration is not None and self.configuration.modified:
                 self.configuration.modified = False
@@ -347,10 +393,18 @@ class Application:
             # potentially OnStop) as part of its internal shutdown sequence after
             # Quit() is called. Releasing sinks beforehand leaves CANoe with a
             # dangling vtable pointer → access violation → crash dialog.
-            # Sinks are released in the finally block after CANoe has shut down.
+            # After OnQuit, abandon the sinks instead of calling Unadvise on a
+            # server that may already have disconnected.
+            if self._com_session is not None and isinstance(
+                self.com_object, ComObjectProxy
+            ):
+                # Release child COM proxies while the server is still reachable.
+                (handle,) = self._com_session.invalidate(self.com_object._handle)
+                self.com_object = ComObjectProxy(self._com_session, handle)
             self.com_object.Quit()
             status = DoEventsUntil(lambda: self.application_events.QUIT, timeout, "Quit CANoe application")
             if status:
+                abandon_event_sinks = True
                 logger.info("CANoe Application Quit Successfully.")
             return status
         except Exception as e:
@@ -358,7 +412,19 @@ class Application:
             status = False
             return status
         finally:
-            self._release_event_sinks()
+            self.close(abandon_event_sinks=abandon_event_sinks)
+
+    def close(self, *, abandon_event_sinks: bool = False) -> None:
+        """Release or abandon event sinks, then close the COM session."""
+        try:
+            self._release_event_sinks(abandon=abandon_event_sinks)
+        finally:
+            session = self._com_session
+            self._com_session = None
+            self.com_object = None
+            self.application_events = None
+            if session is not None:
+                session.close(abandon_event_sinks=abandon_event_sinks)
 
     def attach_to_active_application(self) -> bool:
         """Attach to an already running CANoe application instance."""
@@ -418,8 +484,8 @@ class Application:
                         if self.configuration.full_name.lower() == abs_path.lower():
                             status = True
                             break
-                    except Exception:
-                        pass
+                    except Exception as error:
+                        logger.debug(f"Configuration is not ready during switch polling: {error}")
                     _time.sleep(0.2)
 
             if status:
@@ -444,4 +510,5 @@ class Application:
             >>>     app.pump_messages()
             >>>     time.sleep(0.1)
         """
-        pythoncom.PumpWaitingMessages()
+        if self._com_session is not None:
+            self._com_session.invoke(pythoncom.PumpWaitingMessages)

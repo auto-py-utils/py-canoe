@@ -11,12 +11,12 @@ class BusType(Enum):
           (see CANoe help ``car2xHwConfigPageAth.htm``: "Network Hardware
           Configuration - Ath (Car2x)" configures the WLAN device used by
           Car2x).
-        - ``J1939`` has no dedicated ``eBusType`` value; it runs on CAN
+        - ``J1939`` has no dedicated ``eBusType`` value. It runs on CAN
           channels.
     """
 
     CAN = 1
-    J1939 = 2  # no dedicated eBusType; runs on CAN channels
+    J1939 = 2  # Uses CAN channels because eBusType has no dedicated J1939 value.
     TTP = 4
     LIN = 5
     MOST = 6

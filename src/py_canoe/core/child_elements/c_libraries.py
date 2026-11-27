@@ -1,6 +1,5 @@
-import win32com.client
-
 from py_canoe.core.child_elements.c_library import CLibrary
+from py_canoe.core.com_session import dispatch_com_object
 
 
 class CLibraries:
@@ -8,7 +7,7 @@ class CLibraries:
     Represents the collection of C libraries in a CANoe configuration.
     """
     def __init__(self, com_object) -> None:
-        self.com_object = win32com.client.Dispatch(com_object)
+        self.com_object = dispatch_com_object(com_object)
 
     @property
     def count(self) -> int:

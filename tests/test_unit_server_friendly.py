@@ -8,20 +8,16 @@ Unit tests for server-friendly mode features:
 Plus additional tests for pre-existing code to achieve full coverage.
 """
 
-import time
-import pythoncom
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import Mock, patch, MagicMock, call
-
-from py_canoe.core.capl import CaplFunction
+from unittest.mock import MagicMock, Mock, call, patch
 
 import pytest
+import pythoncom
 
+from py_canoe.canoe import CANoe
 from py_canoe.core.application import Application, ApplicationEvents
 from py_canoe.core.measurement import Measurement, MeasurementEvents
-from py_canoe.canoe import CANoe
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -57,15 +53,30 @@ def _make_measurement(enable_events=False):
     return m, mock_com
 
 
-# ---------------------------------------------------------------------------
-# Application: enable_events
-# ---------------------------------------------------------------------------
+class _FakeIUnknown:
+    def __init__(self, pointer):
+        self.pointer = pointer
+
+    def __eq__(self, other):
+        return isinstance(other, _FakeIUnknown) and self.pointer == other.pointer
+
+
+class _FakeOleObject:
+    def QueryInterface(self, _interface_id):
+        return _FakeIUnknown(id(self))
+
 
 def _make_com_no_config() -> Mock:
     """COM mock where CANoe is running but no project is loaded."""
     com = Mock()
-    com.Configuration.FullName = ""
+    com._oleobj_ = _FakeOleObject()
+    com.Configuration = SimpleNamespace(FullName="")
     return com
+
+
+# ---------------------------------------------------------------------------
+# Application: enable_events
+# ---------------------------------------------------------------------------
 
 
 class TestApplicationEnableEvents:
@@ -125,8 +136,8 @@ class TestApplicationEnableEvents:
 
     @patch("win32com.client.gencache.EnsureDispatch")
     def test_launch_initializes_config_when_already_loaded(self, mock_ensure):
-        """Attach to running CANoe with project loaded → _setup_post_configuration_loading called."""
-        com = Mock()
+        """Attach to running CANoe with project loaded → setup is called."""
+        com = _make_com_no_config()
         com.Configuration.FullName = "D:/path/to/GTS_Testing.cfg"
         mock_ensure.return_value = com
 
@@ -139,7 +150,9 @@ class TestApplicationEnableEvents:
     @patch("py_canoe.core.application.logger.warning")
     @patch("win32com.client.Dispatch")
     @patch("win32com.client.gencache.EnsureDispatch", side_effect=AttributeError("broken cache"))
-    def test_launch_attribute_error_logs_root_cause_and_falls_back(self, mock_ensure, mock_dispatch, mock_warning):
+    def test_launch_attribute_error_logs_root_cause_and_falls_back(
+        self, mock_ensure, mock_dispatch, mock_warning
+    ):
         mock_dispatch.return_value = _make_com_no_config()
 
         app = Application(enable_events=False)
@@ -222,9 +235,10 @@ class TestPumpMessages:
     @patch("py_canoe.core.application.pythoncom.PumpWaitingMessages")
     def test_pump_messages_calls_pythoncom(self, mock_pump):
         app = _make_app(enable_events=False)
+        app._com_session = Mock()
         app.pump_messages()
 
-        mock_pump.assert_called_once()
+        app._com_session.invoke.assert_called_once_with(mock_pump)
 
 
 # ---------------------------------------------------------------------------
@@ -252,7 +266,7 @@ class TestMeasurementEnableEvents:
                 mock_we.return_value = Mock()
                 mock_app = Mock()
                 mock_app.com_object = Mock()
-                m = Measurement(mock_app, enable_events=True)
+                Measurement(mock_app, enable_events=True)
                 mock_we.assert_called_once()
 
 
@@ -288,9 +302,14 @@ class TestMeasurementStartEventsDisabled:
             call_idx[0] += 1
             return call_idx[0] * 0.5  # 0.5, 1.0, 1.5, ...
 
-        with patch("py_canoe.core.measurement.time.sleep"):
-            with patch("py_canoe.core.measurement.time.monotonic", side_effect=monotonic_side_effect):
-                result = m.start(timeout=1)
+        with (
+            patch("py_canoe.core.measurement.time.sleep"),
+            patch(
+                "py_canoe.core.measurement.time.monotonic",
+                side_effect=monotonic_side_effect,
+            ),
+        ):
+            result = m.start(timeout=1)
 
         assert result is False
 
@@ -316,9 +335,8 @@ class TestStopExBusyRetry:
     on any exception. The IMessageFilter tests verify the retry logic separately.
     """
 
-    @patch("py_canoe.core.measurement.pythoncom.PumpWaitingMessages")
     @patch("py_canoe.core.measurement.time.sleep")
-    def test_stop_ex_busy_returns_false_without_filter(self, mock_sleep, mock_pump):
+    def test_stop_ex_busy_returns_false_without_filter(self, mock_sleep):
         """Without IMessageFilter (unit tests), busy exception returns False."""
         m, mock_com = _make_measurement(enable_events=False)
         mock_com.Running = True
@@ -332,9 +350,8 @@ class TestStopExBusyRetry:
         assert result is False
         mock_com.Stop.assert_called_once()
 
-    @patch("py_canoe.core.measurement.pythoncom.PumpWaitingMessages")
     @patch("py_canoe.core.measurement.time.sleep")
-    def test_stop_ex_unexpected_error_returns_false(self, mock_sleep, mock_pump):
+    def test_stop_ex_unexpected_error_returns_false(self, mock_sleep):
         m, mock_com = _make_measurement(enable_events=False)
         mock_com.Running = True
         mock_com.Stop = Mock(side_effect=Exception("Something unexpected"))
@@ -346,9 +363,8 @@ class TestStopExBusyRetry:
 
         assert result is False
 
-    @patch("py_canoe.core.measurement.pythoncom.PumpWaitingMessages")
     @patch("py_canoe.core.measurement.time.sleep")
-    def test_stop_ex_already_stopped(self, mock_sleep, mock_pump):
+    def test_stop_ex_already_stopped(self, mock_sleep):
         m, mock_com = _make_measurement(enable_events=False)
         mock_com.Running = False
 
@@ -357,9 +373,8 @@ class TestStopExBusyRetry:
         assert result is True
         mock_com.Stop.assert_not_called()
 
-    @patch("py_canoe.core.measurement.pythoncom.PumpWaitingMessages")
     @patch("py_canoe.core.measurement.time.sleep")
-    def test_stop_ex_naturally_stopped_during_retry(self, mock_sleep, mock_pump):
+    def test_stop_ex_naturally_stopped_during_retry(self, mock_sleep):
         """Measurement stops on its own while we retry Stop()."""
         m, mock_com = _make_measurement(enable_events=False)
         mock_com.Running = True
@@ -376,9 +391,8 @@ class TestStopExBusyRetry:
 
         assert result is True
 
-    @patch("py_canoe.core.measurement.pythoncom.PumpWaitingMessages")
     @patch("py_canoe.core.measurement.time.sleep")
-    def test_stop_ex_timeout_all_busy(self, mock_sleep, mock_pump):
+    def test_stop_ex_timeout_all_busy(self, mock_sleep):
         """stop_ex returns False when timeout expires with all busy errors."""
         m, mock_com = _make_measurement(enable_events=False)
         mock_com.Running = True
@@ -395,9 +409,8 @@ class TestStopExBusyRetry:
 
         assert result is False
 
-    @patch("py_canoe.core.measurement.pythoncom.PumpWaitingMessages")
     @patch("py_canoe.core.measurement.time.sleep")
-    def test_stop_ex_polls_running_after_stop_accepted(self, mock_sleep, mock_pump):
+    def test_stop_ex_polls_running_after_stop_accepted(self, mock_sleep):
         """After Stop() accepted, polls Running until False."""
         m, mock_com = _make_measurement(enable_events=False)
         mock_com.Running = True
@@ -429,11 +442,11 @@ class TestStopExBusyRetry:
 class TestPostStopPump:
     """Test post_stop_pump parameter."""
 
-    @patch("py_canoe.core.measurement.pythoncom.PumpWaitingMessages")
     @patch("py_canoe.core.measurement.time.sleep")
-    def test_post_stop_pump_calls_pump_n_times(self, mock_sleep, mock_pump):
-        """post_stop_pump=2 calls PumpWaitingMessages 20 times."""
+    def test_post_stop_pump_calls_pump_n_times(self, mock_sleep):
+        """post_stop_pump=2 delegates 20 message pumps to the Application."""
         m, mock_com = _make_measurement(enable_events=False)
+        mock_pump = m.app.pump_messages
         mock_com.Running = True
 
         def stop_side_effect():
@@ -447,11 +460,11 @@ class TestPostStopPump:
 
         assert mock_pump.call_count == 20
 
-    @patch("py_canoe.core.measurement.pythoncom.PumpWaitingMessages")
     @patch("py_canoe.core.measurement.time.sleep")
-    def test_post_stop_pump_zero_skips_pump(self, mock_sleep, mock_pump):
-        """post_stop_pump=0 does not call PumpWaitingMessages."""
+    def test_post_stop_pump_zero_skips_pump(self, mock_sleep):
+        """post_stop_pump=0 does not delegate message pumping."""
         m, mock_com = _make_measurement(enable_events=False)
+        mock_pump = m.app.pump_messages
         mock_com.Running = True
 
         def stop_side_effect():
@@ -474,11 +487,11 @@ class TestPostStopPump:
 
         m.stop_ex.assert_called_once_with(10, post_stop_pump=5)
 
-    @patch("py_canoe.core.measurement.pythoncom.PumpWaitingMessages")
     @patch("py_canoe.core.measurement.time.sleep")
-    def test_post_stop_pump_default_is_10(self, mock_sleep, mock_pump):
-        """Default post_stop_pump is 10 (100 pump calls)."""
+    def test_post_stop_pump_default_is_10(self, mock_sleep):
+        """Already-stopped measurement skips callback draining."""
         m, mock_com = _make_measurement(enable_events=False)
+        mock_pump = m.app.pump_messages
         mock_com.Running = False  # Already stopped
 
         m.stop_ex(timeout=30)  # Use default post_stop_pump
@@ -548,10 +561,9 @@ class TestMeasurementStartEventsEnabled:
 class TestStopExEventsEnabled:
     """Test stop_ex() DoEventsUntil path."""
 
-    @patch("py_canoe.core.measurement.pythoncom.PumpWaitingMessages")
     @patch("py_canoe.core.measurement.time.sleep")
     @patch("py_canoe.core.measurement.DoEventsUntil", return_value=True)
-    def test_stop_ex_uses_do_events_when_events_enabled(self, mock_do_events, mock_sleep, mock_pump):
+    def test_stop_ex_uses_do_events_when_events_enabled(self, mock_do_events, mock_sleep):
         with patch("win32com.client.Dispatch") as mock_dispatch:
             mock_com = Mock()
             mock_com.Running = True
@@ -574,10 +586,9 @@ class TestStopExEventsEnabled:
         assert result is True
         mock_do_events.assert_called_once()
 
-    @patch("py_canoe.core.measurement.pythoncom.PumpWaitingMessages")
     @patch("py_canoe.core.measurement.time.sleep")
     @patch("py_canoe.core.measurement.DoEventsUntil", return_value=False)
-    def test_stop_ex_events_timeout_returns_false(self, mock_do_events, mock_sleep, mock_pump):
+    def test_stop_ex_events_timeout_returns_false(self, mock_do_events, mock_sleep):
         with patch("win32com.client.Dispatch") as mock_dispatch:
             mock_com = Mock()
             mock_com.Running = True
@@ -605,9 +616,8 @@ class TestStopExEventsEnabled:
 class TestStopExPollTimeout:
     """Test stop_ex() when Stop() accepted but Running never becomes False."""
 
-    @patch("py_canoe.core.measurement.pythoncom.PumpWaitingMessages")
     @patch("py_canoe.core.measurement.time.sleep")
-    def test_stop_ex_poll_timeout_returns_false(self, mock_sleep, mock_pump):
+    def test_stop_ex_poll_timeout_returns_false(self, mock_sleep):
         m, mock_com = _make_measurement(enable_events=False)
         mock_com.Running = True
         mock_com.Stop = Mock()  # Stop accepted, but Running stays True
@@ -641,7 +651,7 @@ class TestOpenConfigPollingException:
         def full_name_getter():
             call_count[0] += 1
             if call_count[0] <= 2:
-                raise Exception("COM temporarily unavailable")
+                raise RuntimeError("COM temporarily unavailable")
             return target.lower()
 
         type(app.configuration).full_name = property(lambda self: full_name_getter())
@@ -665,9 +675,11 @@ class TestNewAndOpenEventsBranching:
         app = _make_app(enable_events=False)
         app.com_object.FullName = "something"
 
-        with patch.object(app, "_launch_application"):
-            with patch.object(app, "_setup_post_configuration_loading"):
-                result = app.new(timeout=5)
+        with (
+            patch.object(app, "_launch_application"),
+            patch.object(app, "_setup_post_configuration_loading"),
+        ):
+            result = app.new(timeout=5)
 
         assert result is True
         mock_do_events.assert_called_once()
@@ -683,9 +695,11 @@ class TestNewAndOpenEventsBranching:
         app = _make_app(enable_events=True)
         app._enable_events = True
 
-        with patch.object(app, "_launch_application"):
-            with patch.object(app, "_setup_post_configuration_loading"):
-                result = app.new(timeout=5)
+        with (
+            patch.object(app, "_launch_application"),
+            patch.object(app, "_setup_post_configuration_loading"),
+        ):
+            result = app.new(timeout=5)
 
         assert result is True
         mock_do_events.assert_called_once()
@@ -718,9 +732,11 @@ class TestNewAndOpenEventsBranching:
         app = _make_app(enable_events=False)
         app.com_object.FullName = r"d:\test\config.cfg"
 
-        with patch.object(app, "_launch_application"):
-            with patch.object(app, "_setup_post_configuration_loading"):
-                result = app.open(r"D:\test\config.cfg", timeout=5)
+        with (
+            patch.object(app, "_launch_application"),
+            patch.object(app, "_setup_post_configuration_loading"),
+        ):
+            result = app.open(r"D:\test\config.cfg", timeout=5)
 
         assert result is True
         mock_do_events.assert_called_once()
@@ -737,9 +753,11 @@ class TestNewAndOpenEventsBranching:
         expected_path = str(cfg_path.resolve())
         app.com_object.FullName = expected_path
 
-        with patch.object(app, "_launch_application"):
-            with patch.object(app, "_setup_post_configuration_loading"):
-                result = app.open(cfg_path, timeout=5)
+        with (
+            patch.object(app, "_launch_application"),
+            patch.object(app, "_setup_post_configuration_loading"),
+        ):
+            result = app.open(cfg_path, timeout=5)
 
         assert result is True
         app.com_object.Open.assert_called_once_with(expected_path, True, False)
@@ -752,9 +770,11 @@ class TestNewAndOpenEventsBranching:
         app = _make_app(enable_events=True)
         app._enable_events = True
 
-        with patch.object(app, "_launch_application"):
-            with patch.object(app, "_setup_post_configuration_loading"):
-                result = app.open(r"D:\test\config.cfg", timeout=5)
+        with (
+            patch.object(app, "_launch_application"),
+            patch.object(app, "_setup_post_configuration_loading"),
+        ):
+            result = app.open(r"D:\test\config.cfg", timeout=5)
 
         assert result is True
         mock_do_events.assert_called_once()
@@ -863,11 +883,12 @@ class TestApplicationQuit:
     @patch("py_canoe.core.application.DoEventsUntil", return_value=True)
     def test_quit_success(self, mock_do_events):
         app = _make_app(enable_events=False)
+        com_object = app.com_object
 
         result = app.quit(timeout=5)
 
         assert result is True
-        app.com_object.Quit.assert_called_once()
+        com_object.Quit.assert_called_once()
         mock_do_events.assert_called_once()
 
     @patch("py_canoe.core.application.DoEventsUntil", return_value=False)
@@ -997,9 +1018,11 @@ class TestAttachToActiveApplication:
     def test_attach_success(self):
         app = _make_app(enable_events=False)
 
-        with patch.object(app, "_launch_application"):
-            with patch.object(app, "_setup_post_configuration_loading"):
-                result = app.attach_to_active_application()
+        with (
+            patch.object(app, "_launch_application"),
+            patch.object(app, "_setup_post_configuration_loading"),
+        ):
+            result = app.attach_to_active_application()
 
         assert result is True
 
@@ -1295,8 +1318,8 @@ class TestApplicationInternalHelpers:
         app._setup_post_configuration_loading()
 
         mock_net.fetch_diagnostic_devices.assert_called_once()
-        mock_cfg.fetch_test_modules.assert_called_once()
-        mock_cfg.fetch_test_units.assert_called_once()
+        mock_cfg.fetch_test_modules.assert_not_called()
+        mock_cfg.fetch_test_units.assert_not_called()
 
     @patch("py_canoe.core.application.Networks")
     def test_setup_post_configuration_loading_exception(self, mock_net_cls):

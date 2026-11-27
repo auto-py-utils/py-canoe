@@ -1,5 +1,6 @@
-import win32com.client
+from py_canoe.core.com_session import dispatch_com_object
 from py_canoe.helpers.common import logger
+
 
 class CanController:
     """The CANController object represents a CAN controller for a specific channel.
@@ -15,7 +16,7 @@ class CanController:
     """
 
     def __init__(self, com_object):
-        self.com_object = win32com.client.Dispatch(com_object)
+        self.com_object = dispatch_com_object(com_object)
 
     @property
     def acknowledge(self):
@@ -88,7 +89,7 @@ class CanController:
             baudrate: Baudrate in bit/s (e.g. 500000 for 500 kBit/s).
             tseg1: Length of time segment 1 in time quanta.
             tseg2: Length of time segment 2 in time quanta.
-            sjw: Sync jump width in time quanta; cannot be larger than tseg2.
+            sjw: Sync jump width in time quanta. It must not exceed tseg2.
             sam: Number of sampling points (1 or 3).
             flags: 0 = normal mode, 1 = silent mode.
         """
@@ -102,8 +103,9 @@ class CanController:
             baudrate: Baudrate in bit/s (e.g. 500000 for 500 kBit/s).
             tseg1: Length of time segment 1 in time quanta.
             tseg2: Length of time segment 2 in time quanta.
-            sjw: Sync jump width in time quanta; cannot be larger than tseg2.
-            flags: Bit 0 = normal(0)/silent(1) mode; Bit 1 = ISO(0)/non-ISO(1) CAN FD.
+            sjw: Sync jump width in time quanta. It must not exceed tseg2.
+            flags: Bit 0 selects normal (0) or silent (1) mode. Bit 1 selects
+                ISO (0) or non-ISO (1) CAN FD.
         """
         self.com_object.CANSetFDArbPhaseConfig(baudrate, tseg1, tseg2, sjw, flags)
 
@@ -115,8 +117,9 @@ class CanController:
             baudrate: Baudrate in bit/s (e.g. 2000000 for 2 MBit/s).
             tseg1: Length of time segment 1 in time quanta.
             tseg2: Length of time segment 2 in time quanta.
-            sjw: Sync jump width in time quanta; cannot be larger than tseg2.
-            flags: Bit 0 = normal(0)/silent(1) mode; Bit 1 = ISO(0)/non-ISO(1) CAN FD.
+            sjw: Sync jump width in time quanta. It must not exceed tseg2.
+            flags: Bit 0 selects normal (0) or silent (1) mode. Bit 1 selects
+                ISO (0) or non-ISO (1) CAN FD.
         """
         self.com_object.CANSetFDDataPhaseConfig(baudrate, tseg1, tseg2, sjw, flags)
 

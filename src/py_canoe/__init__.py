@@ -1,11 +1,12 @@
 from py_canoe.canoe import CANoe as CANoe
 from py_canoe.helpers.bus_type import BusType as BusType
 from py_canoe.helpers.common import wait as wait
+from py_canoe.helpers.exceptions import (
+    ConfigurationNotLoadedError as ConfigurationNotLoadedError,
+)
 from py_canoe.helpers.exceptions import PyCanoeError as PyCanoeError
-from py_canoe.helpers.exceptions import ConfigurationNotLoadedError as ConfigurationNotLoadedError
 from py_canoe.helpers.vxlapi import ChannelInfo as ChannelInfo
 from py_canoe.helpers.vxlapi import XlBusType as XlBusType
-
 
 sample_py_canoe_script = '''
 from py_canoe import CANoe
@@ -24,7 +25,7 @@ canoe_obj.quit()
 def main():
     import argparse
     import platform
-    from importlib.metadata import version, PackageNotFoundError
+    from importlib.metadata import PackageNotFoundError, version
 
     try:
         v = version("py-canoe")
@@ -49,7 +50,16 @@ def main():
     if args.check:
         try:
             import win32com.client
-            win32com.client.Dispatch("CANoe.Application")
+
+            from py_canoe.core.com_session import ComSession
+
+            session = ComSession()
+            try:
+                session.invoke(
+                    lambda: win32com.client.Dispatch("CANoe.Application")
+                )
+            finally:
+                session.close()
             print("CANoe COM interface: OK")
         except Exception as e:
             print(f"CANoe COM interface: FAILED ({e})")

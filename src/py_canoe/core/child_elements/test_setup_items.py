@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Iterator
 
 from py_canoe.core.child_elements.test_module import TestModule
-from py_canoe.core.child_elements.test_setup_item import TestSetupItem
 from py_canoe.core.child_elements.test_setup_folder import TestSetupFolder
+from py_canoe.core.child_elements.test_setup_item import TestSetupItem
 from py_canoe.helpers.common import logger
 
 
@@ -25,7 +26,7 @@ class TestSetupItems:
         """Returns the number of test setup items inside the collection."""
         return self.com_object.Count
 
-    def item(self, index: int = None) -> 'TestSetupItem | list[TestSetupItem]':
+    def item(self, index: int | None = None) -> TestSetupItem | list[TestSetupItem]:
         """Returns a test setup item at the given index.
 
         The returned item can be either a TestSetupFolder or a TestModule object.
@@ -38,8 +39,12 @@ class TestSetupItems:
             or a list of them when index is None.
         """
         if index is None:
-            return [self._wrap(self.com_object.Item(i)) for i in range(1, self.count + 1)]
+            return list(self.iter_items())
         return self._wrap(self.com_object.Item(index))
+
+    def iter_items(self) -> Iterator[TestSetupItem]:
+        for index in range(1, self.count + 1):
+            yield self._wrap(self.com_object.Item(index))
 
     def _wrap(self, com_obj) -> TestSetupItem:
         """Wraps a COM test setup item into the appropriate concrete class.
@@ -49,12 +54,9 @@ class TestSetupItems:
         TestModule exposes a Sequence. We use the presence of the Folders
         property to distinguish them.
         """
-        try:
-            # TestSetupFolder has a Folders collection
-            com_obj.Folders
+        if hasattr(com_obj, "Folders"):
             return TestSetupFolder(com_obj)
-        except AttributeError:
-            return TestModule(com_obj)
+        return TestModule(com_obj)
 
     def add_folder(self, name: str) -> TestSetupFolder:
         """Adds a directory to a test environment or a directory in the test setup.
@@ -69,7 +71,7 @@ class TestSetupItems:
         logger.info(f'TestSetupItems: added folder "{name}".')
         return folder
 
-    def add_test_module(self, full_name: str, name: str = None) -> TestModule:
+    def add_test_module(self, full_name: str, name: str | None = None) -> TestModule:
         """Adds a test module to a test environment or a directory in the test setup.
 
         The path can be absolute or relative to the current CANoe configuration.
@@ -125,12 +127,5 @@ class TestSetupItems:
         logger.info(f'TestSetupItems: removed item at index/name "{index}".')
 
     def fetch_all_items(self) -> list:
-        """Fetches all test setup items from the collection.
-
-        Returns:
-            A list of TestSetupItem objects.
-        """
-        items = []
-        for index in range(1, self.count + 1):
-            items.append(self.item(index))
-        return items
+        """Fetches all test setup items from the collection."""
+        return list(self.iter_items())
